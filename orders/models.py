@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.conf import settings
+import uuid
 
 
 class Cart(models.Model):
@@ -69,7 +70,7 @@ class CartItem(models.Model):
     @property
     def line_total(self):
         """سعر السطر = الكمية × سعر الوحدة"""
-        return self.unit_price * self.quantity
+        return (self.unit_price or 0) * (self.quantity or 0)
     
 
 
@@ -218,4 +219,4 @@ class OrderItem(models.Model):
 
     @property
     def line_total(self):
-        return self.unit_price * self.quantity
+        return (self.unit_price or 0) * (self.quantity or 0)

@@ -24,7 +24,7 @@ def create_order_from_cart(customer, address_id, payment_method, notes="", coupo
         discount_amount = coupon.calc_discount(cart.subtotal)
         coupon_code     = coupon.code
 
-    shipping_cost = 0 if cart.subtotal >= 500 else 50   # شحن مجاني فوق 500 جنيه
+    shipping_cost = address.city.shipping_cost
     subtotal      = cart.subtotal
     total         = subtotal + shipping_cost - discount_amount
 
@@ -33,8 +33,8 @@ def create_order_from_cart(customer, address_id, payment_method, notes="", coupo
         customer             = customer,
         shipping_full_name   = address.full_name,
         shipping_phone       = address.phone,
-        shipping_governorate = address.get_governorate_display(),
-        shipping_city        = address.city,
+        shipping_governorate = address.governorate.name_ar,
+        shipping_city        = address.city.name_ar,
         shipping_street      = address.street,
         shipping_building    = address.building,
         subtotal             = subtotal,

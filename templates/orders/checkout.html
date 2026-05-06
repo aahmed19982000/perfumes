@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+{% if LANGUAGE_CODE == 'en' %}Checkout{% else %}إتمام الطلب{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .checkout-header {
+        padding: 40px 0 20px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+    }
+
+    .checkout-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--ink);
+    }
+
+    /* ── Address Cards ── */
+    .address-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .address-card {
+        border: 1.5px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        position: relative;
+    }
+
+    .address-card:hover {
+        border-color: var(--gold-light);
+        background: var(--soft);
+    }
+
+    .address-card.selected {
+        border-color: var(--gold);
+        background: #fdfaf3;
+        box-shadow: 0 4px 20px rgba(201, 169, 110, 0.1);
+    }
+
+    .address-card input[type="radio"] {
+        position: absolute;
+        top: 20px;
+        inset-inline-end: 20px;
+        accent-color: var(--gold);
+    }
+
+    .address-name {
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--ink);
+    }
+
+    .address-details {
+        font-size: 13px;
+        color: var(--mid);
+        line-height: 1.6;
+    }
+
+    /* ── Form Section ── */
+    .checkout-section {
+        background: var(--white);
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        margin-bottom: 30px;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--ink);
+    }
+
+    .section-title i {
+        color: var(--gold);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--mid);
+    }
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        font-size: 14px;
+        font-family: 'Cairo', sans-serif;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--gold);
+    }
+
+    /* ── Order Summary ── */
+    .order-summary {
+        background: var(--soft);
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        position: sticky;
+        top: 100px;
+    }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .summary-img {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+        background: var(--white);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+
+    .summary-info {
+        flex: 1;
+    }
+
+    .summary-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .summary-price {
+        font-size: 12px;
+        color: var(--mid);
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: var(--mid);
+    }
+
+    .total-row.grand-total {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--ink);
+    }
+
+    .btn-place-order {
+        width: 100%;
+        padding: 16px;
+        background: var(--ink);
+        color: var(--white);
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+        margin-top: 24px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .btn-place-order:hover {
+        background: var(--gold-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="checkout-header d-flex justify-content-between align-items-center">
+        <h1 class="checkout-title">{% if LANGUAGE_CODE == 'en' %}Checkout{% else %}إتمام الطلب{% endif %}</h1>
+        <a href="{% url 'cart' %}" class="text-decoration-none text-muted">
+            <i class="ti ti-arrow-left"></i> {% if LANGUAGE_CODE == 'en' %}Back to Cart{% else %}العودة للسلة{% endif %}
+        </a>
+    </div>
+
+    <form method="post" id="checkoutForm">
+        {% csrf_token %}
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <!-- Shipping Address Section -->
+                <div class="checkout-section">
+                    <h2 class="section-title">
+                        <i class="ti ti-map-pin"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Shipping Address{% else %}عنوان الشحن{% endif %}
+                    </h2>
+
+                    {% if addresses %}
+                    <div class="address-grid">
+                        {% for addr in addresses %}
+                        <label class="address-card {% if addr.is_default %}selected{% endif %}"
+                            id="addr-label-{{ addr.id }}">
+                            <input type="radio" name="address_id" value="{{ addr.id }}" {% if addr.is_default %}checked{% endif %}
+                                onchange="updateShipping({{ addr.city.shipping_cost }}, {{ addr.id }})">
+                            <div class="address-name">{{ addr.full_name }}</div>
+                            <div class="address-details">
+                                {{ addr.phone }}<br>
+                                {{ addr.governorate.name_ar }} — {{ addr.city.name_ar }}<br>
+                                {{ addr.street }}, {{ addr.building }}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="ti ti-info-circle"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Please add a shipping address to complete your order.{% else %}يرجى إضافة عنوان شحن لإتمام طلبك.{% endif %}
+                    </div>
+                    {% endif %}
+
+                    <button type="button" class="btn-checkout w-100"
+                        style="background:none;color:var(--gold);border:1.5px dashed var(--gold);padding:15px;border-radius:12px"
+                        data-bs-toggle="collapse" data-bs-target="#newAddressForm">
+                        <i class="ti ti-plus"></i> {% if LANGUAGE_CODE == 'en' %}Add New Address{% else %}إضافة عنوان جديد{% endif %}
+                    </button>
+
+                    <div class="collapse {% if not addresses %}show{% endif %} mt-4" id="newAddressForm">
+                        <div class="p-4 border rounded-4 bg-light">
+                            <h4 class="mb-4">{% if LANGUAGE_CODE == 'en' %}Add New Shipping Address{% else %}إضافة عنوان شحن جديد{% endif %}</h4>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Full Name{% else %}الاسم بالكامل{% endif %}</label>
+                                    <input type="text" name="new_full_name" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Phone Number{% else %}رقم الهاتف{% endif %}</label>
+                                    <input type="text" name="new_phone" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Governorate{% else %}المحافظة{% endif %}</label>
+                                    <select name="new_governorate" id="govSelect" class="form-select"
+                                        onchange="loadCities(this.value)">
+                                        <option value="">{% if LANGUAGE_CODE == 'en' %}Select Governorate{% else %}اختر المحافظة{% endif %}</option>
+                                        {% for gov in governorates %}
+                                        <option value="{{ gov.id }}">{% if LANGUAGE_CODE == 'en' %}{{ gov.name_en }}{% else %}{{ gov.name_ar }}{% endif %}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}City{% else %}المدينة{% endif %}</label>
+                                    <select name="new_city" id="citySelect" class="form-select" disabled>
+                                        <option value="">{% if LANGUAGE_CODE == 'en' %}Select City{% else %}اختر المدينة{% endif %}</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Street Address{% else %}العنوان (الشارع / الحي){% endif %}</label>
+                                    <input type="text" name="new_street" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Building / Apartment{% else %}المبنى / الشقة{% endif %}</label>
+                                    <input type="text" name="new_building" class="form-control">
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="save_address"
+                                            id="saveAddr" checked>
+                                        <label class="form-check-label" for="saveAddr">
+                                            {% if LANGUAGE_CODE == 'en' %}Save this address for future orders{% else %}حفظ هذا العنوان للطلبات القادمة{% endif %}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method Section -->
+                <div class="checkout-section">
+                    <h2 class="section-title">
+                        <i class="ti ti-credit-card"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Payment Method{% else %}طريقة الدفع{% endif %}
+                    </h2>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="payment_method" value="cod" id="paymentCod"
+                            checked>
+                        <label class="form-check-label" for="paymentCod">
+                            {% if LANGUAGE_CODE == 'en' %}Cash on Delivery (COD){% else %}الدفع عند الاستلام{% endif %}
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="checkout-section">
+                    <h2 class="section-title">
+                        <i class="ti ti-notes"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Order Notes{% else %}ملاحظات إضافية{% endif %}
+                    </h2>
+                    <textarea name="notes" class="form-control" rows="3"
+                        placeholder="{% if LANGUAGE_CODE == 'en' %}Any special instructions for delivery?{% else %}هل لديك أي تعليمات خاصة للتوصيل؟{% endif %}"></textarea>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="order-summary">
+                    <h3 class="summary-title">{% if LANGUAGE_CODE == 'en' %}Order Summary{% else %}ملخص الطلب{% endif %}
+                    </h3>
+
+                    <div class="mb-4">
+                        {% for item in cart.items.all %}
+                        <div class="summary-item">
+                            <img src="{{ item.product.thumbnail.url }}" class="summary-img" alt="">
+                            <div class="summary-info">
+                                <div class="summary-name">{% if LANGUAGE_CODE == 'en' %}{{ item.product.name_en }}{%
+                                    else %}{{ item.product.name_ar }}{% endif %}</div>
+                                <div class="summary-price">{{ item.quantity }} × {{ item.unit_price }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="total-row">
+                        <span>{% if LANGUAGE_CODE == 'en' %}Subtotal{% else %}المجموع الجزئي{% endif %}</span>
+                        <span> ج.م {{ cart.subtotal }}</span>
+                    </div>
+                    <div class="total-row">
+                        <span>{% if LANGUAGE_CODE == 'en' %}Shipping{% else %}الشحن{% endif %}</span>
+                        <span id="shippingDisplay">{% if addresses %}{% with def=request.user.get_default_address %}ج.م
+                            {{ def.city.shipping_cost|default:"0" }}{% endwith %}{% else %}{% if LANGUAGE_CODE == 'en' %}Please select an address{% else %}يرجى اختيار عنوان{% endif %}{% endif %}</span>
+                    </div>
+
+                    <div class="total-row grand-total">
+                        <span>{% if LANGUAGE_CODE == 'en' %}Total{% else %}الإجمالي{% endif %}</span>
+                        <span id="grandTotalDisplay">ج.م {{ cart.subtotal }}</span>
+                    </div>
+
+                    <button type="submit" class="btn-place-order">
+                        {% if LANGUAGE_CODE == 'en' %}Confirm Order{% else %}تأكيد الطلب{% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load l10n %}
+<script>
+    // Safe parsing of subtotal regardless of locale formatting
+    const subtotal = parseFloat("{{ cart.subtotal|unlocalize }}") || 0;
+
+    async function loadCities(govId) {
+        console.log("Loading cities for governorate ID:", govId);
+        const citySelect = document.getElementById('citySelect');
+        const lang = ("{{ LANGUAGE_CODE }}" || "ar").substring(0, 2);
+
+        citySelect.innerHTML = '<option value="">' + (lang === "en" ? "Loading..." : "جاري التحميل...") + '</option>';
+        citySelect.disabled = true;
+
+        if (!govId) {
+            citySelect.innerHTML = '<option value="">' + (lang === "en" ? "Select City" : "اختر المدينة") + '</option>';
+            return;
+        }
+
+        try {
+            const apiUrl = "{% url 'get_cities' %}?governorate_id=" + govId;
+            console.log("Fetching from:", apiUrl);
+            const res = await fetch(apiUrl);
+            const data = await res.json();
+            console.log("Data received:", data);
+
+            citySelect.innerHTML = '<option value="">' + (lang === "en" ? "Select City" : "اختر المدينة") + '</option>';
+            data.cities.forEach(city => {
+                const name = lang === 'en' ? city.name_en : city.name_ar;
+                console.log("Adding city:", name);
+                const opt = document.createElement('option');
+                opt.value = city.id;
+                opt.textContent = name;
+                opt.setAttribute('data-cost', city.shipping_cost);
+                citySelect.appendChild(opt);
+            });
+            citySelect.disabled = false;
+            citySelect.removeAttribute('disabled');
+            console.log("Dropdown enabled and populated.");
+        } catch (e) {
+            console.error('Error loading cities', e);
+        }
+    }
+
+    document.getElementById('citySelect').addEventListener('change', function () {
+        const selected = this.options[this.selectedIndex];
+        if (selected && selected.value) {
+            const cost = parseFloat(selected.getAttribute('data-cost')) || 0;
+            updateShipping(cost, 'new');
+
+            // Uncheck existing addresses
+            document.querySelectorAll('input[name="address_id"]').forEach(radio => radio.checked = false);
+            document.querySelectorAll('.address-card').forEach(c => c.classList.remove('selected'));
+        }
+    });
+
+    function updateShipping(cost, addrId) {
+        if (addrId !== 'new') {
+            document.querySelectorAll('.address-card').forEach(c => c.classList.remove('selected'));
+            const card = document.getElementById(`addr-label-${addrId}`);
+            if (card) card.classList.add('selected');
+        }
+
+        const shippingSpan = document.getElementById('shippingDisplay');
+        const totalSpan = document.getElementById('grandTotalDisplay');
+
+        shippingSpan.textContent = `ج.م ${cost}`;
+        totalSpan.textContent = `ج.م ${subtotal + cost}`;
+    }
+
+    // Initial logic to set correct total on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const checkedAddr = document.querySelector('input[name="address_id"]:checked');
+        if (checkedAddr) {
+            // If an address is already checked (default), trigger update
+            // We need to get the cost from the template or a data attribute
+            // For now, let's just use the value from the UI
+            const costStr = document.getElementById('shippingDisplay').textContent.replace('ج.م ', '').trim();
+            const cost = parseFloat(costStr) || 0;
+            document.getElementById('grandTotalDisplay').textContent = `ج.م ${subtotal + cost}`;
+        }
+    });
+
+    // Initial calculation if an address is selected
+    window.onload = () => {
+        const selected = document.querySelector('input[name="address_id"]:checked');
+        if (selected) {
+            // We need to pass the cost initially. 
+            // In a real app, we'd use data-attributes on the radio button.
+            // Let's assume the first calculation is handled by Django template.
+            const initialCostStr = document.getElementById('shippingDisplay').textContent.replace('ج.م ', '');
+            const initialCost = parseFloat(initialCostStr) || 0;
+            document.getElementById('grandTotalDisplay').textContent = `ج.م ${subtotal + initialCost}`;
+        }
+    }
+</script>
+{% endblock %}

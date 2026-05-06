@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+{% if LANGUAGE_CODE == 'en' %}Shopping Cart{% else %}سلة التسوق{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cart-header {
+        padding: 40px 0 20px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+    }
+
+    .cart-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--ink);
+    }
+
+    /* ── Cart Items ── */
+    .cart-item-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 16px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .cart-item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .cart-item-img {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+        background: var(--soft);
+        border-radius: 12px;
+        flex-shrink: 0;
+    }
+
+    .cart-item-info {
+        flex: 1;
+    }
+
+    .cart-item-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .cart-item-brand {
+        font-size: 12px;
+        color: var(--mid);
+        margin-bottom: 8px;
+    }
+
+    .cart-item-price {
+        font-weight: 700;
+        color: var(--gold);
+    }
+
+    /* ── Qty Control ── */
+    .cart-qty {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--soft);
+        border-radius: 30px;
+        padding: 4px;
+        border: 1px solid var(--border);
+    }
+
+    .cart-qty-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: var(--white);
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-weight: 700;
+        transition: background 0.2s;
+    }
+
+    .cart-qty-btn:hover {
+        background: var(--gold);
+        color: var(--white);
+    }
+
+    .cart-qty-input {
+        width: 30px;
+        text-align: center;
+        border: none;
+        background: transparent;
+        font-weight: 700;
+        font-size: 14px;
+        -moz-appearance: textfield;
+    }
+
+    .cart-qty-input::-webkit-outer-spin-button,
+    .cart-qty-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* ── Remove Btn ── */
+    .btn-remove {
+        color: #e74c3c;
+        background: rgba(231, 76, 60, 0.08);
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-remove:hover {
+        background: #e74c3c;
+        color: #white;
+    }
+
+    /* ── Summary ── */
+    .summary-card {
+        background: var(--soft);
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        position: sticky;
+        top: 100px;
+    }
+
+    .summary-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        color: var(--ink);
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        font-size: 15px;
+        color: var(--mid);
+    }
+
+    .summary-row.total {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--ink);
+        font-weight: 800;
+        font-size: 1.2rem;
+    }
+
+    .btn-checkout {
+        width: 100%;
+        padding: 16px;
+        background: var(--ink);
+        color: var(--white);
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+        margin-top: 24px;
+        transition: transform 0.2s, background 0.2s;
+    }
+
+    .btn-checkout:hover {
+        background: var(--gold-dark);
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--border);
+        margin-bottom: 20px;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+
+    <div class="cart-header">
+        <h1 class="cart-title">{% if LANGUAGE_CODE == 'en' %}Your Cart{% else %}سلة التسوق{% endif %}</h1>
+    </div>
+
+    {% if cart.items.exists %}
+    <div class="row g-4">
+        <!-- Items List -->
+        <div class="col-lg-8">
+            <div id="cartItemsList">
+                {% for item in cart.items.all %}
+                <div class="cart-item-card" id="item-{{ item.id }}">
+                    <a href="{% url 'product_detail' item.product.slug %}">
+                        <img src="{{ item.product.thumbnail.url }}" class="cart-item-img"
+                            alt="{{ item.product.name_ar }}">
+                    </a>
+                    <div class="cart-item-info">
+                        <div class="cart-item-brand">{{ item.product.brand.name }}</div>
+                        <a href="{% url 'product_detail' item.product.slug %}" class="cart-item-name">
+                            {% if LANGUAGE_CODE == 'en' %}{{ item.product.name_en }}{% else %}{{ item.product.name_ar
+                            }}{% endif %}
+                        </a>
+                        <div class="cart-item-price">
+                            {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ item.unit_price }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Qty -->
+                        <div class="cart-qty">
+                            <button class="cart-qty-btn" onclick="updateQty({{ item.id }}, -1)">−</button>
+                            <input type="number" value="{{ item.quantity }}" class="cart-qty-input"
+                                id="qty-{{ item.id }}" readonly>
+                            <button class="cart-qty-btn" onclick="updateQty({{ item.id }}, 1)">+</button>
+                        </div>
+
+                        <!-- Remove -->
+                        <button class="btn-remove" onclick="removeItem({{ item.id }})"
+                            title="{% if LANGUAGE_CODE == 'en' %}Remove{% else %}حذف{% endif %}">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="col-lg-4">
+            <div class="summary-card">
+                <h3 class="summary-title">{% if LANGUAGE_CODE == 'en' %}Order Summary{% else %}ملخص الطلب{% endif %}
+                </h3>
+
+                <div class="summary-row">
+                    <span>{% if LANGUAGE_CODE == 'en' %}Subtotal{% else %}المجموع الجزئي{% endif %}</span>
+                    <span id="cartSubtotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal
+                        }}</span>
+                </div>
+
+
+                <div class="summary-row total">
+                    <span>{% if LANGUAGE_CODE == 'en' %}Total{% else %}الإجمالي{% endif %}</span>
+                    <span id="cartTotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal
+                        }}</span>
+                </div>
+
+                <a href="{% url 'checkout' %}" class="btn btn-checkout">
+                    {% if LANGUAGE_CODE == 'en' %}Proceed to Checkout{% else %}إتمام الطلب{% endif %}
+                </a>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'products' %}"
+                        style="font-size:13px;color:var(--gold);text-decoration:none;font-weight:600">
+                        {% if LANGUAGE_CODE == 'en' %}Continue Shopping{% else %}متابعة التسوق{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="ti ti-shopping-cart-x empty-icon"></i>
+        <h2>{% if LANGUAGE_CODE == 'en' %}Your cart is empty{% else %}سلتك فارغة حالياً{% endif %}</h2>
+        <p class="text-muted mb-4">{% if LANGUAGE_CODE == 'en' %}Add some of our luxury perfumes to your cart!{% else
+            %}أضف بعض عطورنا الفاخرة لتبدأ التسوق!{% endif %}</p>
+        <a href="{% url 'products' %}" class="btn-checkout"
+            style="display:inline-block;width:auto;padding:12px 40px;text-decoration:none">
+            {% if LANGUAGE_CODE == 'en' %}Shop Now{% else %}تسوق الآن{% endif %}
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function updateQty(itemId, delta) {
+        const input = document.getElementById(`qty-${itemId}`);
+        let newQty = parseInt(input.value) + delta;
+        if (newQty < 1) return;
+
+        const formData = new FormData();
+        formData.append('quantity', newQty);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const res = await fetch(`/cart/update/${itemId}/`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (data.status === 'updated') {
+                input.value = newQty;
+                document.getElementById('cartSubtotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
+                document.getElementById('cartTotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
+                updateGlobalCartCount(data.cart_count);
+            } else if (data.status === 'error') {
+                alert(data.message);
+            }
+        } catch (e) {
+            console.error('Update qty error', e);
+        }
+    }
+
+    async function removeItem(itemId) {
+        if (!confirm('{% if LANGUAGE_CODE == "en" %}Remove this item?{% else %}هل تريد حذف هذا المنتج؟{% endif %}')) return;
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const res = await fetch(`/cart/remove/${itemId}/`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (data.status === 'removed') {
+                document.getElementById(`item-${itemId}`).remove();
+                document.getElementById('cartSubtotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
+                document.getElementById('cartTotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
+                updateGlobalCartCount(data.cart_count);
+
+                if (data.cart_count === 0) {
+                    location.reload();
+                }
+            }
+        } catch (e) {
+            console.error('Remove item error', e);
+        }
+    }
+
+    function updateGlobalCartCount(count) {
+        const badges = document.querySelectorAll('.badge-count, .mob-bar-badge');
+        badges.forEach(b => b.textContent = count);
+    }
+</script>
+{% endblock %}

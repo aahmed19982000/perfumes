@@ -50,45 +50,45 @@ class Customer(AbstractBaseUser, PermissionsMixin):
         return self.addresses.filter(is_default=True).first()
 
 
-class Address(models.Model):
-    GOVERNORATES = [
-        ("cairo",          "القاهرة"),
-        ("giza",           "الجيزة"),
-        ("alexandria",     "الإسكندرية"),
-        ("luxor",          "الأقصر"),
-        ("aswan",          "أسوان"),
-        ("port_said",      "بورسعيد"),
-        ("suez",           "السويس"),
-        ("mansoura",       "المنصورة"),
-        ("tanta",          "طنطا"),
-        ("zagazig",        "الزقازيق"),
-        ("ismailia",       "الإسماعيلية"),
-        ("fayoum",         "الفيوم"),
-        ("minya",          "المنيا"),
-        ("asyut",          "أسيوط"),
-        ("sohag",          "سوهاج"),
-        ("qena",           "قنا"),
-        ("beni_suef",      "بني سويف"),
-        ("dakahlia",       "الدقهلية"),
-        ("sharqia",        "الشرقية"),
-        ("gharbia",        "الغربية"),
-        ("kafr_el_sheikh", "كفر الشيخ"),
-        ("beheira",        "البحيرة"),
-        ("monufia",        "المنوفية"),
-        ("qalyubia",       "القليوبية"),
-        ("damietta",       "دمياط"),
-        ("north_sinai",    "شمال سيناء"),
-        ("south_sinai",    "جنوب سيناء"),
-        ("red_sea",        "البحر الأحمر"),
-        ("matrouh",        "مطروح"),
-        ("new_valley",     "الوادي الجديد"),
-    ]
+class Governorate(models.Model):
+    name_ar   = models.CharField(max_length=100, verbose_name="المحافظة بالعربي")
+    name_en   = models.CharField(max_length=100, verbose_name="المحافظة بالإنجليزي")
+    is_active = models.BooleanField(default=True, verbose_name="نشط")
 
+    class Meta:
+        verbose_name        = "محافظة"
+        verbose_name_plural = "المحافظات"
+        ordering            = ["name_ar"]
+
+    def __str__(self):
+        return self.name_ar
+
+
+class City(models.Model):
+    governorate   = models.ForeignKey(
+        Governorate, on_delete=models.CASCADE,
+        related_name="cities", verbose_name="المحافظة"
+    )
+    name_ar       = models.CharField(max_length=100, verbose_name="المدينة بالعربي")
+    name_en       = models.CharField(max_length=100, verbose_name="المدينة بالإنجليزي")
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="تكلفة الشحن")
+    is_active     = models.BooleanField(default=True, verbose_name="نشط")
+
+    class Meta:
+        verbose_name        = "مدينة"
+        verbose_name_plural = "المدن"
+        ordering            = ["governorate", "name_ar"]
+
+    def __str__(self):
+        return f"{self.governorate.name_ar} — {self.name_ar}"
+
+
+class Address(models.Model):
     customer     = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="addresses", verbose_name="العميل")
     full_name    = models.CharField(max_length=100, verbose_name="الاسم الكامل")
     phone        = models.CharField(max_length=20, verbose_name="رقم الهاتف")
-    governorate  = models.CharField(max_length=50, choices=GOVERNORATES, verbose_name="المحافظة")
-    city         = models.CharField(max_length=100, verbose_name="المدينة / الحي")
+    governorate  = models.ForeignKey(Governorate, on_delete=models.PROTECT, related_name="addresses", verbose_name="المحافظة")
+    city         = models.ForeignKey(City, on_delete=models.PROTECT, related_name="addresses", verbose_name="المدينة")
     street       = models.CharField(max_length=255, verbose_name="الشارع")
     building     = models.CharField(max_length=50, blank=True, verbose_name="رقم المبنى / الشقة")
     postal_code  = models.CharField(max_length=10, blank=True, verbose_name="الرمز البريدي")

@@ -2,7 +2,20 @@
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Customer, Address
+from .models import Customer, Address, Governorate, City
+
+
+@admin.register(Governorate)
+class GovernorateAdmin(admin.ModelAdmin):
+    list_display = ["name_ar", "name_en", "is_active"]
+    list_editable = ["is_active"]
+
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    list_display = ["name_ar", "name_en", "governorate", "shipping_cost", "is_active"]
+    list_filter = ["governorate", "is_active"]
+    list_editable = ["shipping_cost", "is_active"]
 
 
 class AddressInline(admin.TabularInline):

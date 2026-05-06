@@ -1,10 +1,11 @@
 # apps/orders/views.py
 
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Cart, CartItem , Order
+from django.utils.translation import gettext as _
+from .models import Cart, CartItem, Order
 from products.models import Product
 from django.contrib import messages
 from .services import create_order_from_cart
@@ -30,9 +31,16 @@ def cart_view(request):
 def add_to_cart(request, product_id):
     product  = get_object_or_404(Product, id=product_id, is_active=True)
     quantity = int(request.POST.get("quantity", 1))
+    
+    # الترجمة للرسالة
+    msg_success = _("تمت الإضافة للسلة") if request.LANGUAGE_CODE == 'ar' else "Added to cart"
+    msg_oos     = _("المنتج نفد من المخزون") if request.LANGUAGE_CODE == 'ar' else "Product out of stock"
 
     if product.is_out_of_stock:
-        return JsonResponse({"status": "error", "message": "المنتج نفد من المخزون"}, status=400)
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({"status": "error", "message": msg_oos}, status=400)
+        messages.error(request, msg_oos)
+        return redirect("product_detail", slug=product.slug)
 
     cart = get_or_create_cart(request.user)
     item, created = CartItem.objects.get_or_create(
@@ -44,12 +52,19 @@ def add_to_cart(request, product_id):
         item.quantity += quantity
         item.save()
 
-    return JsonResponse({
-        "status":      "success",
-        "message":     "تمت الإضافة للسلة",
-        "cart_count":  cart.total_items,
-        "cart_total":  str(cart.subtotal),
-    })
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            "status":      "success",
+            "message":     msg_success,
+            "cart_count":  cart.total_items,
+            "cart_total":  str(cart.subtotal),
+        })
+    
+    messages.success(request, msg_success)
+    next_url = request.GET.get("next")
+    if next_url == "checkout":
+        return redirect("checkout")
+    return redirect("cart")
 
 
 # ── تعديل الكمية (AJAX) ──────────────────────────────────────────
@@ -98,31 +113,54 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def checkout_view(request):
-    cart = request.user.cart
+    cart = get_or_create_cart(request.user)
     if cart.is_empty:
         return redirect("cart")
 
-    addresses = request.user.addresses.all()
+    from accounts.models import Governorate, Address, City
+    addresses    = request.user.addresses.all()
+    governorates = Governorate.objects.filter(is_active=True)
 
     if request.method == "POST":
         address_id     = request.POST.get("address_id")
         payment_method = request.POST.get("payment_method", "cod")
         notes          = request.POST.get("notes", "")
 
-        try:
-            order = create_order_from_cart(
-                customer       = request.user,
-                address_id     = address_id,
-                payment_method = payment_method,
-                notes          = notes,
-            )
-            return redirect("order_success", order_number=order.order_number)
-        except Exception as e:
-            messages.error(request, str(e))
+        # ── معالجة عنوان جديد ──────────────────────────────────────
+        if not address_id and request.POST.get("new_full_name"):
+            try:
+                new_addr = Address.objects.create(
+                    customer     = request.user,
+                    full_name    = request.POST.get("new_full_name"),
+                    phone        = request.POST.get("new_phone"),
+                    governorate_id = request.POST.get("new_governorate"),
+                    city_id        = request.POST.get("new_city"),
+                    street       = request.POST.get("new_street"),
+                    building     = request.POST.get("new_building"),
+                    is_default   = request.POST.get("save_address") == "on"
+                )
+                address_id = new_addr.id
+            except Exception as e:
+                messages.error(request, f"خطأ في إنشاء العنوان: {str(e)}")
+
+        if not address_id:
+            messages.error(request, "يرجى اختيار عنوان الشحن") if request.LANGUAGE_CODE == 'ar' else messages.error(request, "Please select a shipping address")
+        else:
+            try:
+                order = create_order_from_cart(
+                    customer       = request.user,
+                    address_id     = address_id,
+                    payment_method = payment_method,
+                    notes          = notes,
+                )
+                return redirect("order_success", order_number=order.order_number)
+            except Exception as e:
+                messages.error(request, str(e))
 
     return render(request, "orders/checkout.html", {
-        "cart":      cart,
-        "addresses": addresses,
+        "cart":         cart,
+        "addresses":    addresses,
+        "governorates": governorates,
     })
 
 

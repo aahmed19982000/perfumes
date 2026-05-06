@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}My Wishlist{% else %}قائمة أمنياتي{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wishlist-header {
+        padding: 40px 0 20px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+    }
+    .wishlist-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--ink);
+    }
+    
+    /* ── Wishlist Grid ── */
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 30px;
+    }
+    
+    .wishlist-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        position: relative;
+    }
+    .wishlist-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+    }
+    
+    .wishlist-img-wrap {
+        height: 300px;
+        background: var(--soft);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .wishlist-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .btn-remove-wishlist {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 36px;
+        height: 36px;
+        background: var(--white);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e74c3c;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+        z-index: 10;
+    }
+    .btn-remove-wishlist:hover {
+        background: #e74c3c;
+        color: var(--white);
+    }
+    
+    .wishlist-body {
+        padding: 20px;
+        text-align: center;
+    }
+    .wishlist-brand {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 8px;
+    }
+    .wishlist-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink);
+        text-decoration: none;
+        display: block;
+        margin-bottom: 12px;
+        height: 44px;
+        overflow: hidden;
+    }
+    .wishlist-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 20px;
+    }
+    
+    .btn-move-cart {
+        width: 100%;
+        padding: 12px;
+        background: var(--ink);
+        color: var(--white);
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: background 0.2s;
+        text-decoration: none;
+    }
+    .btn-move-cart:hover {
+        background: var(--gold-dark);
+        color: var(--white);
+    }
+    .btn-move-cart.out-of-stock {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+    }
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--border);
+        margin-bottom: 20px;
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    
+    <div class="wishlist-header">
+        <h1 class="wishlist-title">{% if LANGUAGE_CODE == 'en' %}Your Wishlist{% else %}قائمة أمنياتي{% endif %}</h1>
+    </div>
+
+    {% if wishlist.items.exists %}
+    <div class="wishlist-grid" id="wishlistGrid">
+        {% for item in wishlist.items.all %}
+        <div class="wishlist-card" id="wish-item-{{ item.id }}">
+            <button class="btn-remove-wishlist" onclick="removeWishItem({{ item.id }})" title="{% if LANGUAGE_CODE == 'en' %}Remove{% else %}حذف{% endif %}">
+                <i class="ti ti-x"></i>
+            </button>
+            
+            <div class="wishlist-img-wrap">
+                <img src="{{ item.product.thumbnail.url }}" class="wishlist-img" alt="{{ item.product.name_ar }}">
+            </div>
+            
+            <div class="wishlist-body">
+                <div class="wishlist-brand">{{ item.product.brand.name }}</div>
+                <a href="{% url 'product_detail' item.product.slug %}" class="wishlist-name">
+                    {% if LANGUAGE_CODE == 'en' %}{{ item.product.name_en }}{% else %}{{ item.product.name_ar }}{% endif %}
+                </a>
+                <div class="wishlist-price">
+                    {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ item.product.final_price }}
+                </div>
+                
+                {% if item.product.is_out_of_stock %}
+                <button class="btn-move-cart out-of-stock" disabled>
+                    {% if LANGUAGE_CODE == 'en' %}Out of Stock{% else %}نفد من المخزون{% endif %}
+                </button>
+                {% else %}
+                <button class="btn-move-cart" onclick="moveToCart({{ item.id }})">
+                    <i class="ti ti-shopping-cart-plus"></i>
+                    {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="ti ti-heart-off empty-icon"></i>
+        <h2>{% if LANGUAGE_CODE == 'en' %}Your wishlist is empty{% else %}قائمة أمنياتك فارغة{% endif %}</h2>
+        <p class="text-muted mb-4">{% if LANGUAGE_CODE == 'en' %}Save your favorite perfumes to buy them later!{% else %}احفظ عطورك المفضلة لتشتريها لاحقاً!{% endif %}</p>
+        <a href="{% url 'products' %}" class="btn-move-cart" style="display:inline-block;width:auto;padding:12px 40px;text-decoration:none;margin:0 auto">
+            {% if LANGUAGE_CODE == 'en' %}Explore Perfumes{% else %}استكشف العطور{% endif %}
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function removeWishItem(itemId) {
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const res = await fetch(`/wishlist/remove/${itemId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            
+            if (data.status === 'removed') {
+                document.getElementById(`wish-item-${itemId}`).style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById(`wish-item-${itemId}`).remove();
+                    if (document.querySelectorAll('.wishlist-card').length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+                updateBadgeCount('wishlist', data.wishlist_count);
+                showToast('{% if LANGUAGE_CODE == "en" %}Removed from wishlist{% else %}تم الحذف من الأمنيات{% endif %}');
+            }
+        } catch (e) {
+            console.error('Remove wishlist error', e);
+        }
+    }
+
+    async function moveToCart(itemId) {
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const res = await fetch(`/wishlist/move-to-cart/${itemId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            
+            if (data.status === 'moved') {
+                document.getElementById(`wish-item-${itemId}`).style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById(`wish-item-${itemId}`).remove();
+                    if (document.querySelectorAll('.wishlist-card').length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+                
+                updateBadgeCount('wishlist', data.wishlist_count);
+                updateBadgeCount('cart', data.cart_count);
+                showToast(data.message);
+            } else if (data.status === 'error') {
+                showToast(data.message, 'error');
+            }
+        } catch (e) {
+            console.error('Move to cart error', e);
+        }
+    }
+
+    function updateBadgeCount(type, count) {
+        let selector = type === 'cart' ? '.badge-count:nth-child(2), .mob-bar-badge:nth-child(2)' : '.badge-count:first-child, .mob-bar-badge:first-child';
+        // Better to use specific IDs or classes. Let's update header.html with specific classes.
+        // For now, let's just find them by looking at the parent's icon.
+        document.querySelectorAll('.nav-action i, .mob-bar-item i').forEach(icon => {
+            if (type === 'cart' && (icon.classList.contains('ti-shopping-bag') || icon.classList.contains('ti-shopping-cart'))) {
+                const badge = icon.parentElement.querySelector('.badge-count, .mob-bar-badge');
+                if (badge) badge.textContent = count;
+            }
+            if (type === 'wishlist' && icon.classList.contains('ti-heart')) {
+                const badge = icon.parentElement.querySelector('.badge-count, .mob-bar-badge');
+                if (badge) badge.textContent = count;
+            }
+        });
+    }
+</script>
+{% endblock %}

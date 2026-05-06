@@ -13,3 +13,20 @@ def nav_context(request):
             is_active=True
         )[:10],
     }
+
+
+def shop_context(request):
+    context = {
+        "cart_count": 0,
+        "wishlist_count": 0,
+    }
+    if request.user.is_authenticated:
+        try:
+            context["cart_count"] = request.user.cart.total_items
+        except:
+            pass
+        try:
+            context["wishlist_count"] = request.user.wishlist.total_items
+        except:
+            pass
+    return context

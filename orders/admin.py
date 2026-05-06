@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import Cart, CartItem, Order, OrderItem
 
+
 class CartItemInline(admin.TabularInline):
     model           = CartItem
     extra           = 0

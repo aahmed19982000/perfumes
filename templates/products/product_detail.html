@@ -388,7 +388,8 @@
     }
 
     .btn-wish:hover,
-    .btn-wish.in-wishlist {
+    .btn-wish.in-wishlist,
+    .btn-wish.active {
         border-color: #f43f5e;
         background: #fff1f2;
         color: #f43f5e;
@@ -915,17 +916,11 @@
                         <button type="button" onclick="buyNow()" class="btn-buy">
                             <i class="ti ti-bolt"></i> {% if LANGUAGE_CODE == 'en' %}Buy Now{% else %}اشترِ الآن{% endif %}
                         </button>
-                        {% if request.user.is_authenticated %}
-                        <button type="button"
-                            class="btn-wish wishlist-btn {% if is_in_wishlist %}in-wishlist{% endif %}" id="wishlistBtn"
-                            data-product-id="{{ product.id }}" title="{% if LANGUAGE_CODE == 'en' %}Add to Wishlist{% else %}أضف للمفضلة{% endif %}">
+                        <button type="button" class="btn-wish {% if is_in_wishlist %}active{% endif %}" 
+                            onclick="toggleWishlist(this, {{ product.id }})"
+                            title="{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}">
                             <i class="ti ti-heart{% if is_in_wishlist %}-filled{% endif %}"></i>
                         </button>
-                        {% else %}
-                        <a href="{% url 'login' %}" class="btn-wish" title="{% if LANGUAGE_CODE == 'en' %}Add to Wishlist{% else %}أضف للمفضلة{% endif %}">
-                            <i class="ti ti-heart"></i>
-                        </a>
-                        {% endif %}
                     </div>
                 </form>
                 {% else %}
@@ -1148,11 +1143,74 @@
             input.value = val;
         }
 
+        // ── Wishlist Toggle (AJAX) ──
+        async function toggleWishlist(btn, productId) {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            try {
+                const res = await fetch(`/wishlist/toggle/${productId}/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                
+                if (data.status === 'added') {
+                    btn.classList.add('active');
+                    btn.querySelector('i').classList.replace('ti-heart', 'ti-heart-filled');
+                    showToast(data.message);
+                } else if (data.status === 'removed') {
+                    btn.classList.remove('active');
+                    btn.querySelector('i').classList.replace('ti-heart-filled', 'ti-heart');
+                    showToast(data.message);
+                }
+                
+                if (typeof updateGlobalBadgeCount === 'function') {
+                    updateGlobalBadgeCount('wishlist', data.wishlist_count);
+                } else {
+                    // Fallback badge update
+                    document.querySelectorAll('.nav-action i.ti-heart, .mob-bar-item i.ti-heart').forEach(icon => {
+                        const badge = icon.parentElement.querySelector('.badge-count, .mob-bar-badge');
+                        if (badge) badge.textContent = data.wishlist_count;
+                    });
+                }
+            } catch (e) {
+                showToast('{% if LANGUAGE_CODE == "en" %}Please login to add to wishlist{% else %}يرجى تسجيل الدخول للإضافة للمفضلة{% endif %}', 'error');
+            }
+        }
+        const cartForm = document.getElementById('addToCartForm');
+        if (cartForm) {
+            cartForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(cartForm);
+                try {
+                    const res = await fetch(cartForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        showToast(data.message);
+                        if (typeof updateGlobalCartCount === 'function') {
+                            updateGlobalCartCount(data.cart_count);
+                        }
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                } catch (e) {
+                    showToast('{% if LANGUAGE_CODE == "en" %}Error adding to cart{% else %}حدث خطأ أثناء الإضافة{% endif %}', 'error');
+                }
+            });
+        }
+
         // ── Buy Now ──
         function buyNow() {
             const form = document.getElementById('addToCartForm');
             if (!form) return;
             form.action = "{% url 'add_to_cart' product.id %}?next=checkout";
+            // For Buy Now, we can still do a normal submit to go to checkout immediately
             form.submit();
         }
 

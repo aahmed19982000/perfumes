@@ -91,6 +91,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',   # ✅ يجعل LANGUAGE_CODE متاحاً في القوالب
                 "core.context_processors.nav_context",
+                "core.context_processors.shop_context",
             ],
         },
     },

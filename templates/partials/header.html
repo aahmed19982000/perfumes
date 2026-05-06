@@ -68,14 +68,14 @@
         </div>
 
         <div class="nav-actions d-none d-lg-flex">
-            <a href="#" class="nav-action">
+            <a href="{% url 'wishlist' %}" class="nav-action">
                 <i class="ti ti-heart"></i>
-                <span class="badge-count">0</span>
+                <span class="badge-count">{{ wishlist_count }}</span>
                 <span>{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</span>
             </a>
-            <a href="#" class="nav-action">
+            <a href="{% url 'cart' %}" class="nav-action">
                 <i class="ti ti-shopping-bag"></i>
-                <span class="badge-count">0</span>
+                <span class="badge-count">{{ cart_count }}</span>
                 <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
             </a>
             <a href="#" class="nav-action">
@@ -193,14 +193,14 @@
         <i class="ti ti-category-2"></i>
         <span>{% if LANGUAGE_CODE == 'en' %}Shop{% else %}المتجر{% endif %}</span>
     </a>
-    <a href="#" class="mob-bar-item">
+    <a href="{% url 'wishlist' %}" class="mob-bar-item">
         <i class="ti ti-heart"></i>
-        <span class="mob-bar-badge">0</span>
+        <span class="mob-bar-badge">{{ wishlist_count }}</span>
         <span>{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</span>
     </a>
-    <a href="#" class="mob-bar-item">
+    <a href="{% url 'cart' %}" class="mob-bar-item">
         <i class="ti ti-shopping-bag"></i>
-        <span class="mob-bar-badge">0</span>
+        <span class="mob-bar-badge">{{ cart_count }}</span>
         <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
     </a>
     <a href="#" class="mob-bar-item">
