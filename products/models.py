@@ -1,21 +1,69 @@
-# apps/products/models.py
+# products/models.py
 
 from django.db import models
 from django.utils.text import slugify
+from PIL import Image
+import uuid
+import os
 
+
+# ══════════════════════════════════════════════════════════════════
+# UTILS
+# ══════════════════════════════════════════════════════════════════
+
+def compress_image(image_field, max_width=1200, quality=82):
+    """
+    ضغط الصورة وتحويلها لـ WebP
+    quality=82 = أفضل نقطة توازن بين الجودة والحجم
+    method=6   = أعلى جودة ضغط (أبطأ في الحفظ لكن أصغر حجم)
+    """
+    img = Image.open(image_field.path)
+
+    # تحويل RGBA أو P لـ RGB عشان WebP
+    if img.mode in ("RGBA", "P"):
+        img = img.convert("RGB")
+
+    # تصغير الأبعاد فقط لو الصورة أكبر من max_width
+    if img.width > max_width:
+        ratio      = max_width / img.width
+        new_height = int(img.height * ratio)
+        img        = img.resize((max_width, new_height), Image.LANCZOS)
+
+    old_path  = image_field.path
+    webp_path = os.path.splitext(old_path)[0] + ".webp"
+
+    img.save(
+        webp_path,
+        format="WEBP",
+        quality=quality,
+        optimize=True,
+        method=6,
+        lossless=False,
+    )
+
+    # حذف الصورة الأصلية لو اختلف الامتداد
+    if old_path != webp_path and os.path.exists(old_path):
+        os.remove(old_path)
+
+    return os.path.basename(webp_path)
+
+
+# ══════════════════════════════════════════════════════════════════
+# CATEGORY
+# ══════════════════════════════════════════════════════════════════
 
 class Category(models.Model):
-    name_ar = models.CharField(max_length=100, verbose_name="الاسم بالعربي")
-    name_en = models.CharField(max_length=100, verbose_name="الاسم بالإنجليزي")
-    slug    = models.SlugField(unique=True, blank=True)
-    image   = models.ImageField(upload_to="category/", blank=True, null=True)
-    is_active = models.BooleanField(default=True)
+    name_ar    = models.CharField(max_length=100, verbose_name="الاسم بالعربي")
+    name_en    = models.CharField(max_length=100, verbose_name="الاسم بالإنجليزي")
+    slug       = models.SlugField(unique=True, blank=True)
+    image      = models.ImageField(upload_to="category/", blank=True, null=True)
+    is_active  = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "فئة"
+        verbose_name        = "فئة"
         verbose_name_plural = "الفئات"
-        ordering = ["name_ar"]
+        ordering            = ["name_ar"]
 
     def __str__(self):
         return self.name_ar
@@ -25,25 +73,39 @@ class Category(models.Model):
             self.slug = slugify(self.name_en)
         super().save(*args, **kwargs)
 
+        if self.image:
+            try:
+                # 500px كافية للفئات — بتظهر كأيقونات صغيرة
+                new_name     = compress_image(self.image, max_width=500, quality=82)
+                new_relative = os.path.join("category", new_name)
+                if self.image.name != new_relative:
+                    Category.objects.filter(pk=self.pk).update(image=new_relative)
+            except Exception:
+                pass
+
+
+# ══════════════════════════════════════════════════════════════════
+# SUBCATEGORY
+# ══════════════════════════════════════════════════════════════════
 
 class SubCategory(models.Model):
-    category = models.ForeignKey(
+    category   = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,
         related_name="sub_categories",
         verbose_name="الفئة الرئيسية",
     )
-    name_ar = models.CharField(max_length=100, verbose_name="الاسم بالعربي")
-    name_en = models.CharField(max_length=100, verbose_name="الاسم بالإنجليزي")
-    slug    = models.SlugField(unique=True, blank=True)
-    image   = models.ImageField(upload_to="sub_category/", blank=True, null=True)
-    is_active = models.BooleanField(default=True)
+    name_ar    = models.CharField(max_length=100, verbose_name="الاسم بالعربي")
+    name_en    = models.CharField(max_length=100, verbose_name="الاسم بالإنجليزي")
+    slug       = models.SlugField(unique=True, blank=True)
+    image      = models.ImageField(upload_to="sub_category/", blank=True, null=True)
+    is_active  = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "فئة فرعية"
+        verbose_name        = "فئة فرعية"
         verbose_name_plural = "الفئات الفرعية"
-        ordering = ["name_ar"]
+        ordering            = ["name_ar"]
 
     def __str__(self):
         return f"{self.category.name_ar} ← {self.name_ar}"
@@ -53,12 +115,20 @@ class SubCategory(models.Model):
             self.slug = slugify(self.name_en)
         super().save(*args, **kwargs)
 
+        if self.image:
+            try:
+                # 500px كافية للفئات الفرعية
+                new_name     = compress_image(self.image, max_width=500, quality=82)
+                new_relative = os.path.join("sub_category", new_name)
+                if self.image.name != new_relative:
+                    SubCategory.objects.filter(pk=self.pk).update(image=new_relative)
+            except Exception:
+                pass
 
 
-
-
-
-
+# ══════════════════════════════════════════════════════════════════
+# BRAND
+# ══════════════════════════════════════════════════════════════════
 
 class Brand(models.Model):
     name       = models.CharField(max_length=100, verbose_name="اسم العلامة التجارية")
@@ -80,34 +150,39 @@ class Brand(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
+        if self.logo:
+            try:
+                # 300px كافية للشعارات — بتظهر صغيرة في صف البراندات
+                # quality=88 عشان الشعارات فيها نص وتفاصيل دقيقة
+                new_name     = compress_image(self.logo, max_width=300, quality=88)
+                new_relative = os.path.join("brand", new_name)
+                if self.logo.name != new_relative:
+                    Brand.objects.filter(pk=self.pk).update(logo=new_relative)
+            except Exception:
+                pass
+
     def product_count(self):
         return self.products.count()
-    
 
 
-
-
-# apps/products/models.py  —  أضف بعد Brand
-
-from django.db import models
-from django.utils.text import slugify
-from django.core.validators import MinValueValidator, MaxValueValidator
-import uuid
-
+# ══════════════════════════════════════════════════════════════════
+# PRODUCT
+# ══════════════════════════════════════════════════════════════════
 
 class Product(models.Model):
-    # ── المعرّف الفريد ──────────────────────────────────────────
+
+    # ── المعرّف الفريد ────────────────────────────────────────────
     sku  = models.CharField(max_length=20, unique=True, blank=True, verbose_name="كود المنتج")
 
-    # ── الأسماء والوصف ─────────────────────────────────────────
+    # ── الأسماء والوصف ───────────────────────────────────────────
     name_ar        = models.CharField(max_length=255, verbose_name="الاسم بالعربي")
     name_en        = models.CharField(max_length=255, verbose_name="الاسم بالإنجليزي")
     slug           = models.SlugField(unique=True, blank=True, max_length=300)
     description_ar = models.TextField(blank=True, verbose_name="الوصف بالعربي")
     description_en = models.TextField(blank=True, verbose_name="الوصف بالإنجليزي")
 
-    # ── العلاقات ────────────────────────────────────────────────
-    category     = models.ForeignKey(
+    # ── العلاقات ─────────────────────────────────────────────────
+    category = models.ForeignKey(
         "Category", on_delete=models.SET_NULL,
         null=True, blank=True,
         related_name="products", verbose_name="الفئة",
@@ -123,7 +198,7 @@ class Product(models.Model):
         related_name="products", verbose_name="العلامة التجارية",
     )
 
-    # ── السعر والمخزون ──────────────────────────────────────────
+    # ── السعر والمخزون ───────────────────────────────────────────
     price          = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="السعر")
     discount_price = models.DecimalField(
         max_digits=10, decimal_places=2,
@@ -131,17 +206,17 @@ class Product(models.Model):
     )
     stock = models.PositiveIntegerField(default=0, verbose_name="المخزون")
 
-    # ── الصورة الرئيسية ─────────────────────────────────────────
+    # ── الصورة الرئيسية ──────────────────────────────────────────
     thumbnail = models.ImageField(
         upload_to="product/thumbnail/",
         verbose_name="الصورة الرئيسية",
     )
 
-    # ── الحالة والتصنيف ─────────────────────────────────────────
+    # ── الحالة والتصنيف ──────────────────────────────────────────
     is_active   = models.BooleanField(default=True,  verbose_name="نشط")
     is_featured = models.BooleanField(default=False, verbose_name="مميز")
 
-    # ── التواريخ ────────────────────────────────────────────────
+    # ── التواريخ ─────────────────────────────────────────────────
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -153,28 +228,37 @@ class Product(models.Model):
     def __str__(self):
         return self.name_ar
 
-    # ── توليد SKU و Slug تلقائياً ────────────────────────────────
     def save(self, *args, **kwargs):
         if not self.sku:
-            self.sku = uuid.uuid4().hex[:8].upper()   # مثال: A3F9C21B
+            self.sku = uuid.uuid4().hex[:8].upper()
         if not self.slug:
-            base = slugify(self.name_en) or slugify(self.name_ar)
+            base      = slugify(self.name_en) or slugify(self.name_ar)
             self.slug = f"{base}-{self.sku}"
+
         super().save(*args, **kwargs)
 
-    # ── Properties مساعدة ────────────────────────────────────────
+        if self.thumbnail:
+            try:
+                # 600px كافية للـ thumbnail — بيظهر في بطاقة المنتج
+                # مش محتاج أكبر لأنه مش الصورة الرئيسية في صفحة المنتج
+                new_name     = compress_image(self.thumbnail, max_width=600, quality=82)
+                new_relative = os.path.join("product/thumbnail", new_name)
+                if self.thumbnail.name != new_relative:
+                    Product.objects.filter(pk=self.pk).update(thumbnail=new_relative)
+            except Exception:
+                pass
+
+    # ── Properties ───────────────────────────────────────────────
     @property
     def is_out_of_stock(self):
         return self.stock == 0
 
     @property
     def final_price(self):
-        """السعر الفعلي بعد الخصم إن وجد"""
         return self.discount_price if self.discount_price else self.price
 
     @property
     def discount_percent(self):
-        """نسبة الخصم"""
         if self.discount_price and self.price > 0:
             return int(((self.price - self.discount_price) / self.price) * 100)
         return 0
@@ -191,15 +275,19 @@ class Product(models.Model):
         return self.reviews.count()
 
 
+# ══════════════════════════════════════════════════════════════════
+# PRODUCT IMAGE
+# ══════════════════════════════════════════════════════════════════
+
 class ProductImage(models.Model):
-    product   = models.ForeignKey(
+    product    = models.ForeignKey(
         Product, on_delete=models.CASCADE,
         related_name="images", verbose_name="المنتج",
     )
-    image     = models.ImageField(upload_to="product/images/", verbose_name="الصورة")
-    alt_text  = models.CharField(max_length=150, blank=True, verbose_name="النص البديل")
-    is_main   = models.BooleanField(default=False, verbose_name="صورة رئيسية")
-    order     = models.PositiveSmallIntegerField(default=0, verbose_name="الترتيب")
+    image      = models.ImageField(upload_to="product/images/", verbose_name="الصورة")
+    alt_text   = models.CharField(max_length=150, blank=True, verbose_name="النص البديل")
+    is_main    = models.BooleanField(default=False, verbose_name="صورة رئيسية")
+    order      = models.PositiveSmallIntegerField(default=0, verbose_name="الترتيب")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -209,3 +297,17 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"صورة — {self.product.name_ar}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.image:
+            try:
+                # 1000px للصور الكبيرة في معرض المنتج
+                # quality=82 sweet spot للعطور (صور زجاجات واضحة)
+                new_name     = compress_image(self.image, max_width=1000, quality=82)
+                new_relative = os.path.join("product/images", new_name)
+                if self.image.name != new_relative:
+                    ProductImage.objects.filter(pk=self.pk).update(image=new_relative)
+            except Exception:
+                pass

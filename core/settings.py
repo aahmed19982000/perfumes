@@ -27,7 +27,25 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+import os
+from pathlib import Path
+
+MEDIA_URL  = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 AUTH_USER_MODEL = "accounts.Customer"
+
+
+from django.utils.translation import gettext_lazy as _
+
+LANGUAGE_CODE = 'ar'
+
+LANGUAGES = [
+    ('ar', _('Arabic')),
+    ('en', _('English')),
+]
+
+USE_I18N    = True
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 # Application definition
 
@@ -55,6 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -62,7 +81,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        "DIRS": [BASE_DIR / "templates"], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,6 +89,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "core.context_processors.nav_context",
             ],
         },
     },

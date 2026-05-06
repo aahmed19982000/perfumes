@@ -1,0 +1,24 @@
+<!-- templates/products/product_list.html -->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5">
+    <h2>المنتجات</h2>
+    <div class="row g-3">
+        {% for product in products %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card h-100">
+                <a href="{% url 'product_detail' product.slug %}">
+                    <img src="{{ product.thumbnail.url }}" class="card-img-top"
+                        style="height:200px;object-fit:contain;padding:10px">
+                </a>
+                <div class="card-body text-center">
+                    <h6>{{ product.name_ar }}</h6>
+                    <p class="fw-bold" style="color:#c9a96e">L.E {{ product.final_price }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

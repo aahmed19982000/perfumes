@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'ar' }}" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Mava Perfumes{% endblock %}</title>
+
+    {% load static i18n %}
+
+    <!-- Bootstrap RTL/LTR -->
+    {% if LANGUAGE_CODE == 'en' %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    {% else %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    {% endif %}
+
+    <!-- Tabler Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+    <!-- Fonts: Playfair Display + Cairo -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ─── CSS Variables ─── */
+        :root {
+            --gold:       #c9a96e;
+            --gold-light: #e8d5b0;
+            --gold-dark:  #a07a40;
+            --ink:        #0f0f0f;
+            --soft:       #f9f7f4;
+            --mid:        #6b6560;
+            --border:     #e8e3dc;
+            --white:      #ffffff;
+            --nav-h:      64px;
+        }
+
+        /* ─── Base ─── */
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--white);
+            color: var(--ink);
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── Top Bar ─── */
+        .top-bar {
+            background: var(--ink);
+            color: #aaa;
+            font-size: 12px;
+            padding: 7px 0;
+            letter-spacing: 0.03em;
+        }
+
+        .top-bar a {
+            color: #bbb;
+            text-decoration: none;
+            transition: color .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .top-bar a:hover { color: var(--gold); }
+
+        .top-bar .separator {
+            width: 1px;
+            height: 14px;
+            background: #333;
+        }
+
+        /* Pill Buttons */
+        .pill-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 12px;
+            border: 1px solid #333;
+            border-radius: 20px;
+            background: transparent;
+            font-size: 11px;
+            cursor: pointer;
+            color: #bbb;
+            text-decoration: none;
+            font-family: 'Cairo', sans-serif;
+            transition: border-color .2s, color .2s;
+        }
+
+        .pill-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* Language dropdown */
+        .lang-dropdown .dropdown-menu {
+            background: var(--ink);
+            border: 1px solid #222;
+            border-radius: 10px;
+            min-width: 120px;
+            padding: 6px;
+        }
+
+        .lang-dropdown .dropdown-item {
+            color: #bbb;
+            border-radius: 6px;
+            font-size: 12px;
+            padding: 6px 10px;
+            transition: background .15s;
+        }
+
+        .lang-dropdown .dropdown-item:hover {
+            background: #1f1f1f;
+            color: var(--gold);
+        }
+
+        /* ─── Main Navbar ─── */
+        .navbar-main {
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            height: var(--nav-h);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 20px rgba(0,0,0,.06);
+        }
+
+        .navbar-main .inner {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Logo */
+        .logo {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .logo-wordmark {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: 0.08em;
+            line-height: 1;
+        }
+
+        .logo-wordmark span {
+            color: var(--gold);
+        }
+
+        .logo-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--gold);
+            border-radius: 50%;
+            margin-bottom: 2px;
+        }
+
+        /* Search */
+        .search-wrap {
+            flex: 1;
+            max-width: 420px;
+            position: relative;
+        }
+
+        .search-wrap input {
+            width: 100%;
+            padding: 9px 44px 9px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 30px;
+            font-size: 13px;
+            font-family: 'Cairo', sans-serif;
+            background: var(--soft);
+            color: var(--ink);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        html[dir="ltr"] .search-wrap input {
+            padding: 9px 16px 9px 44px;
+        }
+
+        .search-wrap input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201,169,110,.12);
+            background: var(--white);
+        }
+
+        .search-wrap button {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gold);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            font-size: 17px;
+        }
+
+        html[dir="ltr"] .search-wrap button {
+            right: auto;
+            left: 12px;
+        }
+
+        /* Nav Actions */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-inline-start: auto;
+        }
+
+        .nav-action {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--ink);
+            font-size: 10px;
+            font-weight: 600;
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: background .15s;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-action i { font-size: 20px; color: var(--ink); }
+
+        .nav-action:hover {
+            background: var(--soft);
+            color: var(--gold);
+        }
+
+        .nav-action:hover i { color: var(--gold); }
+
+        .badge-count {
+            position: absolute;
+            top: 2px;
+            inset-inline-start: 6px;
+            background: var(--gold);
+            color: var(--white);
+            font-size: 9px;
+            font-weight: 700;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 3px;
+            line-height: 1;
+        }
+
+        /* Hamburger */
+        .hamburger {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 8px;
+            transition: background .15s;
+        }
+
+        .hamburger:hover { background: var(--soft); }
+
+        .hamburger span {
+            display: block;
+            height: 2px;
+            background: var(--ink);
+            border-radius: 2px;
+            transition: transform .25s, opacity .25s;
+        }
+
+        .hamburger span:first-child { width: 22px; }
+        .hamburger span:nth-child(2) { width: 16px; }
+        .hamburger span:last-child { width: 20px; }
+
+        /* ─── Desktop Nav Menu ─── */
+        .nav-menu {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: var(--nav-h);
+            z-index: 999;
+        }
+
+        .nav-menu .inner {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .nav-link-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 18px;
+            height: 46px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--ink);
+            text-decoration: none;
+            letter-spacing: 0.02em;
+            transition: color .2s;
+            white-space: nowrap;
+        }
+
+        .nav-link-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 18px;
+            right: 18px;
+            height: 2px;
+            background: var(--gold);
+            transform: scaleX(0);
+            transition: transform .25s cubic-bezier(.4,0,.2,1);
+            border-radius: 2px 2px 0 0;
+        }
+
+        .nav-link-item:hover,
+        .nav-link-item.active { color: var(--gold); }
+
+        .nav-link-item:hover::after,
+        .nav-link-item.active::after { transform: scaleX(1); }
+
+        /* Mega Menu */
+        .mega-wrap {
+            position: relative;
+        }
+
+        .mega-menu {
+            position: absolute;
+            top: 100%;
+            inset-inline-start: -28px;
+            width: calc(100vw - 0px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--white);
+            border-top: 2px solid var(--gold);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 16px 48px rgba(0,0,0,.1);
+            padding: 28px max(28px, calc((100vw - 1200px)/2));
+            display: none;
+            z-index: 998;
+        }
+
+        .mega-wrap:hover .mega-menu { display: block; }
+
+        .mega-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--mid);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mega-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--ink);
+            padding: 12px 8px;
+            border-radius: 12px;
+            transition: background .2s, transform .2s;
+            text-align: center;
+        }
+
+        .mega-card:hover {
+            background: var(--soft);
+            transform: translateY(-2px);
+        }
+
+        .mega-card-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border);
+            transition: border-color .2s;
+        }
+
+        .mega-card:hover .mega-card-img { border-color: var(--gold); }
+
+        .mega-card-name {
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        /* ─── Mobile Offcanvas ─── */
+        .offcanvas {
+            max-width: 300px !important;
+            border: none !important;
+        }
+
+        .offcanvas-header {
+            background: var(--ink);
+            padding: 16px 20px;
+        }
+
+        .offcanvas-body { padding: 0; background: var(--white); }
+
+        .mob-search-wrap {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mob-search-wrap input {
+            width: 100%;
+            padding: 9px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 25px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            background: var(--soft);
+            outline: none;
+            color: var(--ink);
+        }
+
+        .mob-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ink);
+            text-decoration: none;
+            border-bottom: 1px solid var(--border);
+            transition: background .15s, color .15s;
+        }
+
+        .mob-nav-item i { font-size: 18px; color: var(--mid); }
+
+        .mob-nav-item:hover,
+        .mob-nav-item:focus {
+            background: var(--soft);
+            color: var(--gold);
+        }
+
+        .mob-nav-item:hover i { color: var(--gold); }
+
+        .mob-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--mid);
+            padding: 16px 20px 6px;
+        }
+
+        /* ─── Mobile Bottom Bar ─── */
+        .mobile-bottom-bar {
+            display: none;
+        }
+
+        @media (max-width: 991.98px) {
+            .mobile-bottom-bar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 62px;
+                background: var(--white);
+                border-top: 1px solid var(--border);
+                box-shadow: 0 -4px 20px rgba(0,0,0,.08);
+                z-index: 1050;
+                align-items: center;
+            }
+
+            body { padding-bottom: 62px; }
+
+            .mob-bar-item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                text-decoration: none;
+                color: var(--mid);
+                font-size: 10px;
+                font-weight: 600;
+                position: relative;
+                padding: 8px 4px;
+                transition: color .2s;
+            }
+
+            .mob-bar-item i { font-size: 22px; }
+            .mob-bar-item:hover, .mob-bar-item.active { color: var(--gold); }
+
+            .mob-bar-badge {
+                position: absolute;
+                top: 6px;
+                inset-inline-start: calc(50% + 4px);
+                background: var(--gold);
+                color: var(--white);
+                font-size: 9px;
+                font-weight: 700;
+                min-width: 15px;
+                height: 15px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 3px;
+            }
+
+            /* WhatsApp moves up from bottom bar */
+            .whatsapp-float { bottom: 76px; }
+        }
+
+        /* ─── WhatsApp ─── */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 28px;
+            inset-inline-end: 24px;
+            width: 50px;
+            height: 50px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-size: 1.5rem;
+            z-index: 9000;
+            text-decoration: none;
+            box-shadow: 0 4px 20px rgba(37,211,102,.4);
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 28px rgba(37,211,102,.5);
+        }
+
+        /* ─── Footer ─── */
+        .footer-main {
+            background: var(--ink);
+            color: #888;
+            padding: 56px 0 0;
+            margin-top: 80px;
+        }
+
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: 0.1em;
+        }
+
+        .footer-logo span { color: var(--gold); }
+
+        .footer-tagline {
+            font-size: 13px;
+            color: #666;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .footer-divider {
+            border: none;
+            border-top: 1px solid #1f1f1f;
+            margin: 40px 0 0;
+        }
+
+        .footer-bottom {
+            padding: 18px 0;
+            font-size: 12px;
+            color: #444;
+        }
+
+        .footer-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 18px;
+        }
+
+        .footer-link {
+            display: block;
+            color: #666;
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 10px;
+            transition: color .2s;
+        }
+
+        .footer-link:hover { color: var(--gold-light); }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .footer-contact-item i {
+            color: var(--gold);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .social-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 17px;
+            text-decoration: none;
+            transition: background .2s, color .2s;
+        }
+
+        .social-btn:hover {
+            background: var(--gold);
+            color: var(--white);
+        }
+
+        /* ─── Utility ─── */
+        @media (max-width: 575.98px) {
+            .footer-main { margin-top: 40px; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/201069545469" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+        <i class="ti ti-brand-whatsapp"></i>
+    </a>
+
+    <!-- ══ Top Bar (Desktop only) ══ -->
+    <div class="top-bar d-none d-lg-block">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <a href="tel:+201069545469">
+                    <i class="ti ti-phone"></i> +201069545469
+                </a>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Currency -->
+                    <div class="pill-btn">
+                        <i class="ti ti-currency-pound" style="font-size:13px"></i>
+                        EGP &nbsp;·&nbsp; <strong style="color:#eee">L.E</strong>
+                    </div>
+                    <div class="separator"></div>
+                    <!-- Language -->
+                    <div class="dropdown lang-dropdown">
+                        <button class="pill-btn dropdown-toggle" data-bs-toggle="dropdown">
+                            {% if LANGUAGE_CODE == 'en' %}
+                            <img src="https://flagcdn.com/w20/gb.png" alt="EN" style="border-radius:2px"> English
+                            {% else %}
+                            <img src="https://flagcdn.com/w20/eg.png" alt="AR" style="border-radius:2px"> عربي
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+                                    <input type="hidden" name="language" value="ar">
+                                    <button type="submit" class="dropdown-item">
+                                        <img src="https://flagcdn.com/w20/eg.png" alt="" style="border-radius:2px;margin-inline-end:6px"> عربي
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+                                    <input type="hidden" name="language" value="en">
+                                    <button type="submit" class="dropdown-item">
+                                        <img src="https://flagcdn.com/w20/gb.png" alt="" style="border-radius:2px;margin-inline-end:6px"> English
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Main Navbar ══ -->
+    <nav class="navbar-main">
+        <div class="container inner">
+
+            <!-- Hamburger (mobile) -->
+            <button class="hamburger d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Logo -->
+            <a href="{% url 'home' %}" class="logo">
+                <div class="logo-dot"></div>
+                <div class="logo-wordmark">MAV<span>A</span></div>
+            </a>
+
+            <!-- Search (Desktop) -->
+            <div class="search-wrap d-none d-lg-block mx-4">
+                <form action="{% url 'products' %}" method="get">
+                    <input type="text" name="search"
+                        placeholder="{% if LANGUAGE_CODE == 'en' %}Search perfumes...{% else %}ابحث عن العطر...{% endif %}">
+                    <button type="submit"><i class="ti ti-search"></i></button>
+                </form>
+            </div>
+
+            <!-- Nav Actions (Desktop wishlist + cart) -->
+            <div class="nav-actions d-none d-lg-flex">
+                <a href="#" class="nav-action">
+                    <i class="ti ti-heart"></i>
+                    <span class="badge-count">0</span>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</span>
+                </a>
+                <a href="#" class="nav-action">
+                    <i class="ti ti-shopping-bag"></i>
+                    <span class="badge-count">0</span>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
+                </a>
+                <a href="#" class="nav-action">
+                    <i class="ti ti-user"></i>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Account{% else %}حسابي{% endif %}</span>
+                </a>
+            </div>
+
+        </div>
+    </nav>
+
+    <!-- ══ Desktop Nav Menu ══ -->
+    <div class="nav-menu d-none d-lg-block">
+        <div class="container inner">
+            <a href="{% url 'home' %}" class="nav-link-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                {% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}
+            </a>
+
+            <!-- Mega Menu Trigger -->
+            <div class="mega-wrap">
+                <a href="{% url 'products' %}" class="nav-link-item">
+                    {% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}
+                    <i class="ti ti-chevron-down" style="font-size:14px;opacity:.6"></i>
+                </a>
+                <div class="mega-menu">
+                    <div class="mega-section-title">
+                        {% if LANGUAGE_CODE == 'en' %}Browse by Category{% else %}تصفح حسب الفئة{% endif %}
+                    </div>
+                    <div class="row g-2">
+                        {% for cat in nav_categories %}
+                        <div class="col-md-2 col-4">
+                            <a href="{% url 'products' %}?category_id={{ cat.id }}" class="mega-card">
+                                {% if cat.image %}
+                                <img src="{{ cat.image.url }}" alt="{{ cat.name_ar }}" class="mega-card-img">
+                                {% else %}
+                                <div class="mega-card-img d-flex align-items-center justify-content-center" style="background:var(--soft)">
+                                    <i class="ti ti-bottle" style="font-size:22px;color:var(--gold)"></i>
+                                </div>
+                                {% endif %}
+                                <div class="mega-card-name">{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}</div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
+            <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+            <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
+        </div>
+    </div>
+
+    <!-- ══ Mobile Offcanvas ══ -->
+    <div class="offcanvas offcanvas-start" id="mobileMenu" tabindex="-1">
+        <div class="offcanvas-header">
+            <div class="d-flex align-items-center gap-2">
+                <div class="logo-dot" style="background:#c9a96e"></div>
+                <span style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;letter-spacing:.08em">MAV<span style="color:#c9a96e">A</span></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+
+            <!-- Mobile search -->
+            <div class="mob-search-wrap">
+                <form action="{% url 'products' %}" method="get">
+                    <input type="text" name="search"
+                        placeholder="{% if LANGUAGE_CODE == 'en' %}Search...{% else %}ابحث...{% endif %}">
+                </form>
+            </div>
+
+            <!-- Nav links -->
+            <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Navigation{% else %}التنقل{% endif %}</div>
+
+            <a href="{% url 'home' %}" class="mob-nav-item">
+                <i class="ti ti-home"></i>
+                {% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}
+            </a>
+
+            {% if nav_categories %}
+            <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}</div>
+            {% for cat in nav_categories %}
+            <a href="{% url 'products' %}?category_id={{ cat.id }}" class="mob-nav-item">
+                <i class="ti ti-tag"></i>
+                {% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}
+            </a>
+            {% endfor %}
+            {% endif %}
+
+            <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}More{% else %}المزيد{% endif %}</div>
+            <a href="#" class="mob-nav-item"><i class="ti ti-star"></i> {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
+            <a href="#" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+            <a href="#" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
+
+            <!-- Language switcher in mobile -->
+            <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Language{% else %}اللغة{% endif %}</div>
+            <div style="padding: 10px 16px; display:flex; gap:8px;">
+                <form action="{% url 'set_language' %}" method="post" style="flex:1">{% csrf_token %}
+                    <input type="hidden" name="language" value="ar">
+                    <button type="submit" class="mob-nav-item w-100" style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
+                        <img src="https://flagcdn.com/w20/eg.png" alt="" style="border-radius:2px"> عربي
+                    </button>
+                </form>
+                <form action="{% url 'set_language' %}" method="post" style="flex:1">{% csrf_token %}
+                    <input type="hidden" name="language" value="en">
+                    <button type="submit" class="mob-nav-item w-100" style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
+                        <img src="https://flagcdn.com/w20/gb.png" alt="" style="border-radius:2px"> English
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══ Page Content ══ -->
+    {% block content %}{% endblock %}
+
+    <!-- ══ Footer ══ -->
+    <footer class="footer-main">
+        <div class="container">
+            <div class="row g-5">
+                <!-- Brand -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-logo">MAV<span>A</span></div>
+                    <p class="footer-tagline">{% if LANGUAGE_CODE == 'en' %}Luxury Perfumes — Est. 2020{% else %}عطور فاخرة — منذ ٢٠٢٠{% endif %}</p>
+                    <p style="font-size:13px;color:#555;margin-top:14px;line-height:1.8">
+                        {% if LANGUAGE_CODE == 'en' %}
+                        Discover our curated collection of luxury fragrances from around the world.
+                        {% else %}
+                        اكتشف مجموعتنا المختارة من العطور الفاخرة من حول العالم.
+                        {% endif %}
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-btn" aria-label="Instagram"><i class="ti ti-brand-instagram"></i></a>
+                        <a href="#" class="social-btn" aria-label="Facebook"><i class="ti ti-brand-facebook"></i></a>
+                        <a href="https://wa.me/201069545469" class="social-btn" aria-label="WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
+                        <a href="#" class="social-btn" aria-label="TikTok"><i class="ti ti-brand-tiktok"></i></a>
+                    </div>
+                </div>
+
+                <!-- Links -->
+                <div class="col-lg-2 col-md-3 col-6">
+                    <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Quick Links{% else %}روابط سريعة{% endif %}</div>
+                    <a href="{% url 'home' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+                    <a href="{% url 'products' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}All Products{% else %}جميع المنتجات{% endif %}</a>
+                    <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
+                    <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+                    <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}About Us{% else %}من نحن{% endif %}</a>
+                </div>
+
+                <!-- Policy -->
+                <div class="col-lg-2 col-md-3 col-6">
+                    <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Policies{% else %}السياسات{% endif %}</div>
+                    <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Privacy Policy{% else %}سياسة الخصوصية{% endif %}</a>
+                    <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Return Policy{% else %}سياسة الإرجاع{% endif %}</a>
+                    <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Shipping{% else %}الشحن والتوصيل{% endif %}</a>
+                    <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}FAQ{% else %}الأسئلة الشائعة{% endif %}</a>
+                </div>
+
+                <!-- Contact -->
+                <div class="col-lg-4 col-md-12">
+                    <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Contact Us{% else %}تواصل معنا{% endif %}</div>
+                    <div class="footer-contact-item">
+                        <i class="ti ti-phone"></i>
+                        <span>+201069545469</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="ti ti-mail"></i>
+                        <span>info@mavaperfumes.com</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="ti ti-clock"></i>
+                        <span>{% if LANGUAGE_CODE == 'en' %}Sat – Thu: 10am – 10pm{% else %}السبت – الخميس: ١٠ص – ١٠م{% endif %}</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="ti ti-map-pin"></i>
+                        <span>{% if LANGUAGE_CODE == 'en' %}Egypt{% else %}مصر{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="footer-divider">
+            <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span>© 2025 MAVA Perfumes. {% if LANGUAGE_CODE == 'en' %}All rights reserved.{% else %}جميع الحقوق محفوظة.{% endif %}</span>
+                <div class="d-flex align-items-center gap-2" style="font-size:11px">
+                    <i class="ti ti-shield-check" style="color:var(--gold)"></i>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Secured Payments{% else %}مدفوعات آمنة{% endif %}</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ══ Mobile Bottom Navigation Bar ══ -->
+    <div class="mobile-bottom-bar d-lg-none">
+        <a href="{% url 'home' %}" class="mob-bar-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="ti ti-home-2"></i>
+            <span>{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</span>
+        </a>
+        <a href="{% url 'products' %}" class="mob-bar-item">
+            <i class="ti ti-category-2"></i>
+            <span>{% if LANGUAGE_CODE == 'en' %}Shop{% else %}المتجر{% endif %}</span>
+        </a>
+        <a href="#" class="mob-bar-item">
+            <i class="ti ti-heart"></i>
+            <span class="mob-bar-badge">0</span>
+            <span>{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</span>
+        </a>
+        <a href="#" class="mob-bar-item">
+            <i class="ti ti-shopping-bag"></i>
+            <span class="mob-bar-badge">0</span>
+            <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
+        </a>
+        <a href="#" class="mob-bar-item">
+            <i class="ti ti-user"></i>
+            <span>{% if LANGUAGE_CODE == 'en' %}Account{% else %}حسابي{% endif %}</span>
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>
