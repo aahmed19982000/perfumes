@@ -1,0 +1,215 @@
+{% load static i18n %}
+
+<!-- ══ Top Bar (Desktop only) ══ -->
+<div class="top-bar d-none d-lg-block">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <a href="tel:+201069545469">
+                <i class="ti ti-phone"></i> +201069545469
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <div class="pill-btn">
+                    <i class="ti ti-currency-pound" style="font-size:13px"></i>
+                    EGP &nbsp;·&nbsp; <strong style="color:#eee">L.E</strong>
+                </div>
+                <div class="separator"></div>
+                <div class="dropdown lang-dropdown">
+                    <button class="pill-btn dropdown-toggle" data-bs-toggle="dropdown">
+                        {% if LANGUAGE_CODE == 'en' %}
+                        <img src="https://flagcdn.com/w20/gb.png" alt="EN" style="border-radius:2px"> English
+                        {% else %}
+                        <img src="https://flagcdn.com/w20/eg.png" alt="AR" style="border-radius:2px"> عربي
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+                                <input type="hidden" name="language" value="ar">
+                                <button type="submit" class="dropdown-item">
+                                    <img src="https://flagcdn.com/w20/eg.png" alt="" style="border-radius:2px;margin-inline-end:6px"> عربي
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+                                <input type="hidden" name="language" value="en">
+                                <button type="submit" class="dropdown-item">
+                                    <img src="https://flagcdn.com/w20/gb.png" alt="" style="border-radius:2px;margin-inline-end:6px"> English
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Main Navbar ══ -->
+<nav class="navbar-main">
+    <div class="container inner">
+
+        <button class="hamburger d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <a href="{% url 'home' %}" class="logo">
+            <div class="logo-dot"></div>
+            <div class="logo-wordmark">MAV<span>A</span></div>
+        </a>
+
+        <div class="search-wrap d-none d-lg-block mx-4">
+            <form action="{% url 'products' %}" method="get">
+                <input type="text" name="search" placeholder="{% if LANGUAGE_CODE == 'en' %}Search perfumes...{% else %}ابحث عن العطر...{% endif %}">
+                <button type="submit"><i class="ti ti-search"></i></button>
+            </form>
+        </div>
+
+        <div class="nav-actions d-none d-lg-flex">
+            <a href="#" class="nav-action">
+                <i class="ti ti-heart"></i>
+                <span class="badge-count">0</span>
+                <span>{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</span>
+            </a>
+            <a href="#" class="nav-action">
+                <i class="ti ti-shopping-bag"></i>
+                <span class="badge-count">0</span>
+                <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
+            </a>
+            <a href="#" class="nav-action">
+                <i class="ti ti-user"></i>
+                <span>{% if LANGUAGE_CODE == 'en' %}Account{% else %}حسابي{% endif %}</span>
+            </a>
+        </div>
+
+    </div>
+</nav>
+
+<!-- ══ Desktop Nav Menu ══ -->
+<div class="nav-menu d-none d-lg-block">
+    <div class="container inner">
+        <a href="{% url 'home' %}" class="nav-link-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            {% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}
+        </a>
+
+        <div class="mega-wrap">
+            <a href="{% url 'products' %}" class="nav-link-item">
+                {% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}
+                <i class="ti ti-chevron-down" style="font-size:14px;opacity:.6"></i>
+            </a>
+            <div class="mega-menu">
+                <div class="mega-section-title">
+                    {% if LANGUAGE_CODE == 'en' %}Browse by Category{% else %}تصفح حسب الفئة{% endif %}
+                </div>
+                <div class="row g-2">
+                    {% for cat in nav_categories %}
+                    <div class="col-md-2 col-4">
+                        <a href="{% url 'products' %}?category_id={{ cat.id }}" class="mega-card">
+                            {% if cat.image %}
+                            <img src="{{ cat.image.url }}" alt="{{ cat.name_ar }}" class="mega-card-img">
+                            {% else %}
+                            <div class="mega-card-img d-flex align-items-center justify-content-center" style="background:var(--soft)">
+                                <i class="ti ti-bottle" style="font-size:22px;color:var(--gold)"></i>
+                            </div>
+                            {% endif %}
+                            <div class="mega-card-name">{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}</div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
+        <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
+    </div>
+</div>
+
+<!-- ══ Mobile Offcanvas ══ -->
+<div class="offcanvas offcanvas-start" id="mobileMenu" tabindex="-1">
+    <div class="offcanvas-header">
+        <div class="d-flex align-items-center gap-2">
+            <div class="logo-dot" style="background:#c9a96e"></div>
+            <span style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;letter-spacing:.08em">MAV<span style="color:#c9a96e">A</span></span>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mob-search-wrap">
+            <form action="{% url 'products' %}" method="get">
+                <input type="text" name="search" placeholder="{% if LANGUAGE_CODE == 'en' %}Search...{% else %}ابحث...{% endif %}">
+            </form>
+        </div>
+
+        <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Navigation{% else %}التنقل{% endif %}</div>
+        <a href="{% url 'home' %}" class="mob-nav-item">
+            <i class="ti ti-home"></i>
+            {% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}
+        </a>
+
+        {% if nav_categories %}
+        <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}</div>
+        {% for cat in nav_categories %}
+        <a href="{% url 'products' %}?category_id={{ cat.id }}" class="mob-nav-item">
+            <i class="ti ti-tag"></i>
+            {% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}
+        </a>
+        {% endfor %}
+        {% endif %}
+
+        <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}More{% else %}المزيد{% endif %}</div>
+        <a href="#" class="mob-nav-item"><i class="ti ti-star"></i> {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
+        <a href="#" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="#" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
+
+        <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Language{% else %}اللغة{% endif %}</div>
+        <div style="padding:10px 16px;display:flex;gap:8px;">
+            <form action="{% url 'set_language' %}" method="post" style="flex:1">{% csrf_token %}
+                <input type="hidden" name="language" value="ar">
+                <button type="submit" class="mob-nav-item w-100" style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
+                    <img src="https://flagcdn.com/w20/eg.png" alt="" style="border-radius:2px"> عربي
+                </button>
+            </form>
+            <form action="{% url 'set_language' %}" method="post" style="flex:1">{% csrf_token %}
+                <input type="hidden" name="language" value="en">
+                <button type="submit" class="mob-nav-item w-100" style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
+                    <img src="https://flagcdn.com/w20/gb.png" alt="" style="border-radius:2px"> English
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Mobile Bottom Bar ══ -->
+<div class="mobile-bottom-bar d-lg-none">
+    <a href="{% url 'home' %}" class="mob-bar-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <i class="ti ti-home-2"></i>
+        <span>{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</span>
+    </a>
+    <a href="{% url 'products' %}" class="mob-bar-item">
+        <i class="ti ti-category-2"></i>
+        <span>{% if LANGUAGE_CODE == 'en' %}Shop{% else %}المتجر{% endif %}</span>
+    </a>
+    <a href="#" class="mob-bar-item">
+        <i class="ti ti-heart"></i>
+        <span class="mob-bar-badge">0</span>
+        <span>{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</span>
+    </a>
+    <a href="#" class="mob-bar-item">
+        <i class="ti ti-shopping-bag"></i>
+        <span class="mob-bar-badge">0</span>
+        <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
+    </a>
+    <a href="#" class="mob-bar-item">
+        <i class="ti ti-user"></i>
+        <span>{% if LANGUAGE_CODE == 'en' %}Account{% else %}حسابي{% endif %}</span>
+    </a>
+</div>
+
+<!-- ══ WhatsApp ══ -->
+<a href="https://wa.me/201069545469" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+    <i class="ti ti-brand-whatsapp"></i>
+</a>

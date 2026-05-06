@@ -1,0 +1,72 @@
+{% load static i18n %}
+
+<footer class="footer-main">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Brand -->
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-logo">MAV<span>A</span></div>
+                <p class="footer-tagline">{% if LANGUAGE_CODE == 'en' %}Luxury Perfumes — Est. 2020{% else %}عطور فاخرة — منذ ٢٠٢٠{% endif %}</p>
+                <p style="font-size:13px;color:#555;margin-top:14px;line-height:1.8">
+                    {% if LANGUAGE_CODE == 'en' %}Discover our curated collection of luxury fragrances from around the world.
+                    {% else %}اكتشف مجموعتنا المختارة من العطور الفاخرة من حول العالم.{% endif %}
+                </p>
+                <div class="footer-social">
+                    <a href="#" class="social-btn" aria-label="Instagram"><i class="ti ti-brand-instagram"></i></a>
+                    <a href="#" class="social-btn" aria-label="Facebook"><i class="ti ti-brand-facebook"></i></a>
+                    <a href="https://wa.me/201069545469" class="social-btn" aria-label="WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
+                    <a href="#" class="social-btn" aria-label="TikTok"><i class="ti ti-brand-tiktok"></i></a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Quick Links{% else %}روابط سريعة{% endif %}</div>
+                <a href="{% url 'home' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
+                <a href="{% url 'products' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}All Products{% else %}جميع المنتجات{% endif %}</a>
+                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
+                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}About Us{% else %}من نحن{% endif %}</a>
+            </div>
+
+            <!-- Policies -->
+            <div class="col-lg-2 col-md-3 col-6">
+                <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Policies{% else %}السياسات{% endif %}</div>
+                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Privacy Policy{% else %}سياسة الخصوصية{% endif %}</a>
+                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Return Policy{% else %}سياسة الإرجاع{% endif %}</a>
+                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Shipping{% else %}الشحن والتوصيل{% endif %}</a>
+                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}FAQ{% else %}الأسئلة الشائعة{% endif %}</a>
+            </div>
+
+            <!-- Contact -->
+            <div class="col-lg-4 col-md-12">
+                <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Contact Us{% else %}تواصل معنا{% endif %}</div>
+                <div class="footer-contact-item">
+                    <i class="ti ti-phone"></i>
+                    <span>+201069545469</span>
+                </div>
+                <div class="footer-contact-item">
+                    <i class="ti ti-mail"></i>
+                    <span>info@mavaperfumes.com</span>
+                </div>
+                <div class="footer-contact-item">
+                    <i class="ti ti-clock"></i>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Sat – Thu: 10am – 10pm{% else %}السبت – الخميس: ١٠ص – ١٠م{% endif %}</span>
+                </div>
+                <div class="footer-contact-item">
+                    <i class="ti ti-map-pin"></i>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Egypt{% else %}مصر{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="footer-divider">
+        <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>© 2025 MAVA Perfumes. {% if LANGUAGE_CODE == 'en' %}All rights reserved.{% else %}جميع الحقوق محفوظة.{% endif %}</span>
+            <div class="d-flex align-items-center gap-2" style="font-size:11px">
+                <i class="ti ti-shield-check" style="color:var(--gold)"></i>
+                <span>{% if LANGUAGE_CODE == 'en' %}Secured Payments{% else %}مدفوعات آمنة{% endif %}</span>
+            </div>
+        </div>
+    </div>
+</footer>
