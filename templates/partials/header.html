@@ -78,10 +78,24 @@
                 <span class="badge-count">{{ cart_count }}</span>
                 <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
             </a>
-            <a href="#" class="nav-action">
+            {% if user.is_authenticated %}
+            <div class="dropdown">
+                <a href="#" class="nav-action dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="ti ti-user"></i>
+                    <span>{{ user.first_name }}</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'order_list' %}">{% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">{% if LANGUAGE_CODE == 'en' %}Logout{% else %}تسجيل الخروج{% endif %}</a></li>
+                </ul>
+            </div>
+            {% else %}
+            <a href="{% url 'login' %}" class="nav-action">
                 <i class="ti ti-user"></i>
-                <span>{% if LANGUAGE_CODE == 'en' %}Account{% else %}حسابي{% endif %}</span>
+                <span>{% if LANGUAGE_CODE == 'en' %}Login{% else %}دخول{% endif %}</span>
             </a>
+            {% endif %}
         </div>
 
     </div>
@@ -203,10 +217,21 @@
         <span class="mob-bar-badge">{{ cart_count }}</span>
         <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
     </a>
-    <a href="#" class="mob-bar-item">
-        <i class="ti ti-user"></i>
-        <span>{% if LANGUAGE_CODE == 'en' %}Account{% else %}حسابي{% endif %}</span>
+    {% if user.is_authenticated %}
+    <a href="{% url 'order_list' %}" class="mob-bar-item">
+        <i class="ti ti-package"></i>
+        <span>{% if LANGUAGE_CODE == 'en' %}Orders{% else %}طلباتي{% endif %}</span>
     </a>
+    <a href="{% url 'logout' %}" class="mob-bar-item text-danger">
+        <i class="ti ti-logout"></i>
+        <span>{% if LANGUAGE_CODE == 'en' %}Logout{% else %}خروج{% endif %}</span>
+    </a>
+    {% else %}
+    <a href="{% url 'login' %}" class="mob-bar-item">
+        <i class="ti ti-user"></i>
+        <span>{% if LANGUAGE_CODE == 'en' %}Login{% else %}دخول{% endif %}</span>
+    </a>
+    {% endif %}
 </div>
 
 <!-- ══ WhatsApp ══ -->

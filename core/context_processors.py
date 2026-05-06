@@ -29,4 +29,12 @@ def shop_context(request):
             context["wishlist_count"] = request.user.wishlist.total_items
         except:
             pass
+    else:
+        # للضيوف
+        session_cart = request.session.get('cart', {})
+        context["cart_count"] = sum(session_cart.values())
+        
+        session_wishlist = request.session.get('wishlist', [])
+        context["wishlist_count"] = len(session_wishlist)
+        
     return context

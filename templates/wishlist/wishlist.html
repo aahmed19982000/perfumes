@@ -150,9 +150,9 @@
         <h1 class="wishlist-title">{% if LANGUAGE_CODE == 'en' %}Your Wishlist{% else %}قائمة أمنياتي{% endif %}</h1>
     </div>
 
-    {% if wishlist.items.exists %}
+    {% if wishlist.items %}
     <div class="wishlist-grid" id="wishlistGrid">
-        {% for item in wishlist.items.all %}
+        {% for item in wishlist.items %}
         <div class="wishlist-card" id="wish-item-{{ item.id }}">
             <button class="btn-remove-wishlist" onclick="removeWishItem({{ item.id }})" title="{% if LANGUAGE_CODE == 'en' %}Remove{% else %}حذف{% endif %}">
                 <i class="ti ti-x"></i>

@@ -211,12 +211,12 @@
         <h1 class="cart-title">{% if LANGUAGE_CODE == 'en' %}Your Cart{% else %}سلة التسوق{% endif %}</h1>
     </div>
 
-    {% if cart.items.exists %}
+    {% if cart.items %}
     <div class="row g-4">
         <!-- Items List -->
         <div class="col-lg-8">
             <div id="cartItemsList">
-                {% for item in cart.items.all %}
+                {% for item in cart.items %}
                 <div class="cart-item-card" id="item-{{ item.id }}">
                     <a href="{% url 'product_detail' item.product.slug %}">
                         <img src="{{ item.product.thumbnail.url }}" class="cart-item-img"
@@ -225,8 +225,7 @@
                     <div class="cart-item-info">
                         <div class="cart-item-brand">{{ item.product.brand.name }}</div>
                         <a href="{% url 'product_detail' item.product.slug %}" class="cart-item-name">
-                            {% if LANGUAGE_CODE == 'en' %}{{ item.product.name_en }}{% else %}{{ item.product.name_ar
-                            }}{% endif %}
+                            {% if LANGUAGE_CODE == 'en' %}{{ item.product.name_en }}{% else %}{{ item.product.name_ar }}{% endif %}
                         </a>
                         <div class="cart-item-price">
                             {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ item.unit_price }}
@@ -261,15 +260,13 @@
 
                 <div class="summary-row">
                     <span>{% if LANGUAGE_CODE == 'en' %}Subtotal{% else %}المجموع الجزئي{% endif %}</span>
-                    <span id="cartSubtotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal
-                        }}</span>
+                    <span id="cartSubtotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal }}</span>
                 </div>
 
 
                 <div class="summary-row total">
                     <span>{% if LANGUAGE_CODE == 'en' %}Total{% else %}الإجمالي{% endif %}</span>
-                    <span id="cartTotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal
-                        }}</span>
+                    <span id="cartTotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal }}</span>
                 </div>
 
                 <a href="{% url 'checkout' %}" class="btn btn-checkout">

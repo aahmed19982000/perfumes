@@ -13,26 +13,76 @@ from .services import create_order_from_cart
 
 
 
-def get_or_create_cart(user):
-    cart, _ = Cart.objects.get_or_create(customer=user)
-    return cart
+def get_cart_data(request):
+    """
+    يوحد التعامل مع السلة سواء للمسجلين أو الضيوف
+    """
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(customer=request.user)
+        items = []
+        for item in cart.items.select_related('product'):
+            items.append({
+                'id': item.id,
+                'product': item.product,
+                'quantity': item.quantity,
+                'unit_price': item.unit_price,
+                'line_total': item.line_total,
+            })
+        return {
+            'items': items,
+            'total_items': cart.total_items,
+            'subtotal': cart.subtotal,
+            'is_empty': cart.is_empty,
+        }
+    else:
+        # للضيوف: تخزين في السيشن
+        session_cart = request.session.get('cart', {})
+        items = []
+        subtotal = 0
+        total_items = 0
+        
+        # التأكد من صحة البيانات في السيشن وحذف المنتجات غير الموجودة
+        to_delete = []
+        for p_id, qty in session_cart.items():
+            product = Product.objects.filter(id=p_id, is_active=True).first()
+            if product:
+                price = product.final_price
+                line_total = price * qty
+                items.append({
+                    'id': p_id,
+                    'product': product,
+                    'quantity': qty,
+                    'unit_price': price,
+                    'line_total': line_total,
+                })
+                subtotal += line_total
+                total_items += qty
+            else:
+                to_delete.append(p_id)
+        
+        for p_id in to_delete:
+            del session_cart[p_id]
+        if to_delete:
+            request.session.modified = True
+            
+        return {
+            'items': items,
+            'total_items': total_items,
+            'subtotal': subtotal,
+            'is_empty': not items,
+        }
 
 
-# ── عرض السلة ────────────────────────────────────────────────────
-@login_required
 def cart_view(request):
-    cart = get_or_create_cart(request.user)
-    return render(request, "orders/cart.html", {"cart": cart})
+    cart_data = get_cart_data(request)
+    return render(request, "orders/cart.html", {"cart": cart_data})
 
 
-# ── إضافة منتج للسلة (AJAX) ──────────────────────────────────────
 @require_POST
-@login_required
 def add_to_cart(request, product_id):
     product  = get_object_or_404(Product, id=product_id, is_active=True)
     quantity = int(request.POST.get("quantity", 1))
     
-    # الترجمة للرسالة
     msg_success = _("تمت الإضافة للسلة") if request.LANGUAGE_CODE == 'ar' else "Added to cart"
     msg_oos     = _("المنتج نفد من المخزون") if request.LANGUAGE_CODE == 'ar' else "Product out of stock"
 
@@ -42,22 +92,39 @@ def add_to_cart(request, product_id):
         messages.error(request, msg_oos)
         return redirect("product_detail", slug=product.slug)
 
-    cart = get_or_create_cart(request.user)
-    item, created = CartItem.objects.get_or_create(
-        cart=cart, product=product,
-        defaults={"quantity": quantity},
-    )
-
-    if not created:
-        item.quantity += quantity
-        item.save()
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(customer=request.user)
+        item, created = CartItem.objects.get_or_create(
+            cart=cart, product=product,
+            defaults={"quantity": quantity},
+        )
+        if not created:
+            item.quantity += quantity
+            item.save()
+        cart_count = cart.total_items
+        cart_total = str(cart.subtotal)
+    else:
+        # الضيوف
+        cart = request.session.get('cart', {})
+        p_id = str(product_id)
+        cart[p_id] = cart.get(p_id, 0) + quantity
+        request.session['cart'] = cart
+        request.session.modified = True
+        
+        # حساب المجموع للرد
+        cart_count = sum(cart.values())
+        subtotal = 0
+        for pid, qty in cart.items():
+            p = Product.objects.filter(id=pid).first()
+            if p: subtotal += p.final_price * qty
+        cart_total = str(subtotal)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({
             "status":      "success",
             "message":     msg_success,
-            "cart_count":  cart.total_items,
-            "cart_total":  str(cart.subtotal),
+            "cart_count":  cart_count,
+            "cart_total":  cart_total,
         })
     
     messages.success(request, msg_success)
@@ -67,43 +134,85 @@ def add_to_cart(request, product_id):
     return redirect("cart")
 
 
-# ── تعديل الكمية (AJAX) ──────────────────────────────────────────
 @require_POST
-@login_required
 def update_cart(request, item_id):
-    item     = get_object_or_404(CartItem, id=item_id, cart__customer=request.user)
     quantity = int(request.POST.get("quantity", 1))
 
-    if quantity < 1:
-        item.delete()
-        return JsonResponse({"status": "removed"})
-
-    if quantity > item.product.stock:
-        return JsonResponse({"status": "error", "message": "الكمية تتجاوز المخزون"}, status=400)
-
-    item.quantity = quantity
-    item.save()
+    if request.user.is_authenticated:
+        item = get_object_or_404(CartItem, id=item_id, cart__customer=request.user)
+        if quantity < 1:
+            item.delete()
+            return JsonResponse({"status": "removed"})
+        if quantity > item.product.stock:
+            return JsonResponse({"status": "error", "message": "الكمية تتجاوز المخزون"}, status=400)
+        item.quantity = quantity
+        item.save()
+        cart_total = str(item.cart.subtotal)
+        cart_count = item.cart.total_items
+    else:
+        # للضيف item_id هو الـ product_id
+        cart = request.session.get('cart', {})
+        p_id = str(item_id)
+        if p_id in cart:
+            if quantity < 1:
+                del cart[p_id]
+            else:
+                product = get_object_or_404(Product, id=p_id)
+                if quantity > product.stock:
+                    return JsonResponse({"status": "error", "message": "الكمية تتجاوز المخزون"}, status=400)
+                cart[p_id] = quantity
+            request.session['cart'] = cart
+            request.session.modified = True
+        
+        # حساب المجموع
+        subtotal = 0
+        total_items = 0
+        for pid, qty in cart.items():
+            p = Product.objects.filter(id=pid).first()
+            if p:
+                subtotal += p.final_price * qty
+                total_items += qty
+        cart_total = str(subtotal)
+        cart_count = total_items
 
     return JsonResponse({
         "status":     "updated",
-        "line_total": str(item.line_total),
-        "cart_total": str(item.cart.subtotal),
-        "cart_count": item.cart.total_items,
+        "cart_total": cart_total,
+        "cart_count": cart_count,
     })
 
 
-# ── حذف منتج من السلة (AJAX) ─────────────────────────────────────
 @require_POST
-@login_required
 def remove_from_cart(request, item_id):
-    item = get_object_or_404(CartItem, id=item_id, cart__customer=request.user)
-    cart = item.cart
-    item.delete()
+    if request.user.is_authenticated:
+        item = get_object_or_404(CartItem, id=item_id, cart__customer=request.user)
+        cart = item.cart
+        item.delete()
+        cart_count = cart.total_items
+        cart_total = str(cart.subtotal)
+    else:
+        cart = request.session.get('cart', {})
+        p_id = str(item_id)
+        if p_id in cart:
+            del cart[p_id]
+            request.session['cart'] = cart
+            request.session.modified = True
+        
+        # حساب المجموع
+        subtotal = 0
+        total_items = 0
+        for pid, qty in cart.items():
+            p = Product.objects.filter(id=pid).first()
+            if p:
+                subtotal += p.final_price * qty
+                total_items += qty
+        cart_total = str(subtotal)
+        cart_count = total_items
 
     return JsonResponse({
         "status":     "removed",
-        "cart_count": cart.total_items,
-        "cart_total": str(cart.subtotal),
+        "cart_count": cart_count,
+        "cart_total": cart_total,
     })
 
 
@@ -113,7 +222,7 @@ def remove_from_cart(request, item_id):
 
 @login_required
 def checkout_view(request):
-    cart = get_or_create_cart(request.user)
+    cart, created = Cart.objects.get_or_create(customer=request.user)
     if cart.is_empty:
         return redirect("cart")
 

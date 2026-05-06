@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}Register{% else %}إنشاء حساب{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 550px;
+        margin: 60px auto;
+        padding: 40px;
+        background: var(--white);
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.05);
+    }
+    .auth-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        text-align: center;
+        margin-bottom: 10px;
+        color: var(--ink);
+    }
+    .auth-subtitle {
+        text-align: center;
+        color: var(--mid);
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--mid);
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        border-color: var(--gold);
+        outline: none;
+    }
+    .btn-auth {
+        width: 100%;
+        padding: 14px;
+        background: var(--ink);
+        color: var(--white);
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+        margin-top: 10px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-auth:hover {
+        background: var(--gold-dark);
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 24px;
+        font-size: 14px;
+        color: var(--mid);
+    }
+    .auth-footer a {
+        color: var(--gold);
+        text-decoration: none;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="auth-container">
+        <h1 class="auth-title">{% if LANGUAGE_CODE == 'en' %}Create Account{% else %}إنشاء حساب جديد{% endif %}</h1>
+        <p class="auth-subtitle">{% if LANGUAGE_CODE == 'en' %}Join Mava Perfumes for a premium shopping experience{% else %}انضم إلى عطور مافا لتجربة تسوق فاخرة{% endif %}</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}First Name{% else %}الاسم الأول{% endif %}</label>
+                    <input type="text" name="first_name" class="form-control" required>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Last Name{% else %}الاسم الأخير{% endif %}</label>
+                    <input type="text" name="last_name" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Email Address{% else %}البريد الإلكتروني{% endif %}</label>
+                <input type="email" name="email" class="form-control" placeholder="example@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Phone Number{% else %}رقم الهاتف{% endif %}</label>
+                <input type="text" name="phone" class="form-control" placeholder="01xxxxxxxxx">
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Password{% else %}كلمة المرور{% endif %}</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <div class="col-md-6 form-group">
+                    <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Confirm Password{% else %}تأكيد كلمة المرور{% endif %}</label>
+                    <input type="password" name="confirm_password" class="form-control" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-auth">
+                {% if LANGUAGE_CODE == 'en' %}Register{% else %}إنشاء الحساب{% endif %}
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            {% if LANGUAGE_CODE == 'en' %}Already have an account?{% else %}لديك حساب بالفعل؟{% endif %}
+            <a href="{% url 'login' %}{% if next %}?next={{ next }}{% endif %}">{% if LANGUAGE_CODE == 'en' %}Login Here{% else %}سجل دخولك هنا{% endif %}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
