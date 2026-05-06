@@ -108,7 +108,7 @@
                     <div class="col-md-2 col-4">
                         <a href="{% url 'products' %}?category_id={{ cat.id }}" class="mega-card">
                             {% if cat.image %}
-                            <img src="{{ cat.image.url }}" alt="{{ cat.name_ar }}" class="mega-card-img">
+                            <img src="{{ cat.image.url }}" alt="{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}" class="mega-card-img">
                             {% else %}
                             <div class="mega-card-img d-flex align-items-center justify-content-center" style="background:var(--soft)">
                                 <i class="ti ti-bottle" style="font-size:22px;color:var(--gold)"></i>

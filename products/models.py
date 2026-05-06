@@ -180,6 +180,7 @@ class Product(models.Model):
     slug           = models.SlugField(unique=True, blank=True, max_length=300)
     description_ar = models.TextField(blank=True, verbose_name="الوصف بالعربي")
     description_en = models.TextField(blank=True, verbose_name="الوصف بالإنجليزي")
+    size           = models.CharField(max_length=50, blank=True, null=True, verbose_name="الحجم")
 
     # ── العلاقات ─────────────────────────────────────────────────
     category = models.ForeignKey(

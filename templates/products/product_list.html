@@ -3,7 +3,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container my-5">
-    <h2>المنتجات</h2>
+    <h2>{% if LANGUAGE_CODE == 'en' %}Products{% else %}المنتجات{% endif %}</h2>
     <div class="row g-3">
         {% for product in products %}
         <div class="col-6 col-md-4 col-lg-3">
@@ -13,8 +13,8 @@
                         style="height:200px;object-fit:contain;padding:10px">
                 </a>
                 <div class="card-body text-center">
-                    <h6>{{ product.name_ar }}</h6>
-                    <p class="fw-bold" style="color:#c9a96e">L.E {{ product.final_price }}</p>
+                    <h6>{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</h6>
+                    <p class="fw-bold" style="color:#c9a96e">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.final_price }}</p>
                 </div>
             </div>
         </div>

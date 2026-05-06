@@ -1,26 +1,108 @@
 {% extends "base.html" %}
 {% load static product_filters %}
 
-{% block title %}{{ product.name_ar }}{% endblock %}
+{% block title %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:30 }}{% else %}{{ product.description_ar|striptags|truncatewords:30 }}{% endif %}">
+<meta property="og:title" content="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %} - Mava Perfumes">
+<meta property="og:description" content="{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:30 }}{% else %}{{ product.description_ar|striptags|truncatewords:30 }}{% endif %}">
+<meta property="og:type" content="product">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+{% if product.thumbnail %}
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}">
+<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}">
+{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}">
+<meta name="twitter:description" content="{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:30 }}{% else %}{{ product.description_ar|striptags|truncatewords:30 }}{% endif %}">
+
+<!-- JSON-LD Product Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{% if LANGUAGE_CODE == 'en' %}{{ product.name_en|escapejs }}{% else %}{{ product.name_ar|escapejs }}{% endif %}",
+  "image": [
+    "{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}"
+  ],
+  "description": "{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|escapejs }}{% else %}{{ product.description_ar|striptags|escapejs }}{% endif %}",
+  "sku": "{{ product.id }}"{% if product.size %},
+  "size": "{{ product.size|escapejs }}"{% endif %}{% if product.brand %},
+  "brand": {
+    "@type": "Brand",
+    "name": "{{ product.brand.name|escapejs }}"
+  }{% endif %},
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ request.build_absolute_uri }}",
+    "priceCurrency": "EGP",
+    "price": "{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}",
+    "availability": "{% if product.is_out_of_stock %}https://schema.org/OutOfStock{% else %}https://schema.org/InStock{% endif %}"
+  }{% if product.review_count > 0 %},
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ product.avg_rating }}",
+    "reviewCount": "{{ product.review_count }}"
+  },
+  "review": [
+    {% for review in product.reviews.all %}{% if review.is_approved %}
+    {
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "{{ review.rating }}"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "{{ review.customer.get_full_name|escapejs|default:'Customer' }}"
+      },
+      "reviewBody": "{{ review.comment|escapejs|default:'' }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endif %}{% endfor %}
+  ]
+  {% endif %}
+}
+</script>
+{% endblock %}
 
 {% block extra_css %}
 <style>
     /* ── Variables (inherit from base) ── */
     :root {
-        --gold:      #c9a96e;
-        --gold-light:#f0e0c0;
-        --ink:       #0f0f0f;
-        --soft:      #f9f7f4;
-        --mid:       #6b6560;
-        --border:    #e8e3dc;
+        --gold: #c9a96e;
+        --gold-light: #f0e0c0;
+        --ink: #0f0f0f;
+        --soft: #f9f7f4;
+        --mid: #6b6560;
+        --border: #e8e3dc;
     }
 
     /* ── Breadcrumb ── */
-    .breadcrumb { background: none; padding: 0; margin: 0; }
-    .breadcrumb-item a { color: var(--mid); text-decoration: none; font-size: 13px; }
-    .breadcrumb-item a:hover { color: var(--gold); }
-    .breadcrumb-item.active { color: var(--ink); font-size: 13px; }
-    .breadcrumb-item + .breadcrumb-item::before { color: var(--border); }
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .breadcrumb-item a {
+        color: var(--mid);
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .breadcrumb-item a:hover {
+        color: var(--gold);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--ink);
+        font-size: 13px;
+    }
+
+    .breadcrumb-item+.breadcrumb-item::before {
+        color: var(--border);
+    }
 
     /* ── Image Gallery ── */
     .main-image-wrap {
@@ -40,12 +122,19 @@
         height: 100%;
         object-fit: contain;
         padding: 20px;
-        transition: transform .4s cubic-bezier(.4,0,.2,1);
+        transition: transform .4s cubic-bezier(.4, 0, .2, 1);
     }
 
-    .main-image-wrap:hover img { transform: scale(1.04); }
+    .main-image-wrap:hover img {
+        transform: scale(1.04);
+    }
 
-    .thumb-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .thumb-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
 
     .thumb-item {
         width: 68px;
@@ -59,9 +148,21 @@
         transition: border-color .2s, transform .2s;
     }
 
-    .thumb-item img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
-    .thumb-item:hover { border-color: var(--gold-light); transform: translateY(-2px); }
-    .thumb-item.active-thumb { border-color: var(--gold); }
+    .thumb-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 4px;
+    }
+
+    .thumb-item:hover {
+        border-color: var(--gold-light);
+        transform: translateY(-2px);
+    }
+
+    .thumb-item.active-thumb {
+        border-color: var(--gold);
+    }
 
     /* ── Brand Tag ── */
     .brand-tag {
@@ -82,7 +183,10 @@
         transition: border-color .2s, color .2s;
     }
 
-    .brand-tag:hover { border-color: var(--gold); color: var(--gold); }
+    .brand-tag:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+    }
 
     /* ── Product Title ── */
     .product-title {
@@ -95,12 +199,29 @@
     }
 
     /* ── Stars ── */
-    .stars-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-    .stars { color: #e8b84b; font-size: 1rem; letter-spacing: 1px; }
-    .stars-label { font-size: 12px; color: var(--mid); }
+    .stars-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .stars {
+        color: #e8b84b;
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+
+    .stars-label {
+        font-size: 12px;
+        color: var(--mid);
+    }
 
     /* ── Price ── */
-    .price-block { margin-bottom: 16px; }
+    .price-block {
+        margin-bottom: 16px;
+    }
+
     .price-main {
         font-family: 'Playfair Display', serif;
         font-size: 2.2rem;
@@ -154,7 +275,11 @@
     }
 
     /* ── Divider ── */
-    .pd-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+    .pd-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 20px 0;
+    }
 
     /* ── Qty Control ── */
     .qty-control {
@@ -180,7 +305,9 @@
         transition: background .15s;
     }
 
-    .qty-btn:hover { background: var(--soft); }
+    .qty-btn:hover {
+        background: var(--soft);
+    }
 
     .qty-input {
         width: 46px;
@@ -217,7 +344,7 @@
     .btn-cart:hover {
         background: #b8925a;
         transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(201,169,110,.35);
+        box-shadow: 0 6px 20px rgba(201, 169, 110, .35);
     }
 
     .btn-buy {
@@ -238,7 +365,10 @@
         gap: 8px;
     }
 
-    .btn-buy:hover { background: #2a2a2a; transform: translateY(-1px); }
+    .btn-buy:hover {
+        background: #2a2a2a;
+        transform: translateY(-1px);
+    }
 
     .btn-wish {
         width: 48px;
@@ -257,7 +387,8 @@
         text-decoration: none;
     }
 
-    .btn-wish:hover, .btn-wish.in-wishlist {
+    .btn-wish:hover,
+    .btn-wish.in-wishlist {
         border-color: #f43f5e;
         background: #fff1f2;
         color: #f43f5e;
@@ -272,7 +403,9 @@
     }
 
     @media (max-width: 575px) {
-        .trust-grid { grid-template-columns: repeat(2, 1fr); }
+        .trust-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
     }
 
     .trust-item {
@@ -283,8 +416,17 @@
         text-align: center;
     }
 
-    .trust-icon { font-size: 1.5rem; margin-bottom: 4px; color: var(--gold); }
-    .trust-label { font-size: 11px; font-weight: 600; color: var(--mid); }
+    .trust-icon {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+        color: var(--gold);
+    }
+
+    .trust-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--mid);
+    }
 
     /* ── Category Pills ── */
     .cat-pill {
@@ -301,10 +443,18 @@
         transition: border-color .2s, color .2s;
     }
 
-    .cat-pill:hover { border-color: var(--gold); color: var(--gold); }
+    .cat-pill:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+    }
 
     /* ── Tabs ── */
-    .pd-tabs { border-bottom: 2px solid var(--border); display: flex; gap: 4px; margin-bottom: 28px; }
+    .pd-tabs {
+        border-bottom: 2px solid var(--border);
+        display: flex;
+        gap: 4px;
+        margin-bottom: 28px;
+    }
 
     .pd-tab-btn {
         padding: 12px 24px;
@@ -320,8 +470,14 @@
         transition: color .2s, border-color .2s;
     }
 
-    .pd-tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
-    .pd-tab-btn:hover { color: var(--ink); }
+    .pd-tab-btn.active {
+        color: var(--gold);
+        border-bottom-color: var(--gold);
+    }
+
+    .pd-tab-btn:hover {
+        color: var(--ink);
+    }
 
     /* ── Description ── */
     .description-body {
@@ -345,7 +501,11 @@
     }
 
     @media (max-width: 575px) {
-        .review-summary { flex-direction: column; align-items: flex-start; gap: 16px; }
+        .review-summary {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
     }
 
     .review-score {
@@ -361,11 +521,25 @@
         line-height: 1;
     }
 
-    .review-bars { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .review-bars {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
 
-    .review-bar-row { display: flex; align-items: center; gap: 10px; }
+    .review-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-    .review-bar-label { font-size: 12px; color: var(--mid); width: 24px; text-align: center; }
+    .review-bar-label {
+        font-size: 12px;
+        color: var(--mid);
+        width: 24px;
+        text-align: center;
+    }
 
     .review-bar-track {
         flex: 1;
@@ -382,19 +556,42 @@
         transition: width .6s ease;
     }
 
-    .review-bar-pct { font-size: 11px; color: var(--mid); width: 30px; }
+    .review-bar-pct {
+        font-size: 11px;
+        color: var(--mid);
+        width: 30px;
+    }
 
     .review-card {
         padding: 20px 0;
         border-bottom: 1px solid var(--border);
     }
 
-    .review-card:last-child { border-bottom: none; }
+    .review-card:last-child {
+        border-bottom: none;
+    }
 
-    .reviewer-name { font-weight: 700; font-size: 14px; }
-    .reviewer-date { font-size: 12px; color: var(--mid); }
-    .review-title { font-weight: 600; margin: 6px 0 4px; font-size: 14px; }
-    .review-comment { font-size: 13px; color: #555; line-height: 1.7; }
+    .reviewer-name {
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .reviewer-date {
+        font-size: 12px;
+        color: var(--mid);
+    }
+
+    .review-title {
+        font-weight: 600;
+        margin: 6px 0 4px;
+        font-size: 14px;
+    }
+
+    .review-comment {
+        font-size: 13px;
+        color: #555;
+        line-height: 1.7;
+    }
 
     /* ── Review Form ── */
     .review-form-wrap {
@@ -404,11 +601,20 @@
         margin-top: 24px;
     }
 
-    .review-form-wrap h5 { font-weight: 700; margin-bottom: 18px; }
+    .review-form-wrap h5 {
+        font-weight: 700;
+        margin-bottom: 18px;
+    }
 
-    .star-rating-input { display: flex; gap: 6px; margin-bottom: 16px; }
+    .star-rating-input {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 16px;
+    }
 
-    .star-rating-input input[type="radio"] { display: none; }
+    .star-rating-input input[type="radio"] {
+        display: none;
+    }
 
     .star-rating-input label {
         font-size: 2rem;
@@ -419,7 +625,10 @@
     }
 
     .star-rating-input label:hover,
-    .star-rating-input label.lit { color: #e8b84b; transform: scale(1.15); }
+    .star-rating-input label.lit {
+        color: #e8b84b;
+        transform: scale(1.15);
+    }
 
     .form-control-pd {
         width: 100%;
@@ -435,7 +644,9 @@
         margin-bottom: 12px;
     }
 
-    .form-control-pd:focus { border-color: var(--gold); }
+    .form-control-pd:focus {
+        border-color: var(--gold);
+    }
 
     .btn-submit-review {
         padding: 11px 28px;
@@ -450,7 +661,9 @@
         transition: background .2s;
     }
 
-    .btn-submit-review:hover { background: #b8925a; }
+    .btn-submit-review:hover {
+        background: #b8925a;
+    }
 
     /* ── Related Products ── */
     .section-title {
@@ -471,7 +684,7 @@
 
     .product-card:hover {
         border-color: var(--gold-light);
-        box-shadow: 0 8px 32px rgba(0,0,0,.08);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, .08);
         transform: translateY(-3px);
     }
 
@@ -483,7 +696,10 @@
         background: var(--soft);
     }
 
-    .product-card-body { padding: 14px; text-align: center; }
+    .product-card-body {
+        padding: 14px;
+        text-align: center;
+    }
 
     .product-card-name {
         font-size: 13px;
@@ -498,7 +714,11 @@
         margin-bottom: 6px;
     }
 
-    .product-card-price { font-weight: 700; color: var(--gold); font-size: 14px; }
+    .product-card-price {
+        font-weight: 700;
+        color: var(--gold);
+        font-size: 14px;
+    }
 
     /* ── Out of stock alert ── */
     .oos-alert {
@@ -517,9 +737,11 @@
     @media (max-width: 767px) {
         .mobile-cta-bar {
             position: fixed;
-            bottom: 62px; /* above bottom nav */
-            left: 0; right: 0;
-            background: rgba(255,255,255,.96);
+            bottom: 62px;
+            /* above bottom nav */
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, .96);
             backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
             padding: 10px 16px;
@@ -529,30 +751,41 @@
         }
 
         .mobile-cta-bar .btn-cart,
-        .mobile-cta-bar .btn-buy { padding: 12px 14px; font-size: 13px; }
-        .pd-cta-desktop { display: none !important; }
-        body { padding-bottom: calc(62px + 72px); }
+        .mobile-cta-bar .btn-buy {
+            padding: 12px 14px;
+            font-size: 13px;
+        }
+
+        .pd-cta-desktop {
+            display: none !important;
+        }
+
+        body {
+            padding-bottom: calc(62px + 72px);
+        }
     }
 
     @media (min-width: 768px) {
-        .mobile-cta-bar { display: none !important; }
+        .mobile-cta-bar {
+            display: none !important;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 20px; padding-bottom: 40px;" dir="rtl">
+<div class="container" style="padding-top: 20px; padding-bottom: 40px;" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}">الرئيسية</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</a></li>
             {% if product.category %}
             <li class="breadcrumb-item">
-                <a href="{% url 'products' %}?category_id={{ product.category.id }}">{{ product.category.name_ar }}</a>
+                <a href="{% url 'products' %}?category_id={{ product.category.id }}">{% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}</a>
             </li>
             {% endif %}
-            <li class="breadcrumb-item active">{{ product.name_ar }}</li>
+            <li class="breadcrumb-item active">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</li>
         </ol>
     </nav>
 
@@ -561,20 +794,20 @@
 
         <!-- ── Images ── -->
         <div class="col-12 col-md-5">
-            <div class="sticky-top" style="top: 120px">
+            <div class="sticky-top" style="top:calc(var(--nav-h) + var(--nav-menu-h) + 16px);z-index:1">
 
                 <div class="main-image-wrap">
-                    <img id="mainImage" src="{{ product.thumbnail.url }}" alt="{{ product.name_ar }}">
+                    <img id="mainImage" src="{{ product.thumbnail.url }}" alt="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}">
                 </div>
 
                 {% if product.images.exists %}
                 <div class="thumb-row">
                     <div class="thumb-item active-thumb" onclick="changeImage('{{ product.thumbnail.url }}', this)">
-                        <img src="{{ product.thumbnail.url }}" alt="{{ product.name_ar }}">
+                        <img src="{{ product.thumbnail.url }}" alt="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}">
                     </div>
                     {% for img in product.images.all %}
                     <div class="thumb-item" onclick="changeImage('{{ img.image.url }}', this)">
-                        <img src="{{ img.image.url }}" alt="{{ img.alt_text|default:product.name_ar }}">
+                        <img src="{{ img.image.url }}" alt="{% if img.alt_text %}{{ img.alt_text }}{% else %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}{% endif %}">
                     </div>
                     {% endfor %}
                 </div>
@@ -593,53 +826,64 @@
             </a>
             {% endif %}
 
-            <h1 class="product-title">{{ product.name_ar }}</h1>
+            <h1 class="product-title">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</h1>
 
             <!-- Stars -->
             <div class="stars-wrap">
                 <span class="stars">
                     {% for i in "12345" %}
-                        {% if forloop.counter <= product.avg_rating %}★{% else %}☆{% endif %}
-                    {% endfor %}
-                </span>
-                <span class="stars-label">({{ product.review_count }} تقييم)</span>
-                <span class="stars-label" style="color:var(--border)">·</span>
-                <span class="stars-label">{{ product.order_items.count }} طلب</span>
+                    {% if forloop.counter <= product.avg_rating %}★{% else %}☆{% endif %} {% endfor %} </span>
+                        <span class="stars-label">({{ product.review_count }} {% if LANGUAGE_CODE == 'en' %}Reviews{% else %}تقييم{% endif %})</span>
+                        <span class="stars-label" style="color:var(--border)">·</span>
+                        <span class="stars-label">{{ product.order_items.count }} {% if LANGUAGE_CODE == 'en' %}Orders{% else %}طلب{% endif %}</span>
             </div>
 
             <!-- Price -->
             <div class="price-block">
                 {% if product.discount_price %}
-                    <span class="price-main">L.E {{ product.discount_price }}</span>
-                    <span class="price-original">L.E {{ product.price }}</span>
-                    <span class="discount-badge">خصم {{ product.discount_percent }}%</span>
+                <span class="price-main">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.discount_price }}</span>
+                <span class="price-original">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.price }}</span>
+                <span class="discount-badge">{% if LANGUAGE_CODE == 'en' %}OFF{% else %}خصم{% endif %} {{ product.discount_percent }}%</span>
                 {% else %}
-                    <span class="price-main">L.E {{ product.price }}</span>
+                <span class="price-main">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.price }}</span>
                 {% endif %}
             </div>
 
             <!-- Stock -->
             <div class="mb-3">
                 {% if product.is_out_of_stock %}
-                    <span class="stock-out"><i class="ti ti-x" style="font-size:12px"></i> نفد المخزون</span>
+                <span class="stock-out"><i class="ti ti-x" style="font-size:12px"></i> {% if LANGUAGE_CODE == 'en' %}Out of Stock{% else %}نفد المخزون{% endif %}</span>
                 {% else %}
-                    <span class="stock-in"><i class="ti ti-check" style="font-size:12px"></i> متوفر في المخزون</span>
+                <span class="stock-in"><i class="ti ti-check" style="font-size:12px"></i> {% if LANGUAGE_CODE == 'en' %}In Stock{% else %}متوفر في المخزون{% endif %}</span>
                 {% endif %}
             </div>
 
             <!-- Category -->
             {% if product.category %}
             <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-                <span style="font-size:12px;color:var(--mid)">الفئة:</span>
+                <span style="font-size:12px;color:var(--mid)">{% if LANGUAGE_CODE == 'en' %}Category:{% else %}الفئة:{% endif %}</span>
                 <a href="{% url 'products' %}?category_id={{ product.category.id }}" class="cat-pill">
-                    {{ product.category.name_ar }}
+                    {% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}
                 </a>
                 {% if product.sub_category %}
                 <i class="ti ti-chevron-left" style="font-size:12px;color:var(--border)"></i>
                 <a href="{% url 'products' %}?sub_category_id={{ product.sub_category.id }}" class="cat-pill">
-                    {{ product.sub_category.name_ar }}
+                    {% if LANGUAGE_CODE == 'en' %}{{ product.sub_category.name_en }}{% else %}{{ product.sub_category.name_ar }}{% endif %}
                 </a>
                 {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Size -->
+            {% if product.size %}
+            <div class="mb-4">
+                <span style="font-size:12px;color:var(--mid);display:block;margin-bottom:6px">
+                    {% if LANGUAGE_CODE == 'en' %}Size:{% else %}الحجم:{% endif %}
+                </span>
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-2" style="background:var(--soft); border:1.5px solid var(--gold); border-radius:10px; font-weight:700; color:var(--ink)">
+                    <i class="ti ti-bottle" style="color:var(--gold)"></i>
+                    {{ product.size }}
+                </div>
             </div>
             {% endif %}
 
@@ -653,29 +897,32 @@
 
                     <!-- Qty -->
                     <div class="d-flex align-items-center gap-3 mb-4">
-                        <span style="font-size:13px;font-weight:600;color:var(--mid)">الكمية</span>
+                        <span style="font-size:13px;font-weight:600;color:var(--mid)">{% if LANGUAGE_CODE == 'en' %}Quantity{% else %}الكمية{% endif %}</span>
                         <div class="qty-control">
                             <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
-                            <input type="number" id="qtyInput" name="quantity" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+                            <input type="number" id="qtyInput" name="quantity" value="1" min="1"
+                                max="{{ product.stock }}" class="qty-input">
                             <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
                         </div>
-                        <span style="font-size:12px;color:var(--mid)">المتاح: {{ product.stock }}</span>
+                        <span style="font-size:12px;color:var(--mid)">{% if LANGUAGE_CODE == 'en' %}Available:{% else %}المتاح:{% endif %} {{ product.stock }}</span>
                     </div>
 
                     <!-- Buttons -->
                     <div class="d-flex gap-3 align-items-center mb-4">
                         <button type="submit" class="btn-cart">
-                            <i class="ti ti-shopping-bag"></i> أضف للسلة
+                            <i class="ti ti-shopping-bag"></i> {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
                         </button>
                         <button type="button" onclick="buyNow()" class="btn-buy">
-                            <i class="ti ti-bolt"></i> اشترِ الآن
+                            <i class="ti ti-bolt"></i> {% if LANGUAGE_CODE == 'en' %}Buy Now{% else %}اشترِ الآن{% endif %}
                         </button>
                         {% if request.user.is_authenticated %}
-                        <button type="button" class="btn-wish wishlist-btn {% if is_in_wishlist %}in-wishlist{% endif %}" id="wishlistBtn" data-product-id="{{ product.id }}" title="أضف للمفضلة">
+                        <button type="button"
+                            class="btn-wish wishlist-btn {% if is_in_wishlist %}in-wishlist{% endif %}" id="wishlistBtn"
+                            data-product-id="{{ product.id }}" title="{% if LANGUAGE_CODE == 'en' %}Add to Wishlist{% else %}أضف للمفضلة{% endif %}">
                             <i class="ti ti-heart{% if is_in_wishlist %}-filled{% endif %}"></i>
                         </button>
                         {% else %}
-                        <a href="{% url 'login' %}" class="btn-wish" title="أضف للمفضلة">
+                        <a href="{% url 'login' %}" class="btn-wish" title="{% if LANGUAGE_CODE == 'en' %}Add to Wishlist{% else %}أضف للمفضلة{% endif %}">
                             <i class="ti ti-heart"></i>
                         </a>
                         {% endif %}
@@ -684,7 +931,7 @@
                 {% else %}
                 <div class="oos-alert mb-4">
                     <i class="ti ti-alert-circle" style="font-size:1.3rem;flex-shrink:0"></i>
-                    هذا المنتج غير متوفر حالياً. أضفه للمفضلة لتُنبَّه عند توفره.
+                    {% if LANGUAGE_CODE == 'en' %}This product is currently out of stock. Add it to your wishlist to be notified when it's back.{% else %}هذا المنتج غير متوفر حالياً. أضفه للمفضلة لتُنبَّه عند توفره.{% endif %}
                 </div>
                 {% endif %}
             </div>
@@ -693,19 +940,19 @@
             <div class="trust-grid">
                 <div class="trust-item">
                     <div class="trust-icon"><i class="ti ti-truck"></i></div>
-                    <div class="trust-label">توصيل سريع</div>
+                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}Fast Delivery{% else %}توصيل سريع{% endif %}</div>
                 </div>
                 <div class="trust-item">
                     <div class="trust-icon"><i class="ti ti-shield-check"></i></div>
-                    <div class="trust-label">دفع آمن</div>
+                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}Secure Payment{% else %}دفع آمن{% endif %}</div>
                 </div>
                 <div class="trust-item">
                     <div class="trust-icon"><i class="ti ti-refresh"></i></div>
-                    <div class="trust-label">إرجاع 7 أيام</div>
+                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}7 Days Return{% else %}إرجاع 7 أيام{% endif %}</div>
                 </div>
                 <div class="trust-item">
                     <div class="trust-icon"><i class="ti ti-rosette"></i></div>
-                    <div class="trust-label">منتجات أصلية</div>
+                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}Original Products{% else %}منتجات أصلية{% endif %}</div>
                 </div>
             </div>
 
@@ -715,17 +962,19 @@
     <!-- ══ Tabs ══ -->
     <div class="mt-5">
         <div class="pd-tabs">
-            <button class="pd-tab-btn active" data-tab="overview">الوصف</button>
-            <button class="pd-tab-btn" data-tab="reviews">التقييمات ({{ product.review_count }})</button>
+            <button class="pd-tab-btn active" data-tab="overview">{% if LANGUAGE_CODE == 'en' %}Overview{% else %}الوصف{% endif %}</button>
+            <button class="pd-tab-btn" data-tab="reviews">{% if LANGUAGE_CODE == 'en' %}Reviews{% else %}التقييمات{% endif %} ({{ product.review_count }})</button>
         </div>
 
         <!-- Overview -->
         <div id="tab-overview" class="tab-panel">
             <div class="description-body">
-                {% if product.description_ar %}
-                    {{ product.description_ar|linebreaks }}
+                {% if LANGUAGE_CODE == 'en' and product.description_en %}
+                {{ product.description_en|linebreaks }}
+                {% elif LANGUAGE_CODE == 'ar' and product.description_ar %}
+                {{ product.description_ar|linebreaks }}
                 {% else %}
-                    <p style="color:var(--mid);text-align:center;padding:20px 0">لا يوجد وصف متاح.</p>
+                <p style="color:var(--mid);text-align:center;padding:20px 0">{% if LANGUAGE_CODE == 'en' %}No description available.{% else %}لا يوجد وصف متاح.{% endif %}</p>
                 {% endif %}
             </div>
         </div>
@@ -735,24 +984,23 @@
 
             {% if product.reviews.exists %}
 
-                {% with summary=product.review_summary %}
-                {% if summary %}
-                <div class="review-summary">
-                    <div class="review-score">
-                        <div class="review-score-num">{{ summary.avg_rating }}</div>
-                        <div class="stars" style="font-size:1.1rem;margin:4px 0">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= summary.avg_rating %}★{% else %}☆{% endif %}
-                            {% endfor %}
-                        </div>
-                        <div style="font-size:12px;color:var(--mid)">{{ summary.total_reviews }} تقييم</div>
+            {% with summary=product.review_summary %}
+            {% if summary %}
+            <div class="review-summary">
+                <div class="review-score">
+                    <div class="review-score-num">{{ summary.avg_rating }}</div>
+                    <div class="stars" style="font-size:1.1rem;margin:4px 0">
+                        {% for i in "12345" %}
+                        {% if forloop.counter <= summary.avg_rating %}★{% else %}☆{% endif %} {% endfor %} </div>
+                            <div style="font-size:12px;color:var(--mid)">{{ summary.total_reviews }} {% if LANGUAGE_CODE == 'en' %}Reviews{% else %}تقييم{% endif %}</div>
                     </div>
                     <div class="review-bars">
                         {% for star in "54321" %}
                         <div class="review-bar-row">
                             <span class="review-bar-label">{{ star }}★</span>
                             <div class="review-bar-track">
-                                <div class="review-bar-fill" style="width:{{ summary.rating_percent|get_item:star }}%"></div>
+                                <div class="review-bar-fill" style="width:{{ summary.rating_percent|get_item:star }}%">
+                                </div>
                             </div>
                             <span class="review-bar-pct">{{ summary.rating_percent|get_item:star }}%</span>
                         </div>
@@ -764,50 +1012,51 @@
 
                 <!-- Review List -->
                 {% for review in product.reviews.all %}
-                    {% if review.is_approved %}
-                    <div class="review-card">
-                        <div class="d-flex justify-content-between align-items-start gap-3">
-                            <div>
-                                <div class="d-flex align-items-center gap-10 gap-2 mb-1">
-                                    <span class="reviewer-name">{{ review.customer.get_full_name }}</span>
-                                    <span class="stars" style="font-size:.85rem">
-                                        {% for i in "12345" %}
-                                            {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
-                                        {% endfor %}
-                                    </span>
-                                </div>
-                                {% if review.title %}<div class="review-title">{{ review.title }}</div>{% endif %}
-                                {% if review.comment %}<div class="review-comment">{{ review.comment }}</div>{% endif %}
-                                <div class="reviewer-date mt-2">{{ review.created_at|date:"d M Y" }}</div>
+                {% if review.is_approved %}
+                <div class="review-card">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <div class="d-flex align-items-center gap-10 gap-2 mb-1">
+                                <span class="reviewer-name">{{ review.customer.get_full_name }}</span>
+                                <span class="stars" style="font-size:.85rem">
+                                    {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %} {% endfor %}
+                                        </span>
                             </div>
-                            {% if request.user == review.customer %}
-                            <div class="d-flex gap-2 flex-shrink-0">
-                                {% if review.can_edit %}
-                                <button class="btn btn-sm btn-outline-secondary" style="font-size:12px;border-radius:20px">تعديل</button>
-                                {% endif %}
-                                <form method="post" action="{% url 'delete_review' review.id %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-sm btn-outline-danger" style="font-size:12px;border-radius:20px">حذف</button>
-                                </form>
-                            </div>
-                            {% endif %}
+                            {% if review.title %}<div class="review-title">{{ review.title }}</div>{% endif %}
+                            {% if review.comment %}<div class="review-comment">{{ review.comment }}</div>{% endif %}
+                            <div class="reviewer-date mt-2">{{ review.created_at|date:"d M Y" }}</div>
                         </div>
+                        {% if request.user == review.customer %}
+                        <div class="d-flex gap-2 flex-shrink-0">
+                            {% if review.can_edit %}
+                            <button class="btn btn-sm btn-outline-secondary"
+                                style="font-size:12px;border-radius:20px">{% if LANGUAGE_CODE == 'en' %}Edit{% else %}تعديل{% endif %}</button>
+                            {% endif %}
+                            <form method="post" action="{% url 'delete_review' review.id %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger"
+                                    style="font-size:12px;border-radius:20px">{% if LANGUAGE_CODE == 'en' %}Delete{% else %}حذف{% endif %}</button>
+                            </form>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
+                </div>
+                {% endif %}
                 {% endfor %}
 
-            {% else %}
-            <div style="text-align:center;padding:40px 0;color:var(--mid)">
-                <i class="ti ti-star" style="font-size:2.5rem;opacity:.3;display:block;margin-bottom:10px"></i>
-                لا توجد تقييمات بعد. كن أول من يقيّم هذا المنتج!
-            </div>
-            {% endif %}
+                {% else %}
+                <div style="text-align:center;padding:40px 0;color:var(--mid)">
+                    <i class="ti ti-star" style="font-size:2.5rem;opacity:.3;display:block;margin-bottom:10px"></i>
+                    {% if LANGUAGE_CODE == 'en' %}No reviews yet. Be the first to review this product!{% else %}لا توجد تقييمات بعد. كن أول من يقيّم هذا المنتج!{% endif %}
+                </div>
+                {% endif %}
 
-            <!-- Review Form -->
-            {% if request.user.is_authenticated %}
+                <!-- Review Form -->
+                {% if request.user.is_authenticated %}
                 {% if not user_reviewed %}
                 <div class="review-form-wrap">
-                    <h5>شاركنا رأيك</h5>
+                    <h5>{% if LANGUAGE_CODE == 'en' %}Share your thoughts{% else %}شاركنا رأيك{% endif %}</h5>
                     <form method="post" action="{% url 'add_review' product.id %}">
                         {% csrf_token %}
                         <div class="star-rating-input" id="starInput">
@@ -816,147 +1065,148 @@
                             <label for="star{{ val }}" data-val="{{ val }}">★</label>
                             {% endfor %}
                         </div>
-                        <input type="text" name="title" class="form-control-pd" placeholder="عنوان مختصر (اختياري)">
-                        <textarea name="comment" rows="4" class="form-control-pd" placeholder="شاركنا تجربتك مع هذا العطر..."></textarea>
-                        <button type="submit" class="btn-submit-review">إرسال التقييم</button>
+                        <input type="text" name="title" class="form-control-pd" placeholder="{% if LANGUAGE_CODE == 'en' %}Short title (optional){% else %}عنوان مختصر (اختياري){% endif %}">
+                        <textarea name="comment" rows="4" class="form-control-pd"
+                            placeholder="{% if LANGUAGE_CODE == 'en' %}Share your experience with this perfume...{% else %}شاركنا تجربتك مع هذا العطر...{% endif %}"></textarea>
+                        <button type="submit" class="btn-submit-review">{% if LANGUAGE_CODE == 'en' %}Submit Review{% else %}إرسال التقييم{% endif %}</button>
                     </form>
                 </div>
                 {% endif %}
-            {% else %}
-            <div class="review-form-wrap" style="text-align:center">
-                <i class="ti ti-lock" style="font-size:1.5rem;color:var(--mid);margin-bottom:8px;display:block"></i>
-                <a href="{% url 'login' %}" style="color:var(--gold);font-weight:600">سجّل دخولك</a> لإضافة تقييم
+                {% else %}
+                <div class="review-form-wrap" style="text-align:center">
+                    <i class="ti ti-lock" style="font-size:1.5rem;color:var(--mid);margin-bottom:8px;display:block"></i>
+                    <a href="{% url 'login' %}" style="color:var(--gold);font-weight:600">{% if LANGUAGE_CODE == 'en' %}Login{% else %}سجّل دخولك{% endif %}</a> {% if LANGUAGE_CODE == 'en' %}to add a review{% else %}لإضافة تقييم{% endif %}
+                </div>
+                {% endif %}
+
             </div>
-            {% endif %}
-
         </div>
-    </div>
 
-    <!-- ══ Related Products ══ -->
-    {% if related_products %}
-    <section class="mt-5 pt-3">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="section-title mb-0">منتجات مشابهة</h2>
-            {% if product.category %}
-            <a href="{% url 'products' %}?category_id={{ product.category.id }}"
-                style="font-size:13px;color:var(--gold);text-decoration:none;font-weight:600">
-                عرض الكل <i class="ti ti-arrow-left"></i>
-            </a>
-            {% endif %}
-        </div>
-        <div class="row g-3">
-            {% for p in related_products %}
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="product-card">
-                    <a href="{% url 'product_detail' p.slug %}">
-                        <img src="{{ p.thumbnail.url }}" class="product-card-img" alt="{{ p.name_ar }}">
-                    </a>
-                    <div class="product-card-body">
-                        <a href="{% url 'product_detail' p.slug %}" class="product-card-name">{{ p.name_ar }}</a>
-                        <div class="product-card-price">L.E {{ p.final_price }}</div>
+        <!-- ══ Related Products ══ -->
+        {% if related_products %}
+        <section class="mt-5 pt-3">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="section-title mb-0">{% if LANGUAGE_CODE == 'en' %}Related Products{% else %}منتجات مشابهة{% endif %}</h2>
+                {% if product.category %}
+                <a href="{% url 'products' %}?category_id={{ product.category.id }}"
+                    style="font-size:13px;color:var(--gold);text-decoration:none;font-weight:600">
+                    {% if LANGUAGE_CODE == 'en' %}View All{% else %}عرض الكل{% endif %} <i class="ti ti-arrow-{% if LANGUAGE_CODE == 'en' %}right{% else %}left{% endif %}"></i>
+                </a>
+                {% endif %}
+            </div>
+            <div class="row g-3">
+                {% for p in related_products %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="product-card">
+                        <a href="{% url 'product_detail' p.slug %}">
+                            <img src="{{ p.thumbnail.url }}" class="product-card-img" alt="{% if LANGUAGE_CODE == 'en' %}{{ p.name_en }}{% else %}{{ p.name_ar }}{% endif %}">
+                        </a>
+                        <div class="product-card-body">
+                            <a href="{% url 'product_detail' p.slug %}" class="product-card-name">{% if LANGUAGE_CODE == 'en' %}{{ p.name_en }}{% else %}{{ p.name_ar }}{% endif %}</a>
+                             <div class="product-card-price">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ p.final_price }}</div>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
-    </section>
+        </section>
+        {% endif %}
+
+    </div>
+
+    <!-- ══ Mobile Sticky CTA Bar ══ -->
+    {% if not product.is_out_of_stock %}
+    <div class="mobile-cta-bar">
+        <button class="btn-cart" onclick="document.getElementById('addToCartForm').submit()">
+            <i class="ti ti-shopping-bag"></i> {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
+        </button>
+        <button class="btn-buy" onclick="buyNow()">
+            <i class="ti ti-bolt"></i> {% if LANGUAGE_CODE == 'en' %}Buy Now{% else %}اشترِ الآن{% endif %}
+        </button>
+    </div>
     {% endif %}
-
-</div>
-
-<!-- ══ Mobile Sticky CTA Bar ══ -->
-{% if not product.is_out_of_stock %}
-<div class="mobile-cta-bar">
-    <button class="btn-cart" onclick="document.getElementById('addToCartForm').submit()">
-        <i class="ti ti-shopping-bag"></i> أضف للسلة
-    </button>
-    <button class="btn-buy" onclick="buyNow()">
-        <i class="ti ti-bolt"></i> اشترِ الآن
-    </button>
-</div>
-{% endif %}
-{% endblock %}
+    {% endblock %}
 
 
-{% block extra_js %}
-<script>
-    // ── Image Gallery ──
-    function changeImage(url, el) {
-        document.getElementById('mainImage').src = url;
-        document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active-thumb'));
-        el.classList.add('active-thumb');
-    }
+    {% block extra_js %}
+    <script>
+        // ── Image Gallery ──
+        function changeImage(url, el) {
+            document.getElementById('mainImage').src = url;
+            document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active-thumb'));
+            el.classList.add('active-thumb');
+        }
 
-    // ── Quantity ──
-    function changeQty(delta) {
-        const input = document.getElementById('qtyInput');
-        if (!input) return;
-        const max = parseInt(input.max) || 99;
-        let val = parseInt(input.value) + delta;
-        if (val < 1) val = 1;
-        if (val > max) val = max;
-        input.value = val;
-    }
+        // ── Quantity ──
+        function changeQty(delta) {
+            const input = document.getElementById('qtyInput');
+            if (!input) return;
+            const max = parseInt(input.max) || 99;
+            let val = parseInt(input.value) + delta;
+            if (val < 1) val = 1;
+            if (val > max) val = max;
+            input.value = val;
+        }
 
-    // ── Buy Now ──
-    function buyNow() {
-        const form = document.getElementById('addToCartForm');
-        if (!form) return;
-        form.action = "{% url 'add_to_cart' product.id %}?next=checkout";
-        form.submit();
-    }
+        // ── Buy Now ──
+        function buyNow() {
+            const form = document.getElementById('addToCartForm');
+            if (!form) return;
+            form.action = "{% url 'add_to_cart' product.id %}?next=checkout";
+            form.submit();
+        }
 
-    // ── Custom Tabs ──
-    document.querySelectorAll('.pd-tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.pd-tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
-            btn.classList.add('active');
-            document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+        // ── Custom Tabs ──
+        document.querySelectorAll('.pd-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.pd-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+            });
         });
-    });
 
-    // ── Star Rating Input ──
-    const starLabels = document.querySelectorAll('#starInput label');
-    starLabels.forEach((label, index) => {
-        label.addEventListener('mouseover', () => {
-            starLabels.forEach((l, i) => l.classList.toggle('lit', i <= index));
+        // ── Star Rating Input ──
+        const starLabels = document.querySelectorAll('#starInput label');
+        starLabels.forEach((label, index) => {
+            label.addEventListener('mouseover', () => {
+                starLabels.forEach((l, i) => l.classList.toggle('lit', i <= index));
+            });
+            label.addEventListener('mouseout', () => {
+                const checked = document.querySelector('#starInput input[type="radio"]:checked');
+                const val = checked ? parseInt(checked.value) - 1 : -1;
+                starLabels.forEach((l, i) => l.classList.toggle('lit', i <= val));
+            });
+            label.addEventListener('click', () => {
+                starLabels.forEach((l, i) => l.classList.toggle('lit', i <= index));
+            });
         });
-        label.addEventListener('mouseout', () => {
-            const checked = document.querySelector('#starInput input[type="radio"]:checked');
-            const val = checked ? parseInt(checked.value) - 1 : -1;
-            starLabels.forEach((l, i) => l.classList.toggle('lit', i <= val));
-        });
-        label.addEventListener('click', () => {
-            starLabels.forEach((l, i) => l.classList.toggle('lit', i <= index));
-        });
-    });
 
-    // ── Wishlist Toggle ──
-    const wishlistBtn = document.getElementById('wishlistBtn');
-    if (wishlistBtn) {
-        wishlistBtn.addEventListener('click', async () => {
-            const productId = wishlistBtn.dataset.productId;
-            try {
-                const res = await fetch(`/wishlist/toggle/${productId}/`, {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                });
-                const data = await res.json();
-                const icon = wishlistBtn.querySelector('i');
-                if (data.status === 'added') {
-                    wishlistBtn.classList.add('in-wishlist');
-                    icon.className = 'ti ti-heart-filled';
-                } else {
-                    wishlistBtn.classList.remove('in-wishlist');
-                    icon.className = 'ti ti-heart';
+        // ── Wishlist Toggle ──
+        const wishlistBtn = document.getElementById('wishlistBtn');
+        if (wishlistBtn) {
+            wishlistBtn.addEventListener('click', async () => {
+                const productId = wishlistBtn.dataset.productId;
+                try {
+                    const res = await fetch(`/wishlist/toggle/${productId}/`, {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    });
+                    const data = await res.json();
+                    const icon = wishlistBtn.querySelector('i');
+                    if (data.status === 'added') {
+                        wishlistBtn.classList.add('in-wishlist');
+                        icon.className = 'ti ti-heart-filled';
+                    } else {
+                        wishlistBtn.classList.remove('in-wishlist');
+                        icon.className = 'ti ti-heart';
+                    }
+                    const counter = document.querySelector('#wishlist-count');
+                    if (counter) counter.textContent = data.wishlist_count;
+                } catch (e) {
+                    console.error('Wishlist error', e);
                 }
-                const counter = document.querySelector('#wishlist-count');
-                if (counter) counter.textContent = data.wishlist_count;
-            } catch (e) {
-                console.error('Wishlist error', e);
-            }
-        });
-    }
-</script>
-{% endblock %}
+            });
+        }
+    </script>
+    {% endblock %}

@@ -65,7 +65,7 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display    = ["thumbnail_preview", "name_ar", "brand", "category",
+    list_display    = ["thumbnail_preview", "name_ar", "brand", "category", "size",
                        "price", "final_price_display", "stock", "stock_badge",
                        "is_featured", "is_active"]
     list_filter     = ["category", "sub_category", "brand", "is_active", "is_featured"]
@@ -78,7 +78,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("المعرّف",        {"fields": ("sku", "slug")}),
-        ("الأسماء والوصف", {"fields": ("name_ar", "name_en", "description_ar", "description_en")}),
+        ("الأسماء والوصف", {"fields": ("name_ar", "name_en", "size", "description_ar", "description_en")}),
         ("التصنيف",        {"fields": ("category", "sub_category", "brand")}),
         ("السعر والمخزون", {"fields": ("price", "discount_price", "stock")}),
         ("الصورة",         {"fields": ("thumbnail", "thumbnail_preview")}),
