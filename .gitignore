@@ -10,6 +10,8 @@ db.sqlite3
 # Database
 *.sqlite3
 
+core/settings.py
+
 # Virtual Environment
 venv/
 env/
