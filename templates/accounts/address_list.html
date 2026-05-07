@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}My Addresses{% else %}عناوين الشحن{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container { margin-top: 40px; margin-bottom: 60px; }
+    
+    .dash-sidebar {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 24px;
+        height: fit-content;
+    }
+    .dash-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: var(--mid);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 5px;
+        transition: all 0.2s;
+    }
+    .dash-nav-link:hover, .dash-nav-link.active {
+        background: var(--soft);
+        color: var(--gold);
+    }
+    .dash-nav-link i { font-size: 20px; }
+    
+    .dash-content-wrap {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 30px;
+    }
+    
+    .address-card {
+        border: 1.5px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .address-card:hover { border-color: var(--gold); }
+    .address-card.is-default { border-color: var(--gold); background: rgba(201,169,110,0.03); }
+    
+    .default-badge {
+        position: absolute;
+        top: 15px; inset-inline-end: 20px;
+        background: var(--gold);
+        color: var(--white);
+        font-size: 10px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+    }
+    
+    .addr-name { font-weight: 700; color: var(--ink); margin-bottom: 5px; display: block; }
+    .addr-phone { font-size: 13px; color: var(--mid); margin-bottom: 10px; display: block; }
+    .addr-text { font-size: 14px; color: var(--ink); line-height: 1.6; }
+    
+    .addr-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed var(--border);
+    }
+    .addr-action-btn { font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 5px; }
+    
+    .btn-add-addr {
+        background: var(--ink);
+        color: var(--white);
+        padding: 10px 24px;
+        border-radius: 50px;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-add-addr:hover { background: var(--gold-dark); color: var(--white); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="dash-sidebar">
+                <nav>
+                    <a href="{% url 'dashboard' %}" class="dash-nav-link">
+                        <i class="ti ti-layout-dashboard"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Overview{% else %}نظرة عامة{% endif %}
+                    </a>
+                    <a href="{% url 'order_list' %}" class="dash-nav-link">
+                        <i class="ti ti-package"></i>
+                        {% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}
+                    </a>
+                    <a href="{% url 'address_list' %}" class="dash-nav-link active">
+                        <i class="ti ti-map-pin"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Addresses{% else %}العناوين{% endif %}
+                    </a>
+                    <a href="{% url 'wishlist' %}" class="dash-nav-link">
+                        <i class="ti ti-heart"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}
+                    </a>
+                    <a href="{% url 'profile' %}" class="dash-nav-link">
+                        <i class="ti ti-user-edit"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Edit Profile{% else %}تعديل الملف الشخصي{% endif %}
+                    </a>
+                    <a href="{% url 'logout' %}" class="dash-nav-link text-danger">
+                        <i class="ti ti-logout"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Logout{% else %}خروج{% endif %}
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="dash-content-wrap">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold m-0" style="font-family:'Playfair Display',serif">{% if LANGUAGE_CODE == 'en' %}My Addresses{% else %}عناوين الشحن{% endif %}</h4>
+                    <a href="{% url 'address_create' %}" class="btn-add-addr">
+                        <i class="ti ti-plus"></i> {% if LANGUAGE_CODE == 'en' %}Add New{% else %}إضافة عنوان{% endif %}
+                    </a>
+                </div>
+                
+                <div class="row">
+                    {% for addr in addresses %}
+                    <div class="col-md-6">
+                        <div class="address-card {% if addr.is_default %}is-default{% endif %}">
+                            {% if addr.is_default %}
+                            <span class="default-badge">{% if LANGUAGE_CODE == 'en' %}Default{% else %}افتراضي{% endif %}</span>
+                            {% endif %}
+                            
+                            <span class="addr-name">{{ addr.full_name }}</span>
+                            <span class="addr-phone" dir="ltr" style="text-align:inherit">{{ addr.phone }}</span>
+                            
+                            <div class="addr-text">
+                                {{ addr.governorate.name_ar }} — {{ addr.city.name_ar }}<br>
+                                {{ addr.street }}<br>
+                                {% if addr.building %}{{ addr.building }}{% endif %}
+                            </div>
+                            
+                            <div class="addr-actions">
+                                <a href="{% url 'address_edit' addr.pk %}" class="addr-action-btn text-dark">
+                                    <i class="ti ti-edit"></i> {% if LANGUAGE_CODE == 'en' %}Edit{% else %}تعديل{% endif %}
+                                </a>
+                                <a href="{% url 'address_delete' addr.pk %}" class="addr-action-btn text-danger" onclick="return confirm('{% if LANGUAGE_CODE == 'en' %}Delete this address?{% else %}هل أنت متأكد من حذف هذا العنوان؟{% endif %}')">
+                                    <i class="ti ti-trash"></i> {% if LANGUAGE_CODE == 'en' %}Delete{% else %}حذف{% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <i class="ti ti-map-pin-off text-muted mb-3" style="font-size:4rem"></i>
+                        <h5>{% if LANGUAGE_CODE == 'en' %}No addresses saved yet.{% else %}لا توجد عناوين مسجلة بعد.{% endif %}</h5>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

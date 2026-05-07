@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        padding: 40px 0;
+        background: var(--soft);
+        margin-bottom: 40px;
+        border-bottom: 1px solid var(--border);
+    }
+    .page-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin: 0;
+    }
+    
+    .order-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        border-color: var(--gold);
+    }
+    
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed var(--border);
+    }
+    
+    .order-info h5 {
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--ink);
+    }
+    .order-date {
+        font-size: 13px;
+        color: var(--mid);
+    }
+    
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    
+    .order-content {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+    
+    .order-items-preview {
+        display: flex;
+        gap: 10px;
+        flex: 1;
+    }
+    .item-img-wrap {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--soft);
+    }
+    .item-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .order-summary {
+        text-align: end;
+        min-width: 150px;
+    }
+    .order-total-label {
+        font-size: 12px;
+        color: var(--mid);
+        display: block;
+    }
+    .order-total-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--gold);
+    }
+    
+    .order-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    .btn-order {
+        flex: 1;
+        padding: 10px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .btn-view {
+        background: var(--ink);
+        color: var(--white);
+    }
+    .btn-view:hover {
+        background: var(--gold-dark);
+        color: var(--white);
+    }
+    .btn-track {
+        background: var(--soft);
+        color: var(--ink);
+        border: 1px solid var(--border);
+    }
+    .btn-track:hover {
+        background: var(--border);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--border);
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .order-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .order-summary {
+            text-align: start;
+            margin-top: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="container text-center">
+        <h1 class="page-title">{% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}</h1>
+        <p class="text-muted mt-2">{% if LANGUAGE_CODE == 'en' %}Manage and track your perfume orders{% else %}إدارة وتتبع طلبات العطور الخاصة بك{% endif %}</p>
+    </div>
+</div>
+
+<div class="container mb-5" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-card">
+                    <div class="order-header">
+                        <div class="order-info">
+                            <h5>#{{ order.order_number }}</h5>
+                            <span class="order-date">{{ order.created_at|date:"d M Y, h:i A" }}</span>
+                        </div>
+                        <span class="status-badge" style="background: {{ order.status_badge_color }}20; color: {{ order.status_badge_color }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="order-content">
+                        <div class="order-items-preview">
+                            {% for item in order.items.all|slice:":4" %}
+                            <div class="item-img-wrap" title="{{ item.product_name }}">
+                                {% if item.product_image %}
+                                <img src="{{ item.product_image }}" alt="{{ item.product_name }}">
+                                {% else %}
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    <i class="ti ti-bottle" style="color:var(--gold)"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% if order.items.count > 4 %}
+                            <div class="item-img-wrap d-flex align-items-center justify-content-center bg-light">
+                                <span class="fw-bold" style="color:var(--mid)">+{{ order.items.count|add:"-4" }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="order-summary">
+                            <span class="order-total-label">{% if LANGUAGE_CODE == 'en' %}Total Amount{% else %}إجمالي المبلغ{% endif %}</span>
+                            <span class="order-total-value">{{ order.total }} ج.م</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-actions">
+                        <a href="{% url 'order_detail' order.order_number %}" class="btn-order btn-view">
+                            <i class="ti ti-eye me-1"></i> {% if LANGUAGE_CODE == 'en' %}View Details{% else %}عرض التفاصيل{% endif %}
+                        </a>
+                        <a href="{% url 'order_detail' order.order_number %}#tracking" class="btn-order btn-track">
+                            <i class="ti ti-truck me-1"></i> {% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="ti ti-package-off"></i>
+                    </div>
+                    <h3>{% if LANGUAGE_CODE == 'en' %}No orders found{% else %}لا توجد طلبات بعد{% endif %}</h3>
+                    <p class="text-muted mb-4">{% if LANGUAGE_CODE == 'en' %}Start shopping and fill your fragrance collection!{% else %}ابدأ التسوق واملأ مجموعتك من العطور!{% endif %}</p>
+                    <a href="{% url 'products' %}" class="btn btn-dark px-4 py-2 rounded-pill">
+                        {% if LANGUAGE_CODE == 'en' %}Go Shopping{% else %}اذهب للتسوق{% endif %}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

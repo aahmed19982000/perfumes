@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}FAQ{% else %}الأسئلة الشائعة{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .faq-hero {
+        background: var(--soft);
+        padding: 60px 0;
+        margin-bottom: 60px;
+        border-bottom: 1px solid var(--border);
+    }
+    .faq-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 700; color: var(--ink); }
+    
+    .faq-item {
+        background: var(--white);
+        border: 1.5px solid var(--border);
+        border-radius: 16px;
+        margin-bottom: 15px;
+        overflow: hidden;
+        transition: all 0.2s;
+    }
+    .faq-item:hover { border-color: var(--gold); }
+    
+    .faq-question {
+        padding: 20px 25px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 700;
+        color: var(--ink);
+    }
+    .faq-answer {
+        padding: 0 25px 25px;
+        color: var(--mid);
+        line-height: 1.6;
+        display: none;
+    }
+    
+    .faq-item.active { border-color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .faq-item.active .faq-answer { display: block; }
+    .faq-item.active .ti-plus { transform: rotate(45deg); color: var(--gold); }
+    
+    .ti-plus { transition: transform 0.3s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="faq-hero" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="container text-center">
+        <h1 class="faq-title">{% if LANGUAGE_CODE == 'en' %}Frequently Asked Questions{% else %}الأسئلة الشائعة{% endif %}</h1>
+        <p class="text-muted">{% if LANGUAGE_CODE == 'en' %}Everything you need to know about our products and services.{% else %}كل ما تحتاج معرفته عن منتجاتنا وخدماتنا.{% endif %}</p>
+    </div>
+</div>
+
+<div class="container mb-5" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="faq-group">
+                <h4 class="fw-bold mb-4" style="font-family:'Playfair Display',serif">{% if LANGUAGE_CODE == 'en' %}Orders & Shipping{% else %}الطلبات والشحن{% endif %}</h4>
+                
+                <div class="faq-item active">
+                    <div class="faq-question">
+                        {% if LANGUAGE_CODE == 'en' %}How long does shipping take?{% else %}كم يستغرق الشحن؟{% endif %}
+                        <i class="ti ti-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        {% if LANGUAGE_CODE == 'en' %}Shipping usually takes 2-4 business days within Cairo and Giza, and 3-6 days for other governorates.{% else %}يستغرق الشحن عادةً من ٢-٤ أيام عمل داخل القاهرة والجيزة، ومن ٣-٦ أيام لباقي المحافظات.{% endif %}
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        {% if LANGUAGE_CODE == 'en' %}Do you offer international shipping?{% else %}هل توفرون شحناً دولياً؟{% endif %}
+                        <i class="ti ti-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        {% if LANGUAGE_CODE == 'en' %}Currently, we only ship within Egypt. We are working on expanding our services to other countries soon.{% else %}في الوقت الحالي، نقوم بالشحن داخل مصر فقط. نحن نعمل على توسيع خدماتنا لتشمل دولاً أخرى قريباً.{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-group mt-5">
+                <h4 class="fw-bold mb-4" style="font-family:'Playfair Display',serif">{% if LANGUAGE_CODE == 'en' %}Products & Quality{% else %}المنتجات والجودة{% endif %}</h4>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        {% if LANGUAGE_CODE == 'en' %}Are your perfumes original?{% else %}هل عطوركم أصلية؟{% endif %}
+                        <i class="ti ti-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        {% if LANGUAGE_CODE == 'en' %}Yes, all our perfumes are 100% original, crafted with the highest quality ingredients and follow strict manufacturing standards.{% else %}نعم، جميع عطورنا أصلية ١٠٠٪، مصنعة بأجود المكونات وتتبع معايير تصنيع صارمة.{% endif %}
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        {% if LANGUAGE_CODE == 'en' %}How can I make my perfume last longer?{% else %}كيف يمكنني جعل العطر يدوم لفترة أطول؟{% endif %}
+                        <i class="ti ti-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        {% if LANGUAGE_CODE == 'en' %}Apply perfume to pulse points such as wrists, neck, and behind the ears. Also, applying an unscented moisturizer before spraying can help lock in the scent.{% else %}ضع العطر على نقاط النبض مثل المعصمين، الرقبة، وخلف الأذنين. كما أن وضع مرطب غير معطر قبل الرش يساعد في تثبيت الرائحة.{% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.faq-question').forEach(q => {
+        q.addEventListener('click', () => {
+            const item = q.parentElement;
+            item.classList.toggle('active');
+        });
+    });
+</script>
+{% endblock %}

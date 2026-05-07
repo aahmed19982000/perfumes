@@ -31,3 +31,32 @@ class RegisterForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ("first_name", "last_name", "phone", "avatar")
+        widgets = {
+            "first_name": forms.TextInput(attrs={"class": "form-control"}),
+            "last_name": forms.TextInput(attrs={"class": "form-control"}),
+            "phone": forms.TextInput(attrs={"class": "form-control"}),
+            "avatar": forms.FileInput(attrs={"class": "form-control"}),
+        }
+
+
+from .models import Address
+
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = ("full_name", "phone", "governorate", "city", "street", "building", "is_default")
+        widgets = {
+            "full_name": forms.TextInput(attrs={"class": "form-control"}),
+            "phone": forms.TextInput(attrs={"class": "form-control"}),
+            "governorate": forms.Select(attrs={"class": "form-select"}),
+            "city": forms.Select(attrs={"class": "form-select"}),
+            "street": forms.TextInput(attrs={"class": "form-control"}),
+            "building": forms.TextInput(attrs={"class": "form-control"}),
+            "is_default": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }

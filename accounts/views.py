@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib import messages
-from .forms import RegisterForm
+from .forms import RegisterForm, ProfileForm, AddressForm
 from django.http import JsonResponse
-from .models import City
+from .models import City, Address
+from django.contrib.auth.decorators import login_required
 
 
 def merge_guest_data_to_account(request, user):
@@ -98,4 +99,101 @@ def get_cities(request):
         is_active=True
     ).values("id", "name_ar", "name_en", "shipping_cost")
     
+    
     return JsonResponse({"cities": list(cities)})
+
+
+@login_required
+def dashboard_view(request):
+    # جلب آخر 5 طلبات
+    recent_orders = request.user.orders.all()[:5]
+    
+    # جلب المفضلة (أول 4 منتجات)
+    from wishlist.models import Wishlist
+    wishlist, _ = Wishlist.objects.get_or_create(customer=request.user)
+    recent_wishlist = wishlist.items.select_related('product')[:4]
+    
+    context = {
+        "recent_orders": recent_orders,
+        "recent_wishlist": recent_wishlist,
+    }
+    return render(request, "accounts/dashboard.html", context)
+
+
+@login_required
+def profile_view(request):
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "تم تحديث الملف الشخصي بنجاح")
+            return redirect("dashboard")
+    else:
+        form = ProfileForm(instance=request.user)
+    
+    
+    
+    return render(request, "accounts/profile.html", {"form": form})
+
+
+@login_required
+def change_password_view(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # لمنع تسجيل الخروج بعد تغيير الباسوورد
+            messages.success(request, "تم تغيير كلمة المرور بنجاح")
+            return redirect("dashboard")
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
+    else:
+        form = PasswordChangeForm(request.user)
+    
+    return render(request, "accounts/change_password.html", {"form": form})
+
+
+@login_required
+def address_list_view(request):
+    addresses = request.user.addresses.all()
+    return render(request, "accounts/address_list.html", {"addresses": addresses})
+
+
+@login_required
+def address_create_view(request):
+    if request.method == "POST":
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = form.save(commit=False)
+            address.customer = request.user
+            address.save()
+            messages.success(request, "تم إضافة العنوان بنجاح")
+            return redirect("address_list")
+    else:
+        form = AddressForm()
+    
+    return render(request, "accounts/address_form.html", {"form": form, "title": "إضافة عنوان جديد"})
+
+
+@login_required
+def address_edit_view(request, pk):
+    address = get_object_or_404(Address, pk=pk, customer=request.user)
+    if request.method == "POST":
+        form = AddressForm(request.POST, instance=address)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "تم تحديث العنوان بنجاح")
+            return redirect("address_list")
+    else:
+        form = AddressForm(instance=address)
+    
+    return render(request, "accounts/address_form.html", {"form": form, "title": "تعديل العنوان"})
+
+
+@login_required
+def address_delete_view(request, pk):
+    address = get_object_or_404(Address, pk=pk, customer=request.user)
+    address.delete()
+    messages.success(request, "تم حذف العنوان بنجاح")
+    return redirect("address_list")

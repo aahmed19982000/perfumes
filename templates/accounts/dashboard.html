@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container { margin-top: 40px; margin-bottom: 60px; }
+    
+    .dash-sidebar {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 24px;
+        height: fit-content;
+    }
+    .dash-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: var(--mid);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 5px;
+        transition: all 0.2s;
+    }
+    .dash-nav-link:hover, .dash-nav-link.active {
+        background: var(--soft);
+        color: var(--gold);
+    }
+    .dash-nav-link i { font-size: 20px; }
+    
+    .dash-content-wrap {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 30px;
+    }
+    
+    .welcome-card {
+        background: var(--ink);
+        border-radius: 20px;
+        padding: 30px;
+        color: var(--white);
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    .welcome-card::after {
+        content: '';
+        position: absolute;
+        top: -50%; right: -10%;
+        width: 300px; height: 300px;
+        background: radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 70%);
+    }
+    .welcome-card h2 { font-family: 'Playfair Display', serif; margin-bottom: 10px; }
+    
+    .stats-row { display: flex; gap: 20px; margin-bottom: 30px; }
+    .stat-card {
+        flex: 1;
+        background: var(--soft);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+    }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--ink); display: block; }
+    .stat-label { font-size: 12px; color: var(--mid); text-transform: uppercase; letter-spacing: 1px; }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+    }
+    .section-header h4 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 700; }
+    
+    .order-item-mini {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px dashed var(--border);
+    }
+    .order-item-mini:last-child { border-bottom: none; }
+    
+    .order-num { font-weight: 700; color: var(--ink); display: block; }
+    .order-date { font-size: 12px; color: var(--mid); }
+    
+    .wish-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+    .wish-item-mini {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        aspect-ratio: 1;
+        position: relative;
+    }
+    .wish-item-mini img { width: 100%; height: 100%; object-fit: cover; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="dash-sidebar">
+                <div class="d-flex align-items-center gap-3 mb-4 px-2">
+                    {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)">
+                    {% else %}
+                    <div style="width:50px;height:50px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;color:var(--gold);border:2px solid var(--gold)">
+                        <i class="ti ti-user" style="font-size:24px"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="fw-bold text-dark">{{ user.get_full_name }}</div>
+                        <div class="small text-muted">{{ user.email }}</div>
+                    </div>
+                </div>
+                
+                <nav>
+                    <a href="{% url 'dashboard' %}" class="dash-nav-link active">
+                        <i class="ti ti-layout-dashboard"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Overview{% else %}نظرة عامة{% endif %}
+                    </a>
+                    <a href="{% url 'order_list' %}" class="dash-nav-link">
+                        <i class="ti ti-package"></i>
+                        {% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}
+                    </a>
+                    <a href="{% url 'wishlist' %}" class="dash-nav-link">
+                        <i class="ti ti-heart"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}
+                    </a>
+                    <a href="{% url 'profile' %}" class="dash-nav-link">
+                        <i class="ti ti-user-edit"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Edit Profile{% else %}تعديل الملف الشخصي{% endif %}
+                    </a>
+                    <a href="{% url 'logout' %}" class="dash-nav-link text-danger">
+                        <i class="ti ti-logout"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Logout{% else %}خروج{% endif %}
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="dash-content-wrap">
+                <div class="welcome-card">
+                    <h2>{% if LANGUAGE_CODE == 'en' %}Welcome back,{% else %}أهلاً بك مجدداً،{% endif %} {{ user.first_name }}!</h2>
+                    <p class="m-0 opacity-75">{% if LANGUAGE_CODE == 'en' %}Check your recent activity and manage your account settings.{% else %}تابع نشاطك الأخير وقم بإدارة إعدادات حسابك من هنا.{% endif %}</p>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <span class="stat-value">{{ user.orders.count }}</span>
+                        <span class="stat-label">{% if LANGUAGE_CODE == 'en' %}Orders{% else %}الطلبات{% endif %}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ user.wishlist.items.count|default:"0" }}</span>
+                        <span class="stat-label">{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ user.addresses.count }}</span>
+                        <span class="stat-label">{% if LANGUAGE_CODE == 'en' %}Addresses{% else %}العناوين{% endif %}</span>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- Recent Orders -->
+                    <div class="col-md-7">
+                        <div class="section-header">
+                            <h4>{% if LANGUAGE_CODE == 'en' %}Recent Orders{% else %}أحدث الطلبات{% endif %}</h4>
+                            <a href="{% url 'order_list' %}" class="small text-decoration-none" style="color:var(--gold)">{% if LANGUAGE_CODE == 'en' %}View All{% else %}عرض الكل{% endif %}</a>
+                        </div>
+                        
+                        {% if recent_orders %}
+                            {% for order in recent_orders %}
+                            <div class="order-item-mini">
+                                <div>
+                                    <a href="{% url 'order_detail' order.order_number %}" class="order-num text-decoration-none">#{{ order.order_number }}</a>
+                                    <span class="order-date">{{ order.created_at|date:"d M Y" }}</span>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fw-bold" style="color:var(--gold)">{{ order.total }} ج.م</div>
+                                    <span class="small" style="color:{{ order.status_badge_color }}">{{ order.get_status_display }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small text-center py-4">{% if LANGUAGE_CODE == 'en' %}No orders yet.{% else %}لا توجد طلبات حتى الآن.{% endif %}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Wishlist Preview -->
+                    <div class="col-md-5">
+                        <div class="section-header">
+                            <h4>{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</h4>
+                            <a href="{% url 'wishlist' %}" class="small text-decoration-none" style="color:var(--gold)">{% if LANGUAGE_CODE == 'en' %}View All{% else %}عرض الكل{% endif %}</a>
+                        </div>
+                        
+                        <div class="wish-grid">
+                            {% for item in recent_wishlist %}
+                            <a href="{% url 'product_detail' item.product.slug %}" class="wish-item-mini" title="{{ item.product.name_ar }}">
+                                {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="">
+                                {% else %}
+                                <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                                    <i class="ti ti-bottle text-muted"></i>
+                                </div>
+                                {% endif %}
+                            </a>
+                            {% empty %}
+                            <div class="col-12">
+                                <p class="text-muted small text-center py-4">{% if LANGUAGE_CODE == 'en' %}Your wishlist is empty.{% else %}قائمة المفضلة فارغة.{% endif %}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

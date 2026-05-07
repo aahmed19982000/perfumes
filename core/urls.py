@@ -18,10 +18,17 @@ urlpatterns = [
     path("", include("orders.urls")),
     path("", include("wishlist.urls")),
     path("", include("reviews.urls")),
+    path("", include("contact.urls")),
     path('i18n/', include('django.conf.urls.i18n')),
 
     # ── الصفحة الرئيسية ──────────────────────────────────────────
     path("", views.home_view, name="home"),
+    
+    # ── الصفحات الثابتة ──────────────────────────────────────────
+    path("about/",   views.about_view,   name="about"),
+    path("faq/",     views.faq_view,     name="faq"),
+    path("privacy/", views.privacy_view, name="privacy"),
+    path("terms/",   views.terms_view,   name="terms"),
 ]
 
 if settings.DEBUG:

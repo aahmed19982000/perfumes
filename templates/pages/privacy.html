@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}Privacy Policy{% else %}سياسة الخصوصية{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block content %}
+<div class="container my-5 py-5" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-5 fw-bold" style="font-family:'Playfair Display',serif">{% if LANGUAGE_CODE == 'en' %}Privacy Policy{% else %}سياسة الخصوصية{% endif %}</h1>
+            
+            <div class="legal-content" style="line-height:1.8; color: var(--mid)">
+                {% if LANGUAGE_CODE == 'en' %}
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">1. Information We Collect</h4>
+                    <p>We collect information that you provide directly to us, such as when you create an account, make a purchase, or communicate with us. This may include your name, email address, phone number, and shipping address.</p>
+                </section>
+                
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">2. How We Use Your Information</h4>
+                    <p>We use the information we collect to process your orders, provide customer support, and send you updates about our products and promotions (if you opt-in).</p>
+                </section>
+
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">3. Data Security</h4>
+                    <p>We implement a variety of security measures to maintain the safety of your personal information. Your sensitive information is transmitted via Secure Socket Layer (SSL) technology.</p>
+                </section>
+                {% else %}
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">١. المعلومات التي نجمعها</h4>
+                    <p>نحن نجمع المعلومات التي تقدمها لنا مباشرة، مثل عند إنشاء حساب، أو إجراء عملية شراء، أو التواصل معنا. قد يشمل ذلك اسمك، بريدك الإلكتروني، رقم هاتفك، وعنوان الشحن.</p>
+                </section>
+                
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">٢. كيف نستخدم معلوماتك</h4>
+                    <p>نحن نستخدم المعلومات التي نجمعها لمعالجة طلباتك، وتقديم دعم العملاء، وإرسال تحديثات حول منتجاتنا وعروضنا الترويجية (في حال موافقتك).</p>
+                </section>
+
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">٣. أمن البيانات</h4>
+                    <p>نحن ننفذ مجموعة متنوعة من تدابير الأمان للحفاظ على سلامة معلوماتك الشخصية. يتم نقل معلوماتك الحساسة عبر تقنية Secure Socket Layer (SSL).</p>
+                </section>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}Terms & Conditions{% else %}الشروط والأحكام{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block content %}
+<div class="container my-5 py-5" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h1 class="mb-5 fw-bold" style="font-family:'Playfair Display',serif">{% if LANGUAGE_CODE == 'en' %}Terms & Conditions{% else %}الشروط والأحكام{% endif %}</h1>
+            
+            <div class="legal-content" style="line-height:1.8; color: var(--mid)">
+                {% if LANGUAGE_CODE == 'en' %}
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">1. Agreement to Terms</h4>
+                    <p>By accessing or using our website, you agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, you must not use our website.</p>
+                </section>
+                
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">2. Order Acceptance</h4>
+                    <p>We reserve the right to refuse or cancel any order for any reason. Some situations that may result in your order being canceled include limitations on quantities available for purchase, inaccuracies or errors in product or pricing information.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">3. Pricing and Payments</h4>
+                    <p>All prices are in EGP. We accept various payment methods. Pricing is subject to change without notice.</p>
+                </section>
+                {% else %}
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">١. الموافقة على الشروط</h4>
+                    <p>من خلال الدخول إلى موقعنا أو استخدامه، فإنك توافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على أي جزء من هذه الشروط، فيجب عليك عدم استخدام موقعنا.</p>
+                </section>
+                
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">٢. قبول الطلبات</h4>
+                    <p>نحن نحتفظ بالحق في رفض أو إلغاء أي طلب لأي سبب من الأسباب. بعض الحالات التي قد تؤدي إلى إلغاء طلبك تشمل قيوداً على الكميات المتاحة للشراء، أو عدم الدقة أو الأخطاء في معلومات المنتج أو التسعير.</p>
+                </section>
+
+                <section class="mb-5">
+                    <h4 class="text-dark fw-bold mb-3">٣. التسعير والدفع</h4>
+                    <p>جميع الأسعار بالجنيه المصري. نحن نقبل طرق دفع متنوعة. الأسعار عرضة للتغيير دون إشعار مسبق.</p>
+                </section>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}My Profile{% else %}الملف الشخصي{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container { margin-top: 40px; margin-bottom: 60px; }
+    
+    .dash-sidebar {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 24px;
+        height: fit-content;
+    }
+    .dash-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: var(--mid);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 5px;
+        transition: all 0.2s;
+    }
+    .dash-nav-link:hover, .dash-nav-link.active {
+        background: var(--soft);
+        color: var(--gold);
+    }
+    .dash-nav-link i { font-size: 20px; }
+    
+    .dash-content-wrap {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 30px;
+    }
+    
+    .profile-avatar-wrap {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+    }
+    .profile-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--gold);
+        padding: 3px;
+        background: var(--white);
+    }
+    .avatar-edit-btn {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        width: 32px;
+        height: 32px;
+        background: var(--ink);
+        color: var(--white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--white);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .avatar-edit-btn:hover { background: var(--gold); }
+
+    .form-label { font-weight: 700; color: var(--ink); font-size: 14px; margin-bottom: 8px; }
+    .form-control {
+        border-radius: 12px;
+        padding: 12px 16px;
+        border: 1.5px solid var(--border);
+        font-family: 'Cairo', sans-serif;
+        background: var(--soft);
+    }
+    .form-control:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(201,169,110,0.1);
+        background: var(--white);
+    }
+    
+    .btn-save {
+        background: var(--ink);
+        color: var(--white);
+        border: none;
+        padding: 12px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        transition: all 0.2s;
+        margin-top: 20px;
+    }
+    .btn-save:hover {
+        background: var(--gold-dark);
+        transform: translateY(-2px);
+    }
+    
+    .info-card {
+        background: var(--soft);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid var(--border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="row g-4">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="dash-sidebar">
+                <nav>
+                    <a href="{% url 'dashboard' %}" class="dash-nav-link">
+                        <i class="ti ti-layout-dashboard"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Overview{% else %}نظرة عامة{% endif %}
+                    </a>
+                    <a href="{% url 'order_list' %}" class="dash-nav-link">
+                        <i class="ti ti-package"></i>
+                        {% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}
+                    </a>
+                    <a href="{% url 'address_list' %}" class="dash-nav-link">
+                        <i class="ti ti-map-pin"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Addresses{% else %}العناوين{% endif %}
+                    </a>
+                    <a href="{% url 'wishlist' %}" class="dash-nav-link">
+                        <i class="ti ti-heart"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}
+                    </a>
+                    <a href="{% url 'profile' %}" class="dash-nav-link active">
+                        <i class="ti ti-user-edit"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Edit Profile{% else %}تعديل الملف الشخصي{% endif %}
+                    </a>
+                    <a href="{% url 'logout' %}" class="dash-nav-link text-danger">
+                        <i class="ti ti-logout"></i>
+                        {% if LANGUAGE_CODE == 'en' %}Logout{% else %}خروج{% endif %}
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="dash-content-wrap">
+                <h4 class="fw-bold mb-4" style="font-family:'Playfair Display',serif">{% if LANGUAGE_CODE == 'en' %}Profile Settings{% else %}إعدادات الملف الشخصي{% endif %}</h4>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="profile-avatar-wrap">
+                        {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="" class="profile-avatar">
+                        {% else %}
+                        <div class="profile-avatar d-flex align-items-center justify-content-center bg-light">
+                            <i class="ti ti-user text-muted" style="font-size:50px"></i>
+                        </div>
+                        {% endif %}
+                        <label for="id_avatar" class="avatar-edit-btn">
+                            <i class="ti ti-camera"></i>
+                        </label>
+                        <div style="display:none">{{ form.avatar }}</div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="form-label">{% if LANGUAGE_CODE == 'en' %}First Name{% else %}الاسم الأول{% endif %}</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Last Name{% else %}الاسم الأخير{% endif %}</label>
+                                {{ form.last_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Email Address{% else %}البريد الإلكتروني{% endif %}</label>
+                                <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                                <small class="text-muted">{% if LANGUAGE_CODE == 'en' %}Email cannot be changed.{% else %}لا يمكن تغيير البريد الإلكتروني.{% endif %}</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Phone Number{% else %}رقم الهاتف{% endif %}</label>
+                                {{ form.phone }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end">
+                        <button type="submit" class="btn-save">
+                            {% if LANGUAGE_CODE == 'en' %}Save Changes{% else %}حفظ التعديلات{% endif %}
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Change Password Section -->
+                <hr class="my-5">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1">{% if LANGUAGE_CODE == 'en' %}Security{% else %}الأمان{% endif %}</h5>
+                        <p class="text-muted small m-0">{% if LANGUAGE_CODE == 'en' %}Keep your account secure by updating your password.{% else %}حافظ على أمان حسابك عن طريق تحديث كلمة المرور.{% endif %}</p>
+                    </div>
+                    <a href="{% url 'password_change' %}" class="btn btn-outline-dark rounded-pill px-4">
+                        {% if LANGUAGE_CODE == 'en' %}Change Password{% else %}تغيير كلمة المرور{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

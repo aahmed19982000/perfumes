@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}About Us{% else %}من نحن{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .about-hero {
+        background: var(--ink);
+        padding: 100px 0;
+        text-align: center;
+        color: var(--white);
+        margin-bottom: 80px;
+        position: relative;
+        overflow: hidden;
+    }
+    .about-hero h1 { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 700; margin-bottom: 20px; }
+    
+    .about-section { margin-bottom: 100px; }
+    .section-tag { color: var(--gold); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; display: block; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 700; color: var(--ink); margin-bottom: 30px; }
+    .about-text { font-size: 1.1rem; line-height: 1.8; color: var(--mid); }
+    
+    .value-card {
+        background: var(--soft);
+        padding: 40px;
+        border-radius: 24px;
+        height: 100%;
+        transition: transform 0.3s;
+        border: 1px solid var(--border);
+    }
+    .value-card:hover { transform: translateY(-10px); border-color: var(--gold); }
+    .value-icon { width: 60px; height: 60px; background: var(--white); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--gold); margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .value-card h4 { font-weight: 700; margin-bottom: 15px; color: var(--ink); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-hero" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <div class="container">
+        <h1>{% if LANGUAGE_CODE == 'en' %}The Essence of Elegance{% else %}جوهر الأناقة{% endif %}</h1>
+        <p class="opacity-75">{% if LANGUAGE_CODE == 'en' %}Since 2020, crafting memories through scent.{% else %}منذ ٢٠٢٠، نصنع الذكريات من خلال العطور.{% endif %}</p>
+    </div>
+</div>
+
+<div class="container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    <!-- Our Story -->
+    <div class="about-section">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="section-tag">{% if LANGUAGE_CODE == 'en' %}Our Story{% else %}قصتنا{% endif %}</span>
+                <h2 class="section-title">{% if LANGUAGE_CODE == 'en' %}A Journey of a Thousand Scents{% else %}رحلة من ألف عطر وعطر{% endif %}</h2>
+                <div class="about-text">
+                    {% if LANGUAGE_CODE == 'en' %}
+                    <p>MAVA Perfumes began with a simple belief: that a fragrance is more than just a scent—it's a story, an emotion, and a legacy. We started our journey in the heart of Cairo, seeking out the finest ingredients from the far corners of the globe to create blends that speak to the soul.</p>
+                    <p>Every bottle we craft is a testament to our dedication to quality and luxury. We bridge the gap between traditional oriental richness and modern western sophistication.</p>
+                    {% else %}
+                    <p>بدأت عطور "مافا" بإيمان بسيط: أن العطر أكثر من مجرد رائحة، إنه قصة، وعاطفة، وإرث. بدأنا رحلتنا في قلب القاهرة، نبحث عن أرقى المكونات من أقاصي الأرض لنبتكر خلطات تحاكي الروح.</p>
+                    <p>كل زجاجة نصنعها هي شهادة على تفانينا في الجودة والفخامة. نحن نجمع بين غنى الشرق التقليدي ورقي الغرب الحديث.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="rounded-5 overflow-hidden shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&q=80&w=1000" alt="About Mava" class="w-100">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Values -->
+    <div class="about-section text-center">
+        <span class="section-tag">{% if LANGUAGE_CODE == 'en' %}Our Values{% else %}قيمنا{% endif %}</span>
+        <h2 class="section-title">{% if LANGUAGE_CODE == 'en' %}What Drives Us{% else %}ما يدفعنا للأمام{% endif %}</h2>
+        
+        <div class="row g-4 mt-4">
+            <div class="col-md-4">
+                <div class="value-card">
+                    <div class="value-icon"><i class="ti ti-award"></i></div>
+                    <h4>{% if LANGUAGE_CODE == 'en' %}Quality First{% else %}الجودة أولاً{% endif %}</h4>
+                    <p class="text-muted small">{% if LANGUAGE_CODE == 'en' %}We never compromise on the purity and longevity of our ingredients.{% else %}نحن لا نتهاون أبداً في نقاء وثبات مكوناتنا.{% endif %}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="value-card">
+                    <div class="value-icon"><i class="ti ti-feather"></i></div>
+                    <h4>{% if LANGUAGE_CODE == 'en' %}Authenticity{% else %}الأصالة{% endif %}</h4>
+                    <p class="text-muted small">{% if LANGUAGE_CODE == 'en' %}Our blends are unique, original, and crafted with artistic passion.{% else %}خلطاتنا فريدة، أصلية، ومصنوعة بشغف فني.{% endif %}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="value-card">
+                    <div class="value-icon"><i class="ti ti-heart"></i></div>
+                    <h4>{% if LANGUAGE_CODE == 'en' %}Customer Care{% else %}رعاية العميل{% endif %}</h4>
+                    <p class="text-muted small">{% if LANGUAGE_CODE == 'en' %}Your satisfaction is our ultimate reward and our primary goal.{% else %}رضاكم هو مكافأتنا الأسمى وهدفنا الأساسي.{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -26,16 +26,17 @@
                 <a href="{% url 'products' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}All Products{% else %}جميع المنتجات{% endif %}</a>
                 <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
                 <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
-                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}About Us{% else %}من نحن{% endif %}</a>
+                <a href="{% url 'about' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}About Us{% else %}من نحن{% endif %}</a>
+                <a href="{% url 'contact' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Contact Us{% else %}تواصل معنا{% endif %}</a>
             </div>
 
             <!-- Policies -->
             <div class="col-lg-2 col-md-3 col-6">
                 <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Policies{% else %}السياسات{% endif %}</div>
-                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Privacy Policy{% else %}سياسة الخصوصية{% endif %}</a>
-                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Return Policy{% else %}سياسة الإرجاع{% endif %}</a>
+                <a href="{% url 'privacy' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Privacy Policy{% else %}سياسة الخصوصية{% endif %}</a>
+                <a href="{% url 'terms' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Terms & Conditions{% else %}الشروط والأحكام{% endif %}</a>
                 <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Shipping{% else %}الشحن والتوصيل{% endif %}</a>
-                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}FAQ{% else %}الأسئلة الشائعة{% endif %}</a>
+                <a href="{% url 'faq' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}FAQ{% else %}الأسئلة الشائعة{% endif %}</a>
             </div>
 
             <!-- Contact -->

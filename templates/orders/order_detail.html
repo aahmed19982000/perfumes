@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% if LANGUAGE_CODE == 'en' %}Order #{{ order.order_number }}{% else %}طلب رقم #{{ order.order_number }}{% endif %} - Mava Perfumes
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-container { margin-top: 40px; margin-bottom: 60px; }
+    
+    .status-section {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    /* ── Tracking Timeline ── */
+    .tracking-timeline {
+        position: relative;
+        padding: 20px 0;
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+    }
+    .tracking-timeline::before {
+        content: '';
+        position: absolute;
+        top: 35px;
+        left: 5%;
+        right: 5%;
+        height: 3px;
+        background: #eee;
+        z-index: 1;
+    }
+    .timeline-step {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        flex: 1;
+    }
+    .step-icon {
+        width: 34px;
+        height: 34px;
+        background: var(--white);
+        border: 3px solid #eee;
+        border-radius: 50%;
+        margin: 0 auto 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #ccc;
+        transition: all 0.3s ease;
+    }
+    .step-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .timeline-step.active .step-icon {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--white);
+        box-shadow: 0 0 0 5px rgba(201,169,110,0.2);
+    }
+    .timeline-step.active .step-label { color: var(--ink); }
+    
+    .timeline-step.completed .step-icon {
+        background: #27ae60;
+        border-color: #27ae60;
+        color: var(--white);
+    }
+    .timeline-step.completed .step-label { color: #27ae60; }
+
+    /* Timeline line progress */
+    .progress-bar-inner {
+        position: absolute;
+        top: 35px;
+        left: 5%;
+        height: 3px;
+        background: var(--gold);
+        z-index: 1;
+        transition: width 0.5s ease;
+    }
+
+    /* ── Cards ── */
+    .card-custom {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    .card-custom-header {
+        padding: 20px 24px;
+        background: var(--soft);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .card-custom-header h5 { margin: 0; font-weight: 700; font-family: 'Playfair Display', serif; }
+    
+    .card-custom-body { padding: 24px; }
+    
+    /* ── Items List ── */
+    .order-item-row {
+        display: flex;
+        gap: 16px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .order-item-row:last-child { border-bottom: none; }
+    .item-thumb {
+        width: 70px;
+        height: 70px;
+        border-radius: 12px;
+        background: var(--soft);
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+    .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .item-meta { flex: 1; }
+    .item-name { font-weight: 700; color: var(--ink); margin-bottom: 4px; display: block; text-decoration: none; }
+    .item-sku { font-size: 11px; color: var(--mid); display: block; margin-bottom: 4px; }
+    .item-price-qty { font-size: 13px; font-weight: 600; color: var(--mid); }
+    
+    .item-total { text-align: end; font-weight: 700; color: var(--gold); }
+    
+    /* ── Summary ── */
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .summary-row.total {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed var(--border);
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+    
+    .info-label { font-size: 12px; color: var(--mid); margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+    .info-value { font-weight: 600; color: var(--ink); }
+
+    .btn-cancel {
+        background: #fff;
+        color: #e74c3c;
+        border: 1px solid #e74c3c;
+        padding: 8px 20px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        transition: all 0.2s;
+    }
+    .btn-cancel:hover {
+        background: #e74c3c;
+        color: #fff;
+    }
+
+    @media (max-width: 768px) {
+        .tracking-timeline { flex-wrap: wrap; gap: 20px; }
+        .tracking-timeline::before, .progress-bar-inner { display: none; }
+        .timeline-step { flex: none; width: calc(50% - 10px); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container detail-container" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+    
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{% url 'order_list' %}" class="text-decoration-none" style="color:var(--gold)">{% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">#{{ order.order_number }}</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0" style="font-family:'Playfair Display',serif">
+                {% if LANGUAGE_CODE == 'en' %}Order{% else %}الطلب{% endif %} #{{ order.order_number }}
+            </h2>
+        </div>
+        
+        <div class="d-flex gap-2">
+            {% if order.can_cancel %}
+            <form action="{% url 'cancel_order' order.order_number %}" method="post" onsubmit="return confirm('{% if LANGUAGE_CODE == 'en' %}Are you sure you want to cancel this order?{% else %}هل أنت متأكد من إلغاء هذا الطلب؟{% endif %}')">
+                {% csrf_token %}
+                <button type="submit" class="btn-cancel">
+                    <i class="ti ti-x me-1"></i> {% if LANGUAGE_CODE == 'en' %}Cancel Order{% else %}إلغاء الطلب{% endif %}
+                </button>
+            </form>
+            {% endif %}
+            <button onclick="window.print()" class="btn btn-outline-dark rounded-pill px-4">
+                <i class="ti ti-printer me-1"></i> {% if LANGUAGE_CODE == 'en' %}Print{% else %}طباعة{% endif %}
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            
+            <!-- Status & Timeline -->
+            <div class="status-section" id="tracking">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold m-0">{% if LANGUAGE_CODE == 'en' %}Order Status{% else %}حالة الطلب{% endif %}</h5>
+                    <span class="badge" style="background: {{ order.status_badge_color }}20; color: {{ order.status_badge_color }}; padding: 8px 15px; border-radius: 20px; font-weight: 700;">
+                        {{ order.get_status_display }}
+                    </span>
+                </div>
+                
+                {% if order.status != 'cancelled' and order.status != 'refunded' %}
+                <div class="tracking-timeline">
+                    {% with s=order.status %}
+                    <div class="progress-bar-inner" style="width: {% if s == 'pending' %}0%{% elif s == 'processing' %}33%{% elif s == 'shipped' %}66%{% elif s == 'delivered' %}90%{% endif %}"></div>
+                    
+                    <div class="timeline-step {% if s == 'pending' %}active{% else %}completed{% endif %}">
+                        <div class="step-icon">
+                            {% if s == 'pending' %}<i class="ti ti-clock"></i>{% else %}<i class="ti ti-check"></i>{% endif %}
+                        </div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Pending{% else %}قيد الانتظار{% endif %}</div>
+                    </div>
+                    
+                    <div class="timeline-step {% if s == 'processing' %}active{% elif s == 'shipped' or s == 'delivered' %}completed{% endif %}">
+                        <div class="step-icon">
+                            {% if s == 'processing' %}<i class="ti ti-settings"></i>{% elif s == 'shipped' or s == 'delivered' %}<i class="ti ti-check"></i>{% else %}<i class="ti ti-settings"></i>{% endif %}
+                        </div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Processing{% else %}قيد المعالجة{% endif %}</div>
+                    </div>
+                    
+                    <div class="timeline-step {% if s == 'shipped' %}active{% elif s == 'delivered' %}completed{% endif %}">
+                        <div class="step-icon">
+                            {% if s == 'shipped' %}<i class="ti ti-truck"></i>{% elif s == 'delivered' %}<i class="ti ti-check"></i>{% else %}<i class="ti ti-truck"></i>{% endif %}
+                        </div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Shipped{% else %}تم الشحن{% endif %}</div>
+                    </div>
+                    
+                    <div class="timeline-step {% if s == 'delivered' %}active{% endif %}">
+                        <div class="step-icon">
+                            <i class="ti ti-package"></i>
+                        </div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Delivered{% else %}تم التسليم{% endif %}</div>
+                    </div>
+                    {% endwith %}
+                </div>
+                {% else %}
+                <div class="alert alert-{% if order.status == 'cancelled' %}danger{% else %}secondary{% endif %} mt-3 text-center border-0 rounded-4">
+                    <i class="ti ti-info-circle me-2"></i>
+                    {% if order.status == 'cancelled' %}
+                        {% if LANGUAGE_CODE == 'en' %}This order has been cancelled.{% else %}تم إلغاء هذا الطلب.{% endif %}
+                    {% else %}
+                        {% if LANGUAGE_CODE == 'en' %}This order has been refunded.{% else %}تم استرداد هذا الطلب.{% endif %}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Items -->
+            <div class="card-custom">
+                <div class="card-custom-header">
+                    <h5>{% if LANGUAGE_CODE == 'en' %}Order Items{% else %}محتويات الطلب{% endif %}</h5>
+                    <span class="text-muted small">{{ order.items.count }} {% if LANGUAGE_CODE == 'en' %}Items{% else %}منتجات{% endif %}</span>
+                </div>
+                <div class="card-custom-body">
+                    {% for item in order.items.all %}
+                    <div class="order-item-row">
+                        <div class="item-thumb">
+                            {% if item.product_image %}
+                            <img src="{{ item.product_image }}" alt="{{ item.product_name }}">
+                            {% else %}
+                            <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                <i class="ti ti-bottle" style="color:var(--gold);font-size:24px"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="item-meta">
+                            <span class="item-name">{{ item.product_name }}</span>
+                            <span class="item-sku">SKU: {{ item.product_sku }}</span>
+                            <span class="item-price-qty">{{ item.quantity }} × {{ item.unit_price }} ج.م</span>
+                        </div>
+                        <div class="item-total">
+                            {{ item.line_total }} ج.م
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Summary -->
+        <div class="col-lg-4">
+            <!-- Summary -->
+            <div class="card-custom">
+                <div class="card-custom-header">
+                    <h5>{% if LANGUAGE_CODE == 'en' %}Summary{% else %}ملخص المبلغ{% endif %}</h5>
+                </div>
+                <div class="card-custom-body">
+                    <div class="summary-row">
+                        <span class="text-muted">{% if LANGUAGE_CODE == 'en' %}Subtotal{% else %}المجموع الجزئي{% endif %}</span>
+                        <span>{{ order.subtotal }} ج.م</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="text-muted">{% if LANGUAGE_CODE == 'en' %}Shipping{% else %}الشحن{% endif %}</span>
+                        <span>{% if order.shipping_cost == 0 %}{% if LANGUAGE_CODE == 'en' %}Free{% else %}مجاني{% endif %}{% else %}{{ order.shipping_cost }} ج.م{% endif %}</span>
+                    </div>
+                    {% if order.discount_amount > 0 %}
+                    <div class="summary-row text-success">
+                        <span>{% if LANGUAGE_CODE == 'en' %}Discount{% else %}الخصم{% endif %} ({{ order.coupon_code }})</span>
+                        <span>-{{ order.discount_amount }} ج.م</span>
+                    </div>
+                    {% endif %}
+                    <div class="summary-row total">
+                        <span>{% if LANGUAGE_CODE == 'en' %}Grand Total{% else %}الإجمالي{% endif %}</span>
+                        <span style="color:var(--gold)">{{ order.total }} ج.م</span>
+                    </div>
+                    
+                    <div class="mt-4 p-3 rounded-4" style="background:var(--soft);border:1px solid var(--border)">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="ti ti-wallet text-muted"></i>
+                            <span class="small fw-bold">{% if LANGUAGE_CODE == 'en' %}Payment Method{% else %}طريقة الدفع{% endif %}</span>
+                        </div>
+                        <div class="fw-bold">{{ order.get_payment_method_display }}</div>
+                        <div class="mt-2">
+                            {% if order.is_paid %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                                <i class="ti ti-check-circle me-1"></i> {% if LANGUAGE_CODE == 'en' %}Paid{% else %}تم الدفع{% endif %}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill">
+                                <i class="ti ti-clock me-1"></i> {% if LANGUAGE_CODE == 'en' %}Unpaid / COD{% else %}لم يتم الدفع / دفع عند الاستلام{% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="card-custom">
+                <div class="card-custom-header">
+                    <h5>{% if LANGUAGE_CODE == 'en' %}Shipping Information{% else %}معلومات الشحن{% endif %}</h5>
+                </div>
+                <div class="card-custom-body">
+                    <div class="mb-4">
+                        <span class="info-label">{% if LANGUAGE_CODE == 'en' %}Recipient{% else %}المستلم{% endif %}</span>
+                        <div class="info-value">{{ order.shipping_full_name }}</div>
+                    </div>
+                    <div class="mb-4">
+                        <span class="info-label">{% if LANGUAGE_CODE == 'en' %}Phone{% else %}الهاتف{% endif %}</span>
+                        <div class="info-value" dir="ltr" style="text-align:inherit">{{ order.shipping_phone }}</div>
+                    </div>
+                    <div class="mb-0">
+                        <span class="info-label">{% if LANGUAGE_CODE == 'en' %}Address{% else %}العنوان{% endif %}</span>
+                        <div class="info-value">
+                            {{ order.shipping_governorate }} — {{ order.shipping_city }}<br>
+                            {{ order.shipping_street }}<br>
+                            {% if order.shipping_building %}{{ order.shipping_building }}{% endif %}
+                        </div>
+                    </div>
+                    {% if order.notes %}
+                    <div class="mt-4 pt-4 border-top">
+                        <span class="info-label">{% if LANGUAGE_CODE == 'en' %}Notes{% else %}ملاحظات{% endif %}</span>
+                        <div class="info-value small text-muted">{{ order.notes }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

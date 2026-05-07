@@ -37,3 +37,16 @@ def home_view(request):
 def admin_dashboard(request):
     stats = get_dashboard_stats()
     return render(request, "admin/dashboard.html", stats)
+
+
+def about_view(request):
+    return render(request, "pages/about.html")
+
+def faq_view(request):
+    return render(request, "pages/faq.html")
+
+def privacy_view(request):
+    return render(request, "pages/privacy.html")
+
+def terms_view(request):
+    return render(request, "pages/terms.html")
