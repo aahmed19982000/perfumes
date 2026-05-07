@@ -2,278 +2,265 @@
 {% load static i18n %}
 
 {% block title %}
-    {% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %} - Mava Perfumes
+{% if LANGUAGE_CODE == 'en' %}Track Your Order{% else %}تتبع طلبك{% endif %} - Mava Perfumes
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    .track-hero {
-        background: var(--ink);
+    .track-section {
         padding: 80px 0;
-        text-align: center;
-        color: var(--white);
-        margin-bottom: 50px;
-        position: relative;
-        overflow: hidden;
+        min-height: 70vh;
     }
-    .track-hero::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: radial-gradient(circle at center, rgba(201,169,110,0.15) 0%, transparent 70%);
-    }
-    .track-hero h1 {
-        font-family: 'Playfair Display', serif;
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 20px;
-    }
-    .track-form-wrap {
+    .search-box {
         max-width: 600px;
-        margin: 0 auto;
-        position: relative;
-        z-index: 10;
-    }
-    .track-input-group {
-        display: flex;
+        margin: 0 auto 50px;
         background: var(--white);
-        padding: 8px;
-        border-radius: 50px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        border: 1px solid var(--border);
     }
-    .track-input-group input {
+    .search-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+        text-align: center;
+        color: var(--ink);
+    }
+    .form-group-track {
+        display: flex;
+        gap: 10px;
+    }
+    .input-track {
         flex: 1;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 50px;
-        outline: none;
-        font-family: 'Cairo', sans-serif;
+        padding: 15px 20px;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
         font-size: 16px;
+        outline: none;
+        transition: border-color 0.3s;
     }
-    .track-input-group button {
-        background: var(--gold);
+    .input-track:focus {
+        border-color: var(--gold);
+    }
+    .btn-track {
+        padding: 15px 30px;
+        background: var(--ink);
         color: var(--white);
         border: none;
-        padding: 12px 35px;
-        border-radius: 50px;
+        border-radius: 12px;
         font-weight: 700;
-        transition: background 0.2s;
+        cursor: pointer;
+        transition: background 0.3s;
     }
-    .track-input-group button:hover {
+    .btn-track:hover {
         background: var(--gold-dark);
     }
 
     /* ── Tracking Result ── */
-    .tracking-result {
-        margin-bottom: 80px;
-    }
-    
-    .status-card {
+    .result-card {
+        max-width: 800px;
+        margin: 0 auto;
         background: var(--white);
+        border-radius: 24px;
         border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 40px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        overflow: hidden;
     }
-
-    /* ── Reuse Timeline Styles from detail page ── */
-    .tracking-timeline {
-        position: relative;
-        padding: 20px 0;
+    .result-header {
+        background: var(--soft);
+        padding: 30px;
+        border-bottom: 1px solid var(--border);
         display: flex;
         justify-content: space-between;
-        margin-top: 40px;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
     }
-    .tracking-timeline::before {
-        content: '';
+    .order-id {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: var(--ink);
+    }
+    .status-badge-big {
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 14px;
+        color: white;
+    }
+
+    /* ── Progress Bar ── */
+    .tracking-progress {
+        padding: 60px 40px;
+        position: relative;
+    }
+    .progress-line {
         position: absolute;
-        top: 35px;
-        left: 5%;
-        right: 5%;
-        height: 3px;
+        top: 85px;
+        left: 10%;
+        right: 10%;
+        height: 4px;
         background: #eee;
         z-index: 1;
     }
-    .timeline-step {
+    .progress-fill {
+        height: 100%;
+        background: var(--gold);
+        transition: width 1s ease-out;
+    }
+    .steps-container {
+        display: flex;
+        justify-content: space-between;
         position: relative;
         z-index: 2;
+    }
+    .step {
         text-align: center;
-        flex: 1;
+        width: 100px;
     }
     .step-icon {
-        width: 40px;
-        height: 40px;
-        background: var(--white);
-        border: 3px solid #eee;
+        width: 50px;
+        height: 50px;
+        background: #eee;
         border-radius: 50%;
-        margin: 0 auto 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        color: #ccc;
-        transition: all 0.3s ease;
+        margin: 0 auto 15px;
+        font-size: 20px;
+        color: #999;
+        border: 4px solid var(--white);
+        transition: all 0.3s;
+    }
+    .step.active .step-icon {
+        background: var(--gold);
+        color: var(--white);
+        transform: scale(1.1);
+    }
+    .step.completed .step-icon {
+        background: var(--ink);
+        color: var(--white);
     }
     .step-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: #aaa;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--mid);
     }
-    
-    .timeline-step.active .step-icon {
-        background: var(--gold);
-        border-color: var(--gold);
-        color: var(--white);
-        box-shadow: 0 0 0 5px rgba(201,169,110,0.2);
-    }
-    .timeline-step.active .step-label { color: var(--ink); }
-    
-    .timeline-step.completed .step-icon {
-        background: #27ae60;
-        border-color: #27ae60;
-        color: var(--white);
-    }
-    .timeline-step.completed .step-label { color: #27ae60; }
-
-    .progress-bar-inner {
-        position: absolute;
-        top: 35px;
-        left: 5%;
-        height: 3px;
-        background: var(--gold);
-        z-index: 1;
-        transition: width 0.5s ease;
+    .step.active .step-label {
+        color: var(--gold);
     }
 
-    .order-mini-info {
+    /* ── Details Table ── */
+    .result-details {
+        padding: 30px;
+        border-top: 1px solid var(--border);
+    }
+    .detail-row {
         display: flex;
-        justify-content: center;
-        gap: 40px;
-        margin-bottom: 40px;
-        padding-bottom: 30px;
+        justify-content: space-between;
+        padding: 12px 0;
         border-bottom: 1px dashed var(--border);
     }
-    .info-item { text-align: center; }
-    .info-item span { display: block; font-size: 12px; color: var(--mid); text-transform: uppercase; margin-bottom: 5px; }
-    .info-item strong { font-size: 1.1rem; color: var(--ink); }
-
-    @media (max-width: 768px) {
-        .tracking-timeline { flex-direction: column; gap: 30px; align-items: flex-start; padding-inline-start: 40px; }
-        .tracking-timeline::before { width: 3px; height: 80%; left: 19px; top: 10%; right: auto; }
-        html[dir="rtl"] .tracking-timeline::before { right: 19px; left: auto; }
-        .timeline-step { display: flex; align-items: center; gap: 20px; text-align: start; }
-        .step-icon { margin: 0; }
-        .progress-bar-inner { display: none; }
-        .order-mini-info { flex-direction: column; gap: 15px; }
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    .detail-label {
+        color: var(--mid);
+        font-weight: 600;
+    }
+    .detail-value {
+        color: var(--ink);
+        font-weight: 700;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="track-hero" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+<section class="track-section">
     <div class="container">
-        <h1>{% if LANGUAGE_CODE == 'en' %}Track Your Order{% else %}تتبع طلبك{% endif %}</h1>
-        <p class="mb-5 opacity-75">{% if LANGUAGE_CODE == 'en' %}Enter your order number to see the current status of your shipment.{% else %}أدخل رقم الطلب لمعرفة الحالة الحالية لشحنتك.{% endif %}</p>
-        
-        <div class="track-form-wrap">
-            <form method="post" action="{% url 'track_order' %}">
-                {% csrf_token %}
-                <div class="track-input-group">
-                    <input type="text" name="order_number" placeholder="ORD-XXXXXXXX" required value="{{ request.POST.order_number }}">
-                    <button type="submit">{% if LANGUAGE_CODE == 'en' %}Track Now{% else %}تتبع الآن{% endif %}</button>
-                </div>
+        <!-- Search Form -->
+        <div class="search-box">
+            <h1 class="search-title">
+                {% if LANGUAGE_CODE == 'en' %}Track Your Order{% else %}تتبع حالة طلبك{% endif %}
+            </h1>
+            <form method="get" action="{% url 'track_order' %}" class="form-group-track">
+                <input type="text" name="order_number" class="input-track" 
+                       placeholder="{% if LANGUAGE_CODE == 'en' %}Example: ORD-123456{% else %}مثال: ORD-123456{% endif %}"
+                       value="{{ order_number }}" required>
+                <button type="submit" class="btn-track">
+                    {% if LANGUAGE_CODE == 'en' %}Track{% else %}تتبع الآن{% endif %}
+                </button>
             </form>
         </div>
-    </div>
-</div>
 
-<div class="container tracking-result" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
-    {% if messages %}
-        <div class="row justify-content-center mb-4">
-            <div class="col-lg-8">
-                {% for message in messages %}
-                <div class="alert alert-danger rounded-4 text-center border-0 shadow-sm">
-                    <i class="ti ti-alert-circle me-2"></i> {{ message }}
+        {% if order %}
+        <!-- Tracking Result -->
+        <div class="result-card">
+            <div class="result-header">
+                <div class="order-id">
+                    {% if LANGUAGE_CODE == 'en' %}Order{% else %}الطلب{% endif %} #{{ order.order_number }}
                 </div>
-                {% endfor %}
+                <div class="status-badge-big" style="background: {{ order.status_badge_color }}">
+                    {{ order.get_status_display }}
+                </div>
             </div>
-        </div>
-    {% endif %}
 
-    {% if order %}
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <div class="status-card">
-                <div class="order-mini-info">
-                    <div class="info-item">
-                        <span>{% if LANGUAGE_CODE == 'en' %}Order Number{% else %}رقم الطلب{% endif %}</span>
-                        <strong>#{{ order.order_number }}</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>{% if LANGUAGE_CODE == 'en' %}Order Date{% else %}تاريخ الطلب{% endif %}</span>
-                        <strong>{{ order.created_at|date:"d M Y" }}</strong>
-                    </div>
-                    <div class="info-item">
-                        <span>{% if LANGUAGE_CODE == 'en' %}Status{% else %}الحالة الحالية{% endif %}</span>
-                        <strong style="color:{{ order.status_badge_color }}">{{ order.get_status_display }}</strong>
-                    </div>
-                </div>
-
-                {% if order.status != 'cancelled' and order.status != 'refunded' %}
-                <div class="tracking-timeline">
+            <!-- Progress Bar -->
+            {% if order.status != 'cancelled' and order.status != 'refunded' %}
+            <div class="tracking-progress">
+                <div class="progress-line">
                     {% with s=order.status %}
-                    <div class="progress-bar-inner" style="width: {% if s == 'pending' %}0%{% elif s == 'processing' %}33%{% elif s == 'shipped' %}66%{% elif s == 'delivered' %}90%{% endif %}"></div>
-                    
-                    <div class="timeline-step {% if s == 'pending' %}active{% else %}completed{% endif %}">
-                        <div class="step-icon">
-                            {% if s == 'pending' %}<i class="ti ti-clock"></i>{% else %}<i class="ti ti-check"></i>{% endif %}
-                        </div>
-                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Pending{% else %}قيد الانتظار{% endif %}</div>
-                    </div>
-                    
-                    <div class="timeline-step {% if s == 'processing' %}active{% elif s == 'shipped' or s == 'delivered' %}completed{% endif %}">
-                        <div class="step-icon">
-                            {% if s == 'processing' %}<i class="ti ti-settings"></i>{% elif s == 'shipped' or s == 'delivered' %}<i class="ti ti-check"></i>{% else %}<i class="ti ti-settings"></i>{% endif %}
-                        </div>
-                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Processing{% else %}قيد المعالجة{% endif %}</div>
-                    </div>
-                    
-                    <div class="timeline-step {% if s == 'shipped' %}active{% elif s == 'delivered' %}completed{% endif %}">
-                        <div class="step-icon">
-                            {% if s == 'shipped' %}<i class="ti ti-truck"></i>{% elif s == 'delivered' %}<i class="ti ti-check"></i>{% else %}<i class="ti ti-truck"></i>{% endif %}
-                        </div>
-                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Shipped{% else %}تم الشحن{% endif %}</div>
-                    </div>
-                    
-                    <div class="timeline-step {% if s == 'delivered' %}active{% endif %}">
-                        <div class="step-icon">
-                            <i class="ti ti-package"></i>
-                        </div>
-                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Delivered{% else %}تم التسليم{% endif %}</div>
-                    </div>
+                    <div class="progress-fill" style="width: {% if s == 'pending' %}0%{% elif s == 'processing' %}33.3%{% elif s == 'shipped' %}66.6%{% elif s == 'delivered' %}100%{% endif %}"></div>
                     {% endwith %}
                 </div>
-                {% else %}
-                <div class="alert alert-{% if order.status == 'cancelled' %}danger{% else %}secondary{% endif %} mt-3 text-center border-0 rounded-4">
-                    <i class="ti ti-info-circle me-2"></i>
-                    {% if order.status == 'cancelled' %}
-                        {% if LANGUAGE_CODE == 'en' %}This order has been cancelled.{% else %}تم إلغاء هذا الطلب.{% endif %}
-                    {% else %}
-                        {% if LANGUAGE_CODE == 'en' %}This order has been refunded.{% else %}تم استرداد هذا الطلب.{% endif %}
-                    {% endif %}
+                <div class="steps-container">
+                    <div class="step {% if order.status == 'pending' %}active{% elif order.status != 'pending' %}completed{% endif %}">
+                        <div class="step-icon"><i class="ti ti-clock"></i></div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Pending{% else %}قيد الانتظار{% endif %}</div>
+                    </div>
+                    <div class="step {% if order.status == 'processing' %}active{% elif order.status == 'shipped' or order.status == 'delivered' %}completed{% endif %}">
+                        <div class="step-icon"><i class="ti ti-package"></i></div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Processing{% else %}قيد المعالجة{% endif %}</div>
+                    </div>
+                    <div class="step {% if order.status == 'shipped' %}active{% elif order.status == 'delivered' %}completed{% endif %}">
+                        <div class="step-icon"><i class="ti ti-truck"></i></div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Shipped{% else %}تم الشحن{% endif %}</div>
+                    </div>
+                    <div class="step {% if order.status == 'delivered' %}active{% endif %}">
+                        <div class="step-icon"><i class="ti ti-check"></i></div>
+                        <div class="step-label">{% if LANGUAGE_CODE == 'en' %}Delivered{% else %}تم التسليم{% endif %}</div>
+                    </div>
                 </div>
+            </div>
+            {% else %}
+            <div class="alert alert-danger m-4 text-center">
+                <i class="ti ti-alert-triangle"></i>
+                {% if order.status == 'cancelled' %}
+                    {% if LANGUAGE_CODE == 'en' %}This order has been cancelled.{% else %}هذا الطلب ملغي.{% endif %}
+                {% else %}
+                    {% if LANGUAGE_CODE == 'en' %}This order has been refunded.{% else %}تم استرداد هذا الطلب.{% endif %}
                 {% endif %}
+            </div>
+            {% endif %}
 
-                <div class="text-center mt-5">
-                    <a href="{% url 'order_detail' order.order_number %}" class="btn btn-dark rounded-pill px-5 py-2 fw-bold">
-                        {% if LANGUAGE_CODE == 'en' %}View Full Order Details{% else %}عرض تفاصيل الطلب الكاملة{% endif %}
-                    </a>
+            <!-- Quick Details -->
+            <div class="result-details">
+                <div class="detail-row">
+                    <span class="detail-label">{% if LANGUAGE_CODE == 'en' %}Order Date{% else %}تاريخ الطلب{% endif %}</span>
+                    <span class="detail-value">{{ order.created_at|date:"Y-m-d H:i" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">{% if LANGUAGE_CODE == 'en' %}Payment Method{% else %}طريقة الدفع{% endif %}</span>
+                    <span class="detail-value">{{ order.get_payment_method_display }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">{% if LANGUAGE_CODE == 'en' %}Estimated Delivery{% else %}موعد التوصيل المتوقع{% endif %}</span>
+                    <span class="detail-value">{% if order.status == 'delivered' %}{{ order.updated_at|date:"Y-m-d" }}{% else %}2 - 4 {% if LANGUAGE_CODE == 'en' %}Days{% else %}أيام{% endif %}{% endif %}</span>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
-    {% endif %}
-</div>
+</section>
 {% endblock %}

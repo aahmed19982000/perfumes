@@ -1,0 +1,49 @@
+{% load static %}
+
+<div class="product-card" data-aos="fade-up">
+    <div class="product-card-img">
+        {% if product.discount_percent > 0 %}
+        <div class="product-badge">
+            -{{ product.discount_percent }}%
+        </div>
+        {% endif %}
+        
+        {% if product.thumbnail %}
+        <img src="{{ product.thumbnail.url }}" alt="{{ product.name_ar }}" loading="lazy">
+        {% else %}
+        <img src="{% static 'images/placeholder.webp' %}" alt="Placeholder" loading="lazy">
+        {% endif %}
+        
+        <div class="product-actions">
+            <button type="button" class="action-btn" onclick="addToWishlist({{ product.id }})" title="{% if LANGUAGE_CODE == 'en' %}Add to Wishlist{% else %}أضف للمفضلة{% endif %}">
+                <i class="ti ti-heart"></i>
+            </button>
+            <a href="{% url 'product_detail' product.slug %}" class="action-btn" title="{% if LANGUAGE_CODE == 'en' %}View Details{% else %}عرض التفاصيل{% endif %}">
+                <i class="ti ti-eye"></i>
+            </a>
+            <button type="button" class="action-btn cart-btn" onclick="addToCart({{ product.id }}, 1)" title="{% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}">
+                <i class="ti ti-shopping-cart"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="product-card-body">
+        <div class="product-category">
+            {% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}
+        </div>
+        <h3 class="product-title">
+            <a href="{% url 'product_detail' product.slug %}">
+                {% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}
+            </a>
+        </h3>
+        
+        <div class="product-price">
+            {% if product.discount_price %}
+            <span class="price-current">ج.م {{ product.discount_price }}</span>
+            <span class="price-old">ج.م {{ product.price }}</span>
+            {% else %}
+            <span class="price-current">ج.م {{ product.price }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>

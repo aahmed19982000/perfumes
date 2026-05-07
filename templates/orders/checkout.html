@@ -220,9 +220,9 @@
                     {% if addresses %}
                     <div class="address-grid">
                         {% for addr in addresses %}
-                        <label class="address-card {% if addr.is_default %}selected{% endif %}"
+                        <label class="address-card {% if addr.is_default or forloop.first %}selected{% endif %}"
                             id="addr-label-{{ addr.id }}">
-                            <input type="radio" name="address_id" value="{{ addr.id }}" {% if addr.is_default %}checked{% endif %}
+                            <input type="radio" name="address_id" value="{{ addr.id }}" {% if addr.is_default or forloop.first %}checked{% endif %} required
                                 onchange="updateShipping({{ addr.city.shipping_cost }}, {{ addr.id }})">
                             <div class="address-name">{{ addr.full_name }}</div>
                             <div class="address-details">
@@ -350,9 +350,16 @@
                             {{ def.city.shipping_cost|default:"0" }}{% endwith %}{% else %}{% if LANGUAGE_CODE == 'en' %}Please select an address{% else %}يرجى اختيار عنوان{% endif %}{% endif %}</span>
                     </div>
 
+                    {% if cart.discount_amount > 0 %}
+                    <div class="total-row text-success">
+                        <span>{% if LANGUAGE_CODE == 'en' %}Discount{% else %}الخصم{% endif %}</span>
+                        <span id="discountDisplay">- ج.م {{ cart.discount_amount }}</span>
+                    </div>
+                    {% endif %}
+
                     <div class="total-row grand-total">
                         <span>{% if LANGUAGE_CODE == 'en' %}Total{% else %}الإجمالي{% endif %}</span>
-                        <span id="grandTotalDisplay">ج.م {{ cart.subtotal }}</span>
+                        <span id="grandTotalDisplay">ج.م {{ cart.total }}</span>
                     </div>
 
                     <button type="submit" class="btn-place-order">
@@ -368,8 +375,9 @@
 {% block extra_js %}
 {% load l10n %}
 <script>
-    // Safe parsing of subtotal regardless of locale formatting
+    // Safe parsing of subtotal and discount regardless of locale formatting
     const subtotal = parseFloat("{{ cart.subtotal|unlocalize }}") || 0;
+    const discount = parseFloat("{{ cart.discount_amount|unlocalize }}") || 0;
 
     async function loadCities(govId) {
         console.log("Loading cities for governorate ID:", govId);
@@ -432,7 +440,7 @@
         const totalSpan = document.getElementById('grandTotalDisplay');
 
         shippingSpan.textContent = `ج.م ${cost}`;
-        totalSpan.textContent = `ج.م ${subtotal + cost}`;
+        totalSpan.textContent = `ج.م ${subtotal + cost - discount}`;
     }
 
     // Initial logic to set correct total on page load
@@ -444,21 +452,44 @@
             // For now, let's just use the value from the UI
             const costStr = document.getElementById('shippingDisplay').textContent.replace('ج.م ', '').trim();
             const cost = parseFloat(costStr) || 0;
-            document.getElementById('grandTotalDisplay').textContent = `ج.م ${subtotal + cost}`;
+            document.getElementById('grandTotalDisplay').textContent = `ج.م ${subtotal + cost - discount}`;
         }
     });
 
-    // Initial calculation if an address is selected
-    window.onload = () => {
-        const selected = document.querySelector('input[name="address_id"]:checked');
-        if (selected) {
-            // We need to pass the cost initially. 
-            // In a real app, we'd use data-attributes on the radio button.
-            // Let's assume the first calculation is handled by Django template.
-            const initialCostStr = document.getElementById('shippingDisplay').textContent.replace('ج.م ', '');
-            const initialCost = parseFloat(initialCostStr) || 0;
-            document.getElementById('grandTotalDisplay').textContent = `ج.م ${subtotal + initialCost}`;
         }
     }
+
+    // Handle Form Submission Feedback
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        const btn = this.querySelector('.btn-place-order');
+        const lang = "{{ LANGUAGE_CODE }}";
+        
+        // Basic check if any address_id is checked OR new address fields are filled
+        const addressChecked = document.querySelector('input[name="address_id"]:checked');
+        const newName = document.querySelector('input[name="new_full_name"]').value;
+        
+        if (!addressChecked && !newName) {
+            e.preventDefault();
+            const msg = lang === 'en' ? "Please select or add a shipping address" : "يرجى اختيار أو إضافة عنوان شحن";
+            showToast(msg, 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.innerHTML = lang === 'en' ? '<i class="ti ti-loader-2 spin"></i> Processing...' : '<i class="ti ti-loader-2 spin"></i> جاري تنفيذ الطلب...';
+    });
 </script>
+
+<style>
+    .spin {
+        animation: spin 1s linear infinite;
+        display: inline-block;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
 {% endblock %}

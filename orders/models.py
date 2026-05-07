@@ -1,8 +1,30 @@
-# apps/orders/models.py
-
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import uuid
+
+
+class Coupon(models.Model):
+    code       = models.CharField(max_length=50, unique=True, verbose_name="كود الكوبون")
+    valid_from = models.DateTimeField(verbose_name="صالح من")
+    valid_to   = models.DateTimeField(verbose_name="صالح إلى")
+    discount   = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        verbose_name="نسبة الخصم (%)"
+    )
+    active     = models.BooleanField(default=True, verbose_name="نشط")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+
+        verbose_name        = "كوبون"
+        verbose_name_plural = "الكوبونات"
+
+    def __str__(self):
+        return self.code
 
 
 class Cart(models.Model):
@@ -11,6 +33,13 @@ class Cart(models.Model):
         on_delete=models.CASCADE,
         related_name="cart",
         verbose_name="العميل",
+    )
+    coupon     = models.ForeignKey(
+        Coupon,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="carts",
+        verbose_name="الكوبون",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -30,8 +59,19 @@ class Cart(models.Model):
 
     @property
     def subtotal(self):
-        """المجموع قبل الشحن"""
+        """المجموع قبل الشحن والخصم"""
         return sum(item.line_total for item in self.items.all())
+
+    @property
+    def discount_amount(self):
+        if self.coupon:
+            return (self.subtotal * self.coupon.discount) / 100
+        return 0
+
+    @property
+    def total(self):
+        """المجموع بعد الخصم"""
+        return self.subtotal - self.discount_amount
 
     @property
     def is_empty(self):
@@ -75,6 +115,10 @@ class CartItem(models.Model):
 
 
 class Order(models.Model):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_status = self.status
 
     # ── حالات الطلب ──────────────────────────────────────────────
     class Status(models.TextChoices):
@@ -220,3 +264,11 @@ class OrderItem(models.Model):
     @property
     def line_total(self):
         return (self.unit_price or 0) * (self.quantity or 0)
+
+
+@receiver(post_save, sender=Order)
+def order_status_changed(sender, instance, created, **kwargs):
+    if not created and instance.status != getattr(instance, '_original_status', None):
+        # Update original status to avoid double triggers if saved again in same request
+        # Update original status to avoid double triggers if saved again in same request
+        instance._original_status = instance.status

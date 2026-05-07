@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext as _
-from .models import Cart, CartItem, Order
+from django.utils import timezone
+from .models import Cart, CartItem, Order, Coupon
 from products.models import Product
 from django.contrib import messages
 from .services import create_order_from_cart
@@ -15,7 +16,7 @@ from .services import create_order_from_cart
 
 def get_cart_data(request):
     """
-    يوحد التعامل مع السلة سواء للمسجلين أو الضيوف
+    يوحد التعامل مع السلة سواء للمسجلين أو الضيوف مع دعم الكوبونات
     """
     if request.user.is_authenticated:
         cart, created = Cart.objects.get_or_create(customer=request.user)
@@ -29,10 +30,13 @@ def get_cart_data(request):
                 'line_total': item.line_total,
             })
         return {
-            'items': items,
-            'total_items': cart.total_items,
-            'subtotal': cart.subtotal,
-            'is_empty': cart.is_empty,
+            'items':           items,
+            'total_items':     cart.total_items,
+            'subtotal':        cart.subtotal,
+            'discount_amount': cart.discount_amount,
+            'total':           cart.total,
+            'coupon_code':     cart.coupon.code if cart.coupon else None,
+            'is_empty':        cart.is_empty,
         }
     else:
         # للضيوف: تخزين في السيشن
@@ -65,11 +69,24 @@ def get_cart_data(request):
         if to_delete:
             request.session.modified = True
             
+        # معالجة الكوبون للضيوف
+        coupon_id = request.session.get('coupon_id')
+        discount_amount = 0
+        coupon_code = None
+        if coupon_id:
+            coupon = Coupon.objects.filter(id=coupon_id, active=True).first()
+            if coupon:
+                discount_amount = (subtotal * coupon.discount) / 100
+                coupon_code = coupon.code
+
         return {
-            'items': items,
-            'total_items': total_items,
-            'subtotal': subtotal,
-            'is_empty': not items,
+            'items':           items,
+            'total_items':     total_items,
+            'subtotal':        subtotal,
+            'discount_amount': discount_amount,
+            'total':           subtotal - discount_amount,
+            'coupon_code':     coupon_code,
+            'is_empty':        not items,
         }
 
 
@@ -314,3 +331,62 @@ def track_order_view(request):
             messages.error(request, "رقم الطلب غير صحيح")
 
     return render(request, "orders/track_order.html", {"order": order})
+
+
+@require_POST
+def apply_coupon(request):
+    code = request.POST.get("code", "").strip()
+    now  = timezone.now()
+    
+    try:
+        coupon = Coupon.objects.get(
+            code__iexact=code,
+            valid_from__lte=now,
+            valid_to__gte=now,
+            active=True
+        )
+        if request.user.is_authenticated:
+            cart, created = Cart.objects.get_or_create(customer=request.user)
+            cart.coupon = coupon
+            cart.save()
+        else:
+            request.session['coupon_id'] = coupon.id
+            request.session.modified = True
+            
+        messages.success(request, _("تم تطبيق الكوبون بنجاح") if request.LANGUAGE_CODE == 'ar' else "Coupon applied successfully")
+    except Coupon.DoesNotExist:
+        messages.error(request, _("كود الكوبون غير صحيح أو منتهي") if request.LANGUAGE_CODE == 'ar' else "Invalid or expired coupon code")
+    
+    return redirect("cart")
+
+
+def track_order_view(request):
+    order = None
+    order_number = request.GET.get("order_number", "").strip()
+    
+    if order_number:
+        # البحث عن الطلب برقم الطلب
+        from .models import Order
+        order = Order.objects.filter(order_number__iexact=order_number).first()
+        if not order:
+            messages.error(request, "لم يتم العثور على طلب بهذا الرقم" if request.LANGUAGE_CODE == 'ar' else "No order found with this number")
+            
+    return render(request, "orders/track_order.html", {
+        "order": order,
+        "order_number": order_number
+    })
+
+
+@require_POST
+def remove_coupon(request):
+    if request.user.is_authenticated:
+        cart, created = Cart.objects.get_or_create(customer=request.user)
+        cart.coupon = None
+        cart.save()
+    else:
+        if 'coupon_id' in request.session:
+            del request.session['coupon_id']
+            request.session.modified = True
+            
+    messages.success(request, _("تم إزالة الكوبون") if request.LANGUAGE_CODE == 'ar' else "Coupon removed")
+    return redirect("cart")

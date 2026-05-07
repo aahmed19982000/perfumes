@@ -263,10 +263,44 @@
                     <span id="cartSubtotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal }}</span>
                 </div>
 
+                {% if cart.discount_amount > 0 %}
+                <div class="summary-row text-success">
+                    <span>{% if LANGUAGE_CODE == 'en' %}Discount{% else %}الخصم{% endif %}</span>
+                    <span id="cartDiscount">- {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.discount_amount }}</span>
+                </div>
+                {% endif %}
 
                 <div class="summary-row total">
                     <span>{% if LANGUAGE_CODE == 'en' %}Total{% else %}الإجمالي{% endif %}</span>
-                    <span id="cartTotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal }}</span>
+                    <span id="cartTotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.total }}</span>
+                </div>
+
+                <!-- Coupon Section -->
+                <div class="mt-4 mb-3 pt-3 border-top">
+                    <div class="small fw-bold mb-2">{% if LANGUAGE_CODE == 'en' %}Have a Coupon?{% else %}هل لديك كوبون خصم؟{% endif %}</div>
+                    <form action="{% url 'apply_coupon' %}" method="POST" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <input type="text" name="code" class="form-control form-control-sm rounded-pill px-3" 
+                               placeholder="{% if LANGUAGE_CODE == 'en' %}Enter code{% else %}أدخل الكود{% endif %}" required>
+                        <button type="submit" class="btn btn-dark btn-sm rounded-pill px-3">
+                            {% if LANGUAGE_CODE == 'en' %}Apply{% else %}تطبيق{% endif %}
+                        </button>
+                    </form>
+                    
+                    {% if cart.coupon_code %}
+                    <div class="mt-3 d-flex justify-content-between align-items-center bg-white p-2 rounded-3 border border-dashed border-success">
+                        <div class="d-flex align-items-center text-success small">
+                            <i class="ti ti-tag-filled me-2"></i>
+                            <span class="fw-bold">{{ cart.coupon_code }}</span>
+                        </div>
+                        <form action="{% url 'remove_coupon' %}" method="POST" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link btn-sm text-danger p-0 text-decoration-none">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
 
                 <a href="{% url 'checkout' %}" class="btn btn-checkout">
@@ -317,10 +351,8 @@
             const data = await res.json();
 
             if (data.status === 'updated') {
-                input.value = newQty;
-                document.getElementById('cartSubtotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
-                document.getElementById('cartTotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
-                updateGlobalCartCount(data.cart_count);
+                // Refresh page to update totals with coupons correctly
+                location.reload();
             } else if (data.status === 'error') {
                 alert(data.message);
             }
@@ -343,14 +375,7 @@
             const data = await res.json();
 
             if (data.status === 'removed') {
-                document.getElementById(`item-${itemId}`).remove();
-                document.getElementById('cartSubtotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
-                document.getElementById('cartTotal').textContent = `{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} ${data.cart_total}`;
-                updateGlobalCartCount(data.cart_count);
-
-                if (data.cart_count === 0) {
-                    location.reload();
-                }
+                location.reload();
             }
         } catch (e) {
             console.error('Remove item error', e);

@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem , Coupon
 
 
 class CartItemInline(admin.TabularInline):
@@ -81,3 +81,24 @@ class OrderAdmin(admin.ModelAdmin):
     def total_display(self, obj):
         return f"L.E {obj.total}"
     total_display.short_description = "الإجمالي"
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = ["code", "discount", "active", "valid_from", "valid_to", "created_at"]
+    list_filter = ["active", "valid_from", "valid_to"]
+    search_fields = ["code"]
+    readonly_fields = ["created_at", "updated_at"]
+    list_editable = ["active"]
+    fieldsets = (
+        ("بيانات الكوبون", {
+            "fields": ("code", "discount", "active")
+        }),
+        ("فترة الصلاحية", {
+            "fields": ("valid_from", "valid_to")
+        }),
+        ("التواريخ (تلقائي)", {
+            "fields": ("created_at", "updated_at"),
+            "classes": ("collapse",)
+        }),
+    )

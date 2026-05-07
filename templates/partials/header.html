@@ -140,6 +140,7 @@
 
         <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
         <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="{% url 'track_order' %}" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
         <a href="#" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
     </div>
 </div>
@@ -179,6 +180,7 @@
         <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}More{% else %}المزيد{% endif %}</div>
         <a href="#" class="mob-nav-item"><i class="ti ti-star"></i> {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
         <a href="#" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="{% url 'track_order' %}" class="mob-nav-item"><i class="ti ti-truck-delivery"></i> {% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
         <a href="#" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
 
         <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Language{% else %}اللغة{% endif %}</div>

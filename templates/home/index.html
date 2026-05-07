@@ -1,1 +1,356 @@
-{% extends "base.html" %}{% block content %}<h1>Home</h1>{% endblock %}
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}MAVA - {% if LANGUAGE_CODE == 'en' %}The Art of Scent{% else %}فن العطور{% endif %}{% endblock %}
+
+{% block extra_css %}
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<style>
+    /* ── Hero Slider ── */
+    .hero-swiper {
+        width: 100%;
+        height: 85vh;
+        background: #0a0a0a;
+    }
+    .hero-slide {
+        position: relative;
+        overflow: hidden;
+    }
+    .hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.7;
+    }
+    .hero-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+        width: 80%;
+        z-index: 10;
+    }
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2rem, 5vw, 4.5rem);
+        font-weight: 700;
+        margin-bottom: 20px;
+        opacity: 0;
+        transform: translateY(30px);
+        transition: 0.8s ease-out;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 40px;
+        color: var(--gold);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: 0.8s ease-out 0.2s;
+    }
+    .swiper-slide-active .hero-title,
+    .swiper-slide-active .hero-subtitle {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .btn-hero {
+        padding: 15px 40px;
+        background: var(--gold);
+        color: var(--ink);
+        border: none;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-hero:hover {
+        background: var(--white);
+        transform: translateY(-5px);
+    }
+
+    /* ── Sections ── */
+    .section-padding { padding: 80px 0; }
+    .section-title-wrap {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    .section-sub {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        color: var(--gold);
+        margin-bottom: 10px;
+        display: block;
+    }
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--ink);
+    }
+
+    /* ── Categories ── */
+    .cat-card {
+        text-align: center;
+        text-decoration: none;
+        display: block;
+        transition: 0.3s;
+    }
+    .cat-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto 20px;
+        border: 1px solid var(--border);
+        transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .cat-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .cat-card:hover .cat-circle {
+        transform: scale(1.05);
+        border-color: var(--gold);
+        box-shadow: 0 15px 30px rgba(201, 169, 110, 0.2);
+    }
+    .cat-name {
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 15px;
+    }
+
+    /* ── Banners Grid ── */
+    .banner-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    @media (max-width: 768px) { .banner-grid { grid-template-columns: 1fr; } }
+    .promo-banner {
+        position: relative;
+        height: 350px;
+        border-radius: 24px;
+        overflow: hidden;
+    }
+    .promo-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: 0.8s;
+    }
+    .promo-banner:hover img { transform: scale(1.1); }
+    .promo-content {
+        position: absolute;
+        bottom: 40px;
+        left: 40px;
+        right: 40px;
+        color: white;
+        z-index: 2;
+    }
+    .promo-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+        z-index: 1;
+    }
+
+    /* ── Brands Slider ── */
+    .brands-swiper {
+        padding: 20px 0;
+    }
+    .brand-logo {
+        height: 60px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: grayscale(1);
+        opacity: 0.5;
+        transition: 0.3s;
+    }
+    .brand-logo:hover {
+        filter: grayscale(0);
+        opacity: 1;
+    }
+    .brand-logo img {
+        max-height: 100%;
+        max-width: 120px;
+        object-fit: contain;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Slider -->
+<div class="swiper hero-swiper">
+    <div class="swiper-wrapper">
+        {% for banner in hero_banners %}
+        <div class="swiper-slide hero-slide">
+            <img src="{{ banner.image.url }}" class="hero-img" alt="">
+            <div class="hero-content">
+                <span class="hero-subtitle">{% if LANGUAGE_CODE == 'en' %}Exclusive Collection{% else %}مجموعة حصرية{% endif %}</span>
+                <h1 class="hero-title">{% if LANGUAGE_CODE == 'en' %}{{ banner.title_en }}{% else %}{{ banner.title_ar }}{% endif %}</h1>
+                {% if banner.link %}
+                <a href="{{ banner.link }}" class="btn-hero">{% if LANGUAGE_CODE == 'en' %}Explore Now{% else %}اكتشف الآن{% endif %}</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="swiper-slide hero-slide">
+            <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?q=80&w=1920" class="hero-img" alt="">
+            <div class="hero-content">
+                <span class="hero-subtitle">Mava Perfumes</span>
+                <h1 class="hero-title">The Art of Luxury Scents</h1>
+                <a href="{% url 'products' %}" class="btn-hero">Shop Collection</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="swiper-pagination"></div>
+</div>
+
+<!-- Categories -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title-wrap">
+            <span class="section-sub">{% if LANGUAGE_CODE == 'en' %}Explore{% else %}استكشف{% endif %}</span>
+            <h2 class="section-title">{% if LANGUAGE_CODE == 'en' %}Top Categories{% else %}أبرز الفئات{% endif %}</h2>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for cat in categories %}
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{% url 'products' %}?category_id={{ cat.id }}" class="cat-card">
+                    <div class="cat-circle">
+                        {% if cat.image %}
+                        <img src="{{ cat.image.url }}" alt="">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                            <i class="ti ti-bottle fs-1 text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="cat-name">{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}</div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="section-padding" style="background: var(--soft);">
+    <div class="container">
+        <div class="section-title-wrap d-flex justify-content-between align-items-end">
+            <div class="text-start">
+                <span class="section-sub">{% if LANGUAGE_CODE == 'en' %}Best Sellers{% else %}الأكثر مبيعاً{% endif %}</span>
+                <h2 class="section-title">{% if LANGUAGE_CODE == 'en' %}Featured Scents{% else %}عطور مميزة{% endif %}</h2>
+            </div>
+            <a href="{% url 'products' %}" class="btn-hero" style="padding: 10px 25px; font-size: 12px;">
+                {% if LANGUAGE_CODE == 'en' %}View All{% else %}عرض الكل{% endif %}
+            </a>
+        </div>
+        <div class="row g-4">
+            {% for product in featured_products %}
+            <div class="col-6 col-lg-3">
+                {% include "products/partials/product_card.html" with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Secondary Banners -->
+{% if secondary_banners %}
+<section class="section-padding">
+    <div class="container">
+        <div class="banner-grid">
+            {% for banner in secondary_banners|slice:":2" %}
+            <a href="{{ banner.link|default:'#' }}" class="promo-banner">
+                <div class="promo-overlay"></div>
+                <img src="{{ banner.image.url }}" alt="">
+                <div class="promo-content">
+                    <h3 class="h2 fw-bold mb-3">{% if LANGUAGE_CODE == 'en' %}{{ banner.title_en }}{% else %}{{ banner.title_ar }}{% endif %}</h3>
+                    <span class="text-uppercase letter-spacing-1">{% if LANGUAGE_CODE == 'en' %}Shop Now{% else %}تسوق الآن{% endif %} <i class="ti ti-arrow-right"></i></span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Latest Products -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title-wrap">
+            <span class="section-sub">{% if LANGUAGE_CODE == 'en' %}New Arrivals{% else %}وصل حديثاً{% endif %}</span>
+            <h2 class="section-title">{% if LANGUAGE_CODE == 'en' %}Latest Additions{% else %}أحدث العطور{% endif %}</h2>
+        </div>
+        <div class="row g-4">
+            {% for product in latest_products %}
+            <div class="col-6 col-lg-3">
+                {% include "products/partials/product_card.html" with product=product %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Brands Slider -->
+<section class="section-padding" style="border-top: 1px solid var(--border);">
+    <div class="container">
+        <div class="swiper brands-swiper">
+            <div class="swiper-wrapper">
+                {% for brand in brands %}
+                <div class="swiper-slide">
+                    <a href="{% url 'products' %}?brand_id={{ brand.id }}" class="brand-logo" title="{{ brand.name }}">
+                        {% if brand.logo %}
+                        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}">
+                        {% else %}
+                        <span class="fw-bold">{{ brand.name }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    // Hero Slider
+    const heroSwiper = new Swiper('.hero-swiper', {
+        loop: true,
+        autoplay: { delay: 5000 },
+        pagination: { el: '.swiper-pagination', clickable: true },
+        effect: 'fade',
+        fadeEffect: { crossFade: true }
+    });
+
+    // Brands Slider
+    const brandsSwiper = new Swiper('.brands-swiper', {
+        slidesPerView: 2,
+        spaceBetween: 30,
+        autoplay: { delay: 3000 },
+        breakpoints: {
+            640: { slidesPerView: 3 },
+            768: { slidesPerView: 4 },
+            1024: { slidesPerView: 6 },
+        }
+    });
+</script>
+{% endblock %}

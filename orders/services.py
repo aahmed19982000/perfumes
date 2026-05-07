@@ -3,13 +3,15 @@
 from django.db import transaction
 from .models import Order, OrderItem
 from accounts.models import Address
+from .tasks import send_order_confirmation_email
 
 
 @transaction.atomic
-def create_order_from_cart(customer, address_id, payment_method, notes="", coupon=None):
+def create_order_from_cart(customer, address_id, payment_method, notes=""):
     """
     تحوّل محتوى السلة لطلب حقيقي في خطوة واحدة atomic
     """
+
     cart = customer.cart
 
     if cart.is_empty:
@@ -18,11 +20,8 @@ def create_order_from_cart(customer, address_id, payment_method, notes="", coupo
     address = Address.objects.get(id=address_id, customer=customer)
 
     # ── حساب الخصم ───────────────────────────────────────────────
-    discount_amount = 0
-    coupon_code     = ""
-    if coupon:
-        discount_amount = coupon.calc_discount(cart.subtotal)
-        coupon_code     = coupon.code
+    discount_amount = cart.discount_amount
+    coupon_code     = cart.coupon.code if cart.coupon else ""
 
     shipping_cost = address.city.shipping_cost
     subtotal      = cart.subtotal
@@ -63,5 +62,8 @@ def create_order_from_cart(customer, address_id, payment_method, notes="", coupo
 
     # ── تفريغ السلة بعد الطلب ────────────────────────────────────
     cart.items.all().delete()
+    cart.coupon = None
+    cart.save()
 
     return order
+

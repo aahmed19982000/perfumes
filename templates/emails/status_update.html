@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .status-box { background: #f0f7ff; border-right: 5px solid #007bff; padding: 15px; margin: 20px 0; }
+        .footer { text-align: center; font-size: 12px; color: #888; margin-top: 30px; }
+        .gold { color: #d4af37; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="gold">Mava Perfumes</h1>
+            <h2>تحديث حالة الطلب</h2>
+        </div>
+        
+        <p>مرحباً {{ order.customer.get_full_name }}،</p>
+        <p>هناك تحديث بخصوص طلبك رقم <span class="gold">#{{ order.order_number }}</span>:</p>
+        
+        <div class="status-box">
+            حالة الطلب الآن هي: <strong>{{ status_display }}</strong>
+        </div>
+        
+        <p>يمكنك متابعة حالة طلبك دائماً من خلال حسابك في موقعنا.</p>
+        
+        <div class="footer">
+            &copy; 2026 Mava Perfumes. جميع الحقوق محفوظة.
+        </div>
+    </div>
+</body>
+</html>

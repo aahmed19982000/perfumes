@@ -152,6 +152,27 @@
         .social-btn { width: 36px; height: 36px; border-radius: 8px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; color: #666; font-size: 17px; text-decoration: none; transition: background .2s, color .2s; }
         .social-btn:hover { background: var(--gold); color: var(--white); }
 
+        /* ── Product Card ── */
+        .product-card { background: var(--white); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); transition: transform .3s, box-shadow .3s; height: 100%; display: flex; flex-direction: column; position: relative; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,.08); }
+        .product-card-img { position: relative; width: 100%; aspect-ratio: 1/1.1; overflow: hidden; background: #fcfcfc; }
+        .product-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s cubic-bezier(.4, 0, .2, 1); }
+        .product-card:hover .product-card-img img { transform: scale(1.08); }
+        .product-badge { position: absolute; top: 12px; left: 12px; background: var(--gold); color: var(--white); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 6px; z-index: 2; }
+        .product-actions { position: absolute; bottom: 12px; left: 12px; right: 12px; display: flex; gap: 8px; transform: translateY(120%); transition: transform .4s cubic-bezier(.4, 0, .2, 1); z-index: 5; }
+        .product-card:hover .product-actions { transform: translateY(0); }
+        .action-btn { flex: 1; height: 42px; border-radius: 12px; border: none; background: var(--white); color: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 12px rgba(0,0,0,.1); transition: all .2s; text-decoration: none; }
+        .action-btn:hover { background: var(--gold); color: var(--white); }
+        .cart-btn { background: var(--ink); color: var(--white); flex: 2; font-size: 14px; font-weight: 600; }
+        .cart-btn:hover { background: var(--gold-dark); }
+        .product-card-body { padding: 18px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-category { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+        .product-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 12px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px; }
+        .product-title a { color: inherit; text-decoration: none; }
+        .product-price { margin-top: auto; display: flex; align-items: center; gap: 8px; }
+        .price-current { font-size: 16px; font-weight: 700; color: var(--gold-dark); }
+        .price-old { font-size: 13px; color: #999; text-decoration: line-through; }
+
         @media (max-width: 575.98px) { .footer-main { margin-top: 40px; } }
     </style>
 
@@ -168,13 +189,29 @@
 
     {% include "partials/footer.html" %}
 
+    <!-- Notification Sound -->
+    <audio id="notificationSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function showToast(message, type = 'success') {
+            // Play notification sound
+            const sound = document.getElementById('notificationSound');
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(() => {}); // Catch error if browser blocks autoplay
+            }
+
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
+            
+            // Map Django tags to our toast types
+            let toastType = type;
+            if (type === 'error' || type === 'danger') toastType = 'error';
+            if (type === 'info' || type === 'warning' || type === 'success') toastType = type;
+
             toast.style.cssText = `
-                background: ${type === 'success' ? 'var(--ink)' : '#e74c3c'};
+                background: ${toastType === 'error' ? '#e74c3c' : 'var(--ink)'};
                 color: white;
                 padding: 12px 24px;
                 border-radius: 12px;
@@ -188,9 +225,10 @@
                 align-items: center;
                 gap: 10px;
                 border: 1px solid rgba(255,255,255,0.1);
+                margin-bottom: 8px;
             `;
             
-            const icon = type === 'success' ? 'ti-check' : 'ti-alert-circle';
+            const icon = toastType === 'error' ? 'ti-alert-circle' : 'ti-check';
             toast.innerHTML = `<i class="ti ${icon}" style="color:var(--gold);font-size:18px"></i> ${message}`;
             
             container.appendChild(toast);
@@ -199,13 +237,23 @@
             setTimeout(() => {
                 toast.style.transform = 'translateX(120%)';
                 setTimeout(() => toast.remove(), 400);
-            }, 3000);
+            }, 4000); // Increased to 4s
         }
 
         function updateGlobalCartCount(count) {
             document.querySelectorAll('.badge-count, .mob-bar-badge').forEach(b => b.textContent = count);
         }
+
+        // Auto-display Django Messages
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if messages %}
+                {% for message in messages %}
+                    showToast("{{ message|escapejs }}", "{{ message.tags }}");
+                {% endfor %}
+            {% endif %}
+        });
     </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 
