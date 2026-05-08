@@ -26,7 +26,8 @@
                             <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
                                 <input type="hidden" name="language" value="ar">
                                 <button type="submit" class="dropdown-item">
-                                    <img src="https://flagcdn.com/w20/eg.png" alt="" style="border-radius:2px;margin-inline-end:6px"> عربي
+                                    <img src="https://flagcdn.com/w20/eg.png" alt=""
+                                        style="border-radius:2px;margin-inline-end:6px"> عربي
                                 </button>
                             </form>
                         </li>
@@ -34,7 +35,8 @@
                             <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
                                 <input type="hidden" name="language" value="en">
                                 <button type="submit" class="dropdown-item">
-                                    <img src="https://flagcdn.com/w20/gb.png" alt="" style="border-radius:2px;margin-inline-end:6px"> English
+                                    <img src="https://flagcdn.com/w20/gb.png" alt=""
+                                        style="border-radius:2px;margin-inline-end:6px"> English
                                 </button>
                             </form>
                         </li>
@@ -49,7 +51,8 @@
 <nav class="navbar-main">
     <div class="container inner">
 
-        <button class="hamburger d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-label="Menu">
+        <button class="hamburger d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu"
+            aria-label="Menu">
             <span></span>
             <span></span>
             <span></span>
@@ -62,7 +65,8 @@
 
         <div class="search-wrap d-none d-lg-block mx-4">
             <form action="{% url 'products' %}" method="get">
-                <input type="text" name="search" placeholder="{% if LANGUAGE_CODE == 'en' %}Search perfumes...{% else %}ابحث عن العطر...{% endif %}">
+                <input type="text" name="search"
+                    placeholder="{% if LANGUAGE_CODE == 'en' %}Search perfumes...{% else %}ابحث عن العطر...{% endif %}">
                 <button type="submit"><i class="ti ti-search"></i></button>
             </form>
         </div>
@@ -85,11 +89,18 @@
                     <span>{{ user.first_name }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item fw-bold" href="{% url 'dashboard' %}"><i class="ti ti-layout-dashboard me-2"></i>{% if LANGUAGE_CODE == 'en' %}My Account{% else %}حسابي (لوحة التحكم){% endif %}</a></li>
-                    <li><a class="dropdown-item" href="{% url 'order_list' %}">{% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}</a></li>
-                    <li><a class="dropdown-item" href="{% url 'wishlist' %}">{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">{% if LANGUAGE_CODE == 'en' %}Logout{% else %}تسجيل الخروج{% endif %}</a></li>
+                    <li><a class="dropdown-item fw-bold" href="{% url 'dashboard' %}"><i
+                                class="ti ti-layout-dashboard me-2"></i>{% if LANGUAGE_CODE == 'en' %}My Account{% else
+                            %}حسابي (لوحة التحكم){% endif %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'order_list' %}">{% if LANGUAGE_CODE == 'en' %}My Orders{%
+                            else %}طلباتي{% endif %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'wishlist' %}">{% if LANGUAGE_CODE == 'en' %}Wishlist{%
+                            else %}المفضلة{% endif %}</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">{% if LANGUAGE_CODE == 'en'
+                            %}Logout{% else %}تسجيل الخروج{% endif %}</a></li>
                 </ul>
             </div>
             {% else %}
@@ -106,7 +117,8 @@
 <!-- ══ Desktop Nav Menu ══ -->
 <div class="nav-menu d-none d-lg-block">
     <div class="container inner">
-        <a href="{% url 'home' %}" class="nav-link-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <a href="{% url 'home' %}"
+            class="nav-link-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             {% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}
         </a>
 
@@ -124,13 +136,17 @@
                     <div class="col-md-2 col-4">
                         <a href="{% url 'products' %}?category_id={{ cat.id }}" class="mega-card">
                             {% if cat.image %}
-                            <img src="{{ cat.image.url }}" alt="{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}" class="mega-card-img">
+                            <img src="{{ cat.image.url }}"
+                                alt="{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}"
+                                class="mega-card-img">
                             {% else %}
-                            <div class="mega-card-img d-flex align-items-center justify-content-center" style="background:var(--soft)">
+                            <div class="mega-card-img d-flex align-items-center justify-content-center"
+                                style="background:var(--soft)">
                                 <i class="ti ti-bottle" style="font-size:22px;color:var(--gold)"></i>
                             </div>
                             {% endif %}
-                            <div class="mega-card-name">{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}</div>
+                            <div class="mega-card-name">{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{
+                                cat.name_ar }}{% endif %}</div>
                         </a>
                     </div>
                     {% endfor %}
@@ -138,13 +154,21 @@
             </div>
         </div>
 
-        <a href="{% url 'offers' %}" class="nav-link-item {% if request.resolver_match.url_name == 'offers' %}active{% endif %}" style="color: #e74c3c;">
+        <a href="{% url 'offers' %}"
+            class="nav-link-item {% if request.resolver_match.url_name == 'offers' %}active{% endif %}"
+            style="color: #e74c3c;">
             <i class="ti ti-flame" style="font-size:14px"></i>
             {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}
         </a>
-        <a href="{% url 'brands' %}" class="nav-link-item {% if request.resolver_match.url_name == 'brands' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
-        <a href="{% url 'track_order' %}" class="nav-link-item {% if request.resolver_match.url_name == 'track_order' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
-        <a href="{% url 'about' %}" class="nav-link-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
+        <a href="{% url 'brands' %}"
+            class="nav-link-item {% if request.resolver_match.url_name == 'brands' %}active{% endif %}">{% if
+            LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="{% url 'track_order' %}"
+            class="nav-link-item {% if request.resolver_match.url_name == 'track_order' %}active{% endif %}">{% if
+            LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
+        <a href="{% url 'about' %}"
+            class="nav-link-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">{% if
+            LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
     </div>
 </div>
 
@@ -153,14 +177,16 @@
     <div class="offcanvas-header">
         <div class="d-flex align-items-center gap-2">
             <div class="logo-dot" style="background:#c9a96e"></div>
-            <span style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;letter-spacing:.08em">MAV<span style="color:#c9a96e">A</span></span>
+            <span style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;letter-spacing:.08em">MAV<span
+                    style="color:#c9a96e">A</span></span>
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body">
         <div class="mob-search-wrap">
             <form action="{% url 'products' %}" method="get">
-                <input type="text" name="search" placeholder="{% if LANGUAGE_CODE == 'en' %}Search...{% else %}ابحث...{% endif %}">
+                <input type="text" name="search"
+                    placeholder="{% if LANGUAGE_CODE == 'en' %}Search...{% else %}ابحث...{% endif %}">
             </form>
         </div>
 
@@ -185,21 +211,26 @@
             <i class="ti ti-flame" style="color:#e74c3c"></i>
             {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}
         </a>
-        <a href="{% url 'brands' %}" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
-        <a href="{% url 'track_order' %}" class="mob-nav-item"><i class="ti ti-truck-delivery"></i> {% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
-        <a href="{% url 'about' %}" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
+        <a href="{% url 'brands' %}" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE ==
+            'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="{% url 'track_order' %}" class="mob-nav-item"><i class="ti ti-truck-delivery"></i> {% if LANGUAGE_CODE
+            == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
+        <a href="{% url 'about' %}" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en'
+            %}About{% else %}من نحن{% endif %}</a>
 
         <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Language{% else %}اللغة{% endif %}</div>
         <div style="padding:10px 16px;display:flex;gap:8px;">
             <form action="{% url 'set_language' %}" method="post" style="flex:1">{% csrf_token %}
                 <input type="hidden" name="language" value="ar">
-                <button type="submit" class="mob-nav-item w-100" style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
+                <button type="submit" class="mob-nav-item w-100"
+                    style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
                     <img src="https://flagcdn.com/w20/eg.png" alt="" style="border-radius:2px"> عربي
                 </button>
             </form>
             <form action="{% url 'set_language' %}" method="post" style="flex:1">{% csrf_token %}
                 <input type="hidden" name="language" value="en">
-                <button type="submit" class="mob-nav-item w-100" style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
+                <button type="submit" class="mob-nav-item w-100"
+                    style="border:1.5px solid var(--border);border-radius:10px;justify-content:center">
                     <img src="https://flagcdn.com/w20/gb.png" alt="" style="border-radius:2px"> English
                 </button>
             </form>
@@ -228,11 +259,13 @@
         <span>{% if LANGUAGE_CODE == 'en' %}Cart{% else %}السلة{% endif %}</span>
     </a>
     {% if user.is_authenticated %}
-    <a href="{% url 'dashboard' %}" class="mob-bar-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <a href="{% url 'dashboard' %}"
+        class="mob-bar-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
         <i class="ti ti-layout-dashboard"></i>
         <span>{% if LANGUAGE_CODE == 'en' %}Account{% else %}حسابي{% endif %}</span>
     </a>
-    <a href="{% url 'order_list' %}" class="mob-bar-item {% if request.resolver_match.url_name == 'order_list' %}active{% endif %}">
+    <a href="{% url 'order_list' %}"
+        class="mob-bar-item {% if request.resolver_match.url_name == 'order_list' %}active{% endif %}">
         <i class="ti ti-package"></i>
         <span>{% if LANGUAGE_CODE == 'en' %}Orders{% else %}طلباتي{% endif %}</span>
     </a>
