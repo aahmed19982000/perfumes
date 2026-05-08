@@ -142,7 +142,7 @@
             <i class="ti ti-flame" style="font-size:14px"></i>
             {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}
         </a>
-        <a href="{% url 'products' %}" class="nav-link-item">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="{% url 'brands' %}" class="nav-link-item {% if request.resolver_match.url_name == 'brands' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
         <a href="{% url 'track_order' %}" class="nav-link-item {% if request.resolver_match.url_name == 'track_order' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
         <a href="{% url 'about' %}" class="nav-link-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
     </div>
@@ -185,7 +185,7 @@
             <i class="ti ti-flame" style="color:#e74c3c"></i>
             {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}
         </a>
-        <a href="{% url 'products' %}" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="{% url 'brands' %}" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
         <a href="{% url 'track_order' %}" class="mob-nav-item"><i class="ti ti-truck-delivery"></i> {% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
         <a href="{% url 'about' %}" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
 

@@ -54,20 +54,17 @@ def terms_view(request):
 
 def offers_view(request):
     from django.db.models import F, ExpressionWrapper, DecimalField
-    # جلب المنتجات التي لديها سعر خصم صالح
     products = Product.objects.filter(
         is_active=True,
         discount_price__isnull=False,
     ).order_by("-created_at")
 
-    # ترتيب حسب نسبة الخصم الأعلى
     sort = request.GET.get("sort", "discount")
     if sort == "price_asc":
         products = products.order_by("discount_price")
     elif sort == "price_desc":
         products = products.order_by("-discount_price")
     else:
-        # ترتيب افتراضي بالخصم الأعلى
         products = products.order_by("-created_at")
 
     categories = Category.objects.filter(is_active=True)
@@ -82,4 +79,16 @@ def offers_view(request):
         "current_cat": int(cat_id) if cat_id else None,
         "total_count": products.count(),
     }
-    return render(request, "home/offers.html", context)
+    return render(request, "home/offers.html", context)
+
+
+def brands_view(request):
+    from django.db.models import Count, Q
+    brands = Brand.objects.filter(is_active=True).order_by("name").annotate(
+        num_products=Count('products', filter=Q(products__is_active=True))
+    )
+    context = {
+        "brands": brands,
+        "total_count": brands.count(),
+    }
+    return render(request, "home/brands.html", context)

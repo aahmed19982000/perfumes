@@ -31,6 +31,7 @@ urlpatterns = [
     path("privacy/", views.privacy_view, name="privacy"),
     path("terms/",   views.terms_view,   name="terms"),
     path("offers/",  views.offers_view,  name="offers"),
+    path("brands/",  views.brands_view,  name="brands"),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if LANGUAGE_CODE == 'en' %}All Brands{% else %}جميع الماركات{% endif %} - Mava Perfumes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Hero ── */
+    .brands-hero {
+        background: var(--ink);
+        padding: 70px 0 60px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .brands-hero::before {
+        content: '';
+        position: absolute;
+        width: 600px; height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(201,169,110,.12) 0%, transparent 70%);
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+    .brands-hero .eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .2em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 14px;
+        display: block;
+    }
+    .brands-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2.2rem, 5vw, 3.8rem);
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 12px;
+    }
+    .brands-hero h1 span { color: var(--gold); }
+    .brands-hero p { color: #777; font-size: 1rem; }
+
+    /* ── Search Bar ── */
+    .brands-search-wrap {
+        max-width: 500px;
+        margin: 28px auto 0;
+        position: relative;
+    }
+    .brands-search-wrap input {
+        width: 100%;
+        padding: 14px 50px 14px 20px;
+        border-radius: 50px;
+        border: 1.5px solid #2a2a2a;
+        background: #111;
+        color: #eee;
+        font-family: 'Cairo', sans-serif;
+        font-size: 14px;
+        outline: none;
+        transition: border-color .2s;
+    }
+    html[dir="ltr"] .brands-search-wrap input { padding: 14px 20px 14px 50px; }
+    .brands-search-wrap input:focus { border-color: var(--gold); }
+    .brands-search-wrap i {
+        position: absolute;
+        top: 50%; right: 18px;
+        transform: translateY(-50%);
+        color: var(--gold);
+        font-size: 18px;
+    }
+    html[dir="ltr"] .brands-search-wrap i { right: auto; left: 18px; }
+
+    /* ── Alphabet Filter ── */
+    .alpha-filter {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border);
+        background: var(--soft);
+    }
+    .alpha-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1.5px solid var(--border);
+        background: var(--white);
+        color: var(--mid);
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+        text-decoration: none;
+    }
+    .alpha-btn:hover, .alpha-btn.active {
+        border-color: var(--gold);
+        color: var(--gold-dark);
+        background: rgba(201,169,110,.08);
+    }
+
+    /* ── Brand Cards Grid ── */
+    .brands-section { padding: 60px 0; }
+
+    .brand-card {
+        background: var(--white);
+        border: 1.5px solid var(--border);
+        border-radius: 20px;
+        padding: 36px 20px 28px;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        transition: transform .3s, box-shadow .3s, border-color .3s;
+        position: relative;
+        overflow: hidden;
+    }
+    .brand-card::before {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--gold-light), var(--gold), var(--gold-dark));
+        transform: scaleX(0);
+        transition: transform .3s;
+    }
+    .brand-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,.1);
+        border-color: var(--gold-light);
+    }
+    .brand-card:hover::before { transform: scaleX(1); }
+
+    .brand-logo-wrap {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--soft);
+        border: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transition: border-color .3s, box-shadow .3s;
+        flex-shrink: 0;
+    }
+    .brand-card:hover .brand-logo-wrap {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 6px rgba(201,169,110,.1);
+    }
+    .brand-logo-wrap img {
+        width: 80%;
+        height: 80%;
+        object-fit: contain;
+        filter: grayscale(30%);
+        transition: filter .3s;
+    }
+    .brand-card:hover .brand-logo-wrap img { filter: grayscale(0); }
+
+    .brand-logo-placeholder {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gold);
+        letter-spacing: .05em;
+    }
+
+    .brand-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: .02em;
+    }
+
+    .brand-count {
+        font-size: 12px;
+        color: var(--mid);
+        background: var(--soft);
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .brand-count i { color: var(--gold); font-size: 13px; }
+
+    .brand-explore {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--gold);
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity .3s, transform .3s;
+    }
+    .brand-card:hover .brand-explore {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* Empty state */
+    .brands-empty {
+        text-align: center;
+        padding: 80px 20px;
+    }
+    .brands-empty i { font-size: 4rem; color: var(--gold); opacity: .3; }
+
+    /* Stats */
+    .brands-stats {
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 30px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 50px;
+    }
+    .stat-box { text-align: center; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--gold-dark); font-family: 'Playfair Display', serif; }
+    .stat-lbl { font-size: 12px; color: var(--mid); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+
+    /* no-brand empty placeholder */
+    .brand-empty-img {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        background: var(--soft);
+        display: flex; align-items: center; justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="brands-hero">
+    <div class="container position-relative">
+        <span class="eyebrow">{% if LANGUAGE_CODE == 'en' %}Premium Collection{% else %}مجموعة فاخرة{% endif %}</span>
+        <h1>
+            {% if LANGUAGE_CODE == 'en' %}World's Finest <span>Brands</span>{% else %}أرقى <span>الماركات</span> العالمية{% endif %}
+        </h1>
+        <p>
+            {% if LANGUAGE_CODE == 'en' %}
+                Explore {{ total_count }} luxury fragrance houses
+            {% else %}
+                اكتشف {{ total_count }} ماركة عطور فاخرة
+            {% endif %}
+        </p>
+        <div class="brands-search-wrap">
+            <input type="text" id="brandSearch"
+                   placeholder="{% if LANGUAGE_CODE == 'en' %}Search brands...{% else %}ابحث عن ماركة...{% endif %}">
+            <i class="ti ti-search"></i>
+        </div>
+    </div>
+</section>
+
+<!-- Brands Grid -->
+<section class="brands-section">
+    <div class="container">
+
+        <!-- Stats -->
+        <div class="brands-stats">
+            <div class="stat-box">
+                <div class="stat-num">{{ total_count }}</div>
+                <div class="stat-lbl">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}ماركة{% endif %}</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-num">{{ brands|length }}</div>
+                <div class="stat-lbl">{% if LANGUAGE_CODE == 'en' %}Available{% else %}متاحة{% endif %}</div>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        {% if brands %}
+        <div class="row g-4" id="brandsGrid">
+            {% for brand in brands %}
+            <div class="col-6 col-md-4 col-lg-3 brand-col" data-name="{{ brand.name|lower }}">
+                <a href="{% url 'products' %}?brand_id={{ brand.id }}" class="brand-card">
+                    <div class="brand-logo-wrap">
+                        {% if brand.logo %}
+                        <img src="{{ brand.logo.url }}" alt="{{ brand.name }}" loading="lazy">
+                        {% else %}
+                        <span class="brand-logo-placeholder">{{ brand.name|slice:":2"|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="brand-name">{{ brand.name }}</div>
+                    <div class="brand-count">
+                        <i class="ti ti-bottle"></i>
+                        {{ brand.num_products }}
+                        {% if LANGUAGE_CODE == 'en' %}Products{% else %}منتج{% endif %}
+                    </div>
+                    <div class="brand-explore">
+                        {% if LANGUAGE_CODE == 'en' %}Explore →{% else %}← استكشف{% endif %}
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- No results after search -->
+        <div id="noResults" class="brands-empty d-none">
+            <i class="ti ti-search-off d-block mb-3"></i>
+            <h5>{% if LANGUAGE_CODE == 'en' %}No brands found{% else %}لا توجد ماركات مطابقة{% endif %}</h5>
+        </div>
+
+        {% else %}
+        <div class="brands-empty">
+            <i class="ti ti-building-store d-block mb-4"></i>
+            <h4>{% if LANGUAGE_CODE == 'en' %}No Brands Available{% else %}لا توجد ماركات حالياً{% endif %}</h4>
+            <p class="text-muted">{% if LANGUAGE_CODE == 'en' %}Check back soon!{% else %}تابعنا قريباً!{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live brand search
+document.getElementById('brandSearch').addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    let visible = 0;
+    document.querySelectorAll('.brand-col').forEach(col => {
+        const name = col.dataset.name || '';
+        if (!q || name.includes(q)) {
+            col.style.display = '';
+            visible++;
+        } else {
+            col.style.display = 'none';
+        }
+    });
+    const noRes = document.getElementById('noResults');
+    if (noRes) noRes.classList.toggle('d-none', visible > 0);
+});
+</script>
+{% endblock %}
