@@ -12,6 +12,8 @@ def nav_context(request):
         "nav_brands": Brand.objects.filter(
             is_active=True
         )[:10],
+
+        "is_en": request.LANGUAGE_CODE == "en",
     }
 
 

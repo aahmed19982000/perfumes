@@ -89,18 +89,13 @@
                     <span>{{ user.first_name }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item fw-bold" href="{% url 'dashboard' %}"><i
-                                class="ti ti-layout-dashboard me-2"></i>{% if LANGUAGE_CODE == 'en' %}My Account{% else
-                            %}حسابي (لوحة التحكم){% endif %}</a></li>
-                    <li><a class="dropdown-item" href="{% url 'order_list' %}">{% if LANGUAGE_CODE == 'en' %}My Orders{%
-                            else %}طلباتي{% endif %}</a></li>
-                    <li><a class="dropdown-item" href="{% url 'wishlist' %}">{% if LANGUAGE_CODE == 'en' %}Wishlist{%
-                            else %}المفضلة{% endif %}</a></li>
+                    <li><a class="dropdown-item fw-bold" href="{% url 'dashboard' %}"><i class="ti ti-layout-dashboard me-2"></i>{% if LANGUAGE_CODE == 'en' %}My Account{% else %}حسابي (لوحة التحكم){% endif %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'order_list' %}">{% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'wishlist' %}">{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</a></li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">{% if LANGUAGE_CODE == 'en'
-                            %}Logout{% else %}تسجيل الخروج{% endif %}</a></li>
+                    <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">{% if LANGUAGE_CODE == 'en' %}Logout{% else %}تسجيل الخروج{% endif %}</a></li>
                 </ul>
             </div>
             {% else %}
@@ -145,8 +140,7 @@
                                 <i class="ti ti-bottle" style="font-size:22px;color:var(--gold)"></i>
                             </div>
                             {% endif %}
-                            <div class="mega-card-name">{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{
-                                cat.name_ar }}{% endif %}</div>
+                            <div class="mega-card-name">{% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}</div>
                         </a>
                     </div>
                     {% endfor %}
@@ -161,14 +155,11 @@
             {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}
         </a>
         <a href="{% url 'brands' %}"
-            class="nav-link-item {% if request.resolver_match.url_name == 'brands' %}active{% endif %}">{% if
-            LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+            class="nav-link-item {% if request.resolver_match.url_name == 'brands' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
         <a href="{% url 'track_order' %}"
-            class="nav-link-item {% if request.resolver_match.url_name == 'track_order' %}active{% endif %}">{% if
-            LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
+            class="nav-link-item {% if request.resolver_match.url_name == 'track_order' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
         <a href="{% url 'about' %}"
-            class="nav-link-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">{% if
-            LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
+            class="nav-link-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">{% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
     </div>
 </div>
 
@@ -211,12 +202,9 @@
             <i class="ti ti-flame" style="color:#e74c3c"></i>
             {% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}
         </a>
-        <a href="{% url 'brands' %}" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE ==
-            'en' %}Brands{% else %}الماركات{% endif %}</a>
-        <a href="{% url 'track_order' %}" class="mob-nav-item"><i class="ti ti-truck-delivery"></i> {% if LANGUAGE_CODE
-            == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
-        <a href="{% url 'about' %}" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en'
-            %}About{% else %}من نحن{% endif %}</a>
+        <a href="{% url 'brands' %}" class="mob-nav-item"><i class="ti ti-building-store"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+        <a href="{% url 'track_order' %}" class="mob-nav-item"><i class="ti ti-truck-delivery"></i> {% if LANGUAGE_CODE == 'en' %}Track Order{% else %}تتبع الطلب{% endif %}</a>
+        <a href="{% url 'about' %}" class="mob-nav-item"><i class="ti ti-info-circle"></i> {% if LANGUAGE_CODE == 'en' %}About{% else %}من نحن{% endif %}</a>
 
         <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Language{% else %}اللغة{% endif %}</div>
         <div style="padding:10px 16px;display:flex;gap:8px;">
