@@ -1,0 +1,173 @@
+{% extends 'backend/base.html' %}
+
+{% block title %}{{ title }} | لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>{{ title }}</h1>
+    <a href="{% url 'backend:product_list' %}" class="btn" style="background: var(--bg-card); color: var(--text-muted);"><i class="fas fa-arrow-right"></i> العودة للقائمة</a>
+</div>
+
+<div class="table-container" style="max-width: 800px; margin: 0 auto;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label>كود المنتج (SKU) - اتركه فارغاً للتوليد التلقائي</label>
+            {{ form.sku }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>الاسم بالعربي</label>
+                {{ form.name_ar }}
+            </div>
+            <div class="form-group">
+                <label>الاسم بالإنجليزي</label>
+                {{ form.name_en }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>الوصف بالعربي</label>
+            {{ form.description_ar }}
+        </div>
+        <div class="form-group">
+            <label>الوصف بالإنجليزي</label>
+            {{ form.description_en }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>الفئة</label>
+                {{ form.category }}
+            </div>
+            <div class="form-group">
+                <label>الفئة الفرعية</label>
+                {{ form.sub_category }}
+            </div>
+            <div class="form-group">
+                <label>العلامة التجارية</label>
+                {{ form.brand }}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>السعر</label>
+                {{ form.price }}
+            </div>
+            <div class="form-group">
+                <label>سعر الخصم</label>
+                {{ form.discount_price }}
+            </div>
+            <div class="form-group">
+                <label>المخزون</label>
+                {{ form.stock }}
+            </div>
+            <div class="form-group">
+                <label>الحجم (مثل: 100 مل)</label>
+                {{ form.size }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>الصورة الرئيسية</label>
+            {% if product.thumbnail %}
+                <img src="{{ product.thumbnail.url }}" style="width: 100px; margin-bottom: 10px; border-radius: 8px;">
+            {% endif %}
+            {{ form.thumbnail }}
+        </div>
+
+        <!-- Statistics Section (Read-only) -->
+        {% if product %}
+        <div class="table-container" style="background: rgba(59, 130, 246, 0.05); margin-bottom: 30px; border: 1px solid var(--primary);">
+            <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fas fa-chart-line"></i> إحصائيات ونظام المنتج</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
+                <div style="text-align: center;">
+                    <small style="color: var(--text-muted);">متوسط التقييم</small>
+                    <div style="font-size: 1.2rem; font-weight: 700;">{{ product.avg_rating }} / 5</div>
+                </div>
+                <div style="text-align: center;">
+                    <small style="color: var(--text-muted);">عدد المراجعات</small>
+                    <div style="font-size: 1.2rem; font-weight: 700;">{{ product.review_count }}</div>
+                </div>
+                <div style="text-align: center;">
+                    <small style="color: var(--text-muted);">تاريخ الإضافة</small>
+                    <div style="font-size: 0.9rem;">{{ product.created_at|date:"Y/m/d H:i" }}</div>
+                </div>
+                <div style="text-align: center;">
+                    <small style="color: var(--text-muted);">آخر تحديث</small>
+                    <div style="font-size: 0.9rem;">{{ product.updated_at|date:"Y/m/d H:i" }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Product Gallery Section -->
+        <div class="table-container" style="margin-bottom: 30px;">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-images"></i> معرض صور المنتج</h3>
+            {{ formset.management_form }}
+            <div id="gallery-formset">
+                {% for image_form in formset %}
+                <div class="formset-row" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 15px; background: var(--bg-dark);">
+                    {{ image_form.id }}
+                    <div style="display: grid; grid-template-columns: 2fr 2fr 1fr 1fr auto; gap: 15px; align-items: center;">
+                        <div>
+                            <label style="font-size: 0.8rem;">الصورة</label>
+                            {% if image_form.instance.image %}
+                                <div style="margin-bottom: 8px;">
+                                    <img src="{{ image_form.instance.image.url }}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                </div>
+                            {% endif %}
+                            {{ image_form.image }}
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem;">النص البديل</label>
+                            {{ image_form.alt_text }}
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem;">الترتيب</label>
+                            {{ image_form.order }}
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.8rem; display: block;">رئيسية؟</label>
+                            {{ image_form.is_main }}
+                        </div>
+                        <div style="text-align: center;">
+                            <label style="font-size: 0.8rem; display: block; color: var(--danger);">حذف؟</label>
+                            {{ image_form.DELETE }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Status & Promotion Section -->
+        <div class="table-container" style="margin-bottom: 30px;">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-toggle-on"></i> الحالة والظهور</h3>
+            <div style="display: flex; gap: 40px;">
+                <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+                    <div style="transform: scale(1.2);">{{ form.is_active }}</div>
+                    <label style="margin: 0; cursor: pointer;">منتج نشط (يظهر في المتجر)</label>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
+                    <div style="transform: scale(1.2);">{{ form.is_featured }}</div>
+                    <label style="margin: 0; cursor: pointer;">منتج مميز (يظهر في الواجهة)</label>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button type="submit" name="_save" class="btn btn-primary" style="flex: 2; justify-content: center; padding: 15px; font-size: 1.1rem;">
+                <i class="fas fa-save"></i> حفظ المنتج والعودة
+            </button>
+            <button type="submit" name="_continue" class="btn" style="flex: 2; justify-content: center; background: var(--warning); color: #000; padding: 15px; font-size: 1.1rem; font-weight: 700;">
+                <i class="fas fa-sync-alt"></i> حفظ واستمرار التعديل
+            </button>
+            <a href="{% url 'backend:product_list' %}" class="btn" style="flex: 1; justify-content: center; background: var(--bg-card); color: var(--text-muted);">إلغاء</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">إدارة المدن وتكاليف الشحن</h1>
+        <div class="header-actions">
+            <a href="{% url 'backend:city_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة مدينة
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>المحافظة</th>
+                <th>الاسم بالعربي</th>
+                <th>الاسم بالإنجليزي</th>
+                <th>تكلفة الشحن</th>
+                <th>الحالة</th>
+                <th>العمليات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for city in cities %}
+            <tr>
+                <td style="color: var(--primary);">{{ city.governorate.name_ar }}</td>
+                <td>{{ city.name_ar }}</td>
+                <td>{{ city.name_en }}</td>
+                <td><span style="color: var(--gold); font-weight: 700;">{{ city.shipping_cost }} ر.س</span></td>
+                <td>
+                    {% if city.is_active %}
+                        <span class="badge badge-success">نشط</span>
+                    {% else %}
+                        <span class="badge badge-danger">معطل</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'backend:city_edit' city.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

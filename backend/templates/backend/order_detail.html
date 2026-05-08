@@ -1,0 +1,124 @@
+{% extends 'backend/base.html' %}
+
+{% block title %}تفاصيل الطلب #{{ order.order_number }} | لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>تفاصيل الطلب <span style="color: var(--primary);">#{{ order.order_number }}</span></h1>
+    <a href="{% url 'backend:order_list' %}" class="btn" style="background: var(--bg-card); color: var(--text-muted);"><i class="fas fa-arrow-right"></i> العودة للقائمة</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+    <div class="table-container">
+        <h3 style="margin-bottom: 20px;">المنتجات</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>السعر</th>
+                    <th>الكمية</th>
+                    <th>المجموع</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>
+                        <div style="font-weight: 600;">{{ item.product_name }}</div>
+                        <small style="color: var(--text-muted);">{{ item.product_sku }}</small>
+                    </td>
+                    <td>{{ item.unit_price }} ر.س</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.line_total }} ر.س</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 30px; text-align: left; padding: 20px; border-top: 1px solid var(--border-color);">
+            <p style="color: var(--text-muted); margin-bottom: 10px;">المجموع الجزئي: {{ order.subtotal }} ر.س</p>
+            <p style="color: var(--text-muted); margin-bottom: 10px;">الشحن: {{ order.shipping_cost }} ر.س</p>
+            {% if order.discount_amount %}
+            <p style="color: var(--danger); margin-bottom: 10px;">الخصم: -{{ order.discount_amount }} ر.س</p>
+            {% endif %}
+            <h2 style="color: var(--primary);">الإجمالي: {{ order.total }} ر.س</h2>
+        </div>
+    </div>
+
+    <div>
+        <div class="table-container" style="margin-bottom: 20px;">
+            <h3 style="margin-bottom: 20px;">حالة الطلب</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ form.status }}
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">تحديث الحالة</button>
+            </form>
+            
+            {% if whatsapp_url %}
+            <!-- WhatsApp Notification Modal -->
+            <div id="whatsappModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                <div style="background: var(--white); padding: 40px; border-radius: 24px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); animation: modalIn 0.3s ease-out;">
+                    <div style="width: 80px; height: 80px; background: rgba(37, 211, 102, 0.1); color: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; font-size: 40px;">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: 15px; color: var(--ink);">تم تحديث الحالة بنجاح!</h2>
+                    <p style="color: var(--mid); margin-bottom: 30px; line-height: 1.6;">هل تود إرسال إشعار للعميل عبر الواتساب بالحالة الجديدة للطلب؟</p>
+                    
+                    <div style="display: flex; gap: 15px;">
+                        <a href="{{ whatsapp_url }}" target="_blank" onclick="closeWhatsappModal()" class="btn btn-primary" style="flex: 1; height: 50px; background: #25D366; border: none; justify-content: center; font-size: 1rem;">
+                            <i class="fab fa-whatsapp"></i> إرسال الآن
+                        </a>
+                        <button onclick="closeWhatsappModal()" class="btn" style="flex: 1; height: 50px; background: var(--soft); color: var(--ink); justify-content: center; font-size: 1rem;">
+                            إغلاق
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <style>
+                @keyframes modalIn {
+                    from { transform: scale(0.9); opacity: 0; }
+                    to { transform: scale(1); opacity: 1; }
+                }
+            </style>
+            <script>
+                function closeWhatsappModal() {
+                    document.getElementById('whatsappModal').style.display = 'none';
+                }
+                // محاولة فتح الرابط في نافذة جديدة (قد يتم حظره، لذا المودال هو البديل الآمن)
+                const waWindow = window.open('{{ whatsapp_url|safe }}', '_blank');
+                if (waWindow) {
+                    closeWhatsappModal();
+                }
+            </script>
+            {% endif %}
+
+            <div style="margin-top: 20px; padding: 15px; background: var(--bg-dark); border-radius: 12px; text-align: center;">
+                <p style="margin-bottom: 5px; color: var(--text-muted);">حالة الدفع</p>
+                {% if order.is_paid %}
+                    <span class="badge badge-success">تم الدفع</span>
+                    <small style="display: block; margin-top: 5px;">{{ order.paid_at|date:"Y/m/d H:i" }}</small>
+                {% else %}
+                    <span class="badge badge-warning">انتظار الدفع</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3 style="margin-bottom: 20px;">معلومات العميل</h3>
+            <p style="font-weight: 700; margin-bottom: 10px;">{{ order.shipping_full_name }}</p>
+            <p style="color: var(--text-muted); margin-bottom: 10px;"><i class="fas fa-phone"></i> {{ order.shipping_phone }}</p>
+            <p style="color: var(--text-muted); line-height: 1.6;">
+                <i class="fas fa-map-marker-alt"></i> {{ order.shipping_address_display }}
+            </p>
+            {% if order.notes %}
+            <div style="margin-top: 20px; padding: 10px; background: rgba(245, 158, 11, 0.05); border-right: 3px solid var(--warning);">
+                <small style="color: var(--warning);">ملاحظات:</small>
+                <p style="font-size: 0.9rem;">{{ order.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

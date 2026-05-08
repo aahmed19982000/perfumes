@@ -5,6 +5,10 @@
 {% if LANGUAGE_CODE == 'en' %}Track Your Order{% else %}تتبع طلبك{% endif %} - Mava Perfumes
 {% endblock %}
 
+{% block meta_description %}
+{% if LANGUAGE_CODE == 'en' %}Track the real-time status of your Mava Perfumes order using your order number.{% else %}تتبع حالة طلبك من مافا للعطور في الوقت الفعلي باستخدام رقم الطلب الخاص بك.{% endif %}
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .track-section {

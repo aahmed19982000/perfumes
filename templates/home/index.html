@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}MAVA - {% if LANGUAGE_CODE == 'en' %}The Art of Scent{% else %}فن العطور{% endif %}{% endblock %}
+{% block title %}MAVA - {% if LANGUAGE_CODE == 'en' %}The Art of Luxury Scents{% else %}فن العطور الفاخرة{% endif %}{% endblock %}
+
+{% block meta_description %}
+{% if LANGUAGE_CODE == 'en' %}Discover the finest luxury perfumes at Mava. Shop our exclusive collection of fragrances, brands, and more.{% else %}اكتشف أرقى العطور الفاخرة في مافا. تسوق مجموعتنا الحصرية من العطور، الماركات، وأكثر.{% endif %}
+{% endblock %}
 
 {% block extra_css %}
 <!-- Swiper CSS -->

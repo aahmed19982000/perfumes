@@ -17,15 +17,26 @@ class CustomerManager(BaseUserManager):
     def create_superuser(self, email, password, **extra):
         extra.setdefault("is_staff", True)
         extra.setdefault("is_superuser", True)
+        extra.setdefault("role", "admin")
         return self.create_user(email, password, **extra)
 
 
 class Customer(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = [
+        ('admin', 'مدير النظام'),
+        ('manager', 'مدير'),
+        ('supervisor', 'مشرف'),
+        ('employee', 'موظف'),
+        ('customer', 'عميل'),
+    ]
+
     email      = models.EmailField(unique=True, verbose_name="البريد الإلكتروني")
     first_name = models.CharField(max_length=50, verbose_name="الاسم الأول")
     last_name  = models.CharField(max_length=50, verbose_name="الاسم الأخير")
-    phone      = models.CharField(max_length=20, blank=True, verbose_name="رقم الهاتف")
-    avatar     = models.ImageField(upload_to="customer/avatars/", blank=True, null=True, verbose_name="الصورة الشخصية")
+    phone         = models.CharField(max_length=20, blank=True, verbose_name="رقم الهاتف")
+    has_whatsapp  = models.BooleanField(default=False, verbose_name="رقم الهاتف به واتساب؟")
+    avatar        = models.ImageField(upload_to="customer/avatars/", blank=True, null=True, verbose_name="الصورة الشخصية")
+    role       = models.CharField(max_length=20, choices=ROLE_CHOICES, default='customer', verbose_name="الصلاحية")
     is_active  = models.BooleanField(default=True)
     is_staff   = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,7 +52,27 @@ class Customer(AbstractBaseUser, PermissionsMixin):
         ordering            = ["-created_at"]
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.email})"
+        return f"{self.first_name} {self.last_name} ({self.role})"
+
+    @property
+    def is_manager(self):
+        return self.role in ['admin', 'manager']
+
+    @property
+    def is_supervisor(self):
+        return self.role == 'supervisor'
+
+    @property
+    def is_employee(self):
+        return self.role == 'employee'
+
+    @property
+    def can_manage_products(self):
+        return self.role in ['admin', 'manager', 'supervisor']
+
+    @property
+    def can_delete_data(self):
+        return self.role in ['admin', 'manager']
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
@@ -101,7 +132,7 @@ class Address(models.Model):
         ordering            = ["-is_default", "-created_at"]
 
     def __str__(self):
-        return f"{self.full_name} — {self.get_governorate_display()} — {self.street}"
+        return f"{self.full_name} — {self.governorate.name_ar} — {self.street}"
 
     def save(self, *args, **kwargs):
         # لو العنوان ده افتراضي، شيل الافتراضي من باقي عناوينه

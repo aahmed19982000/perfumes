@@ -1,0 +1,52 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">إدارة كوبونات الخصم</h1>
+        <div class="header-actions">
+            <a href="{% url 'backend:coupon_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة كوبون جديد
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>كود الكوبون</th>
+                <th>نسبة الخصم</th>
+                <th>صالح من</th>
+                <th>صالح إلى</th>
+                <th>الحالة</th>
+                <th>العمليات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for coupon in coupons %}
+            <tr>
+                <td><span style="font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); letter-spacing: 1px;">{{ coupon.code }}</span></td>
+                <td><span class="badge" style="background: var(--gold); color: #000; font-weight: 700;">{{ coupon.discount }}%</span></td>
+                <td>{{ coupon.valid_from|date:"Y-m-d H:i" }}</td>
+                <td>{{ coupon.valid_to|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {% if coupon.active %}
+                        <span class="badge badge-success">نشط</span>
+                    {% else %}
+                        <span class="badge badge-danger">معطل</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'backend:coupon_edit' coupon.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

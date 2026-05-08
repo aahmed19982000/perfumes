@@ -9,6 +9,7 @@ from django.conf.urls.i18n import i18n_patterns
 import django.conf.urls.i18n as i18n
 
 urlpatterns = [
+    path("manage-perfumes/", include("backend.urls")),
     path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin/",            admin.site.urls),
 

@@ -1,0 +1,46 @@
+{% extends "dashboard_admin/base_admin.html" %}
+{% load static i18n %}
+
+{% block admin_title %}إدارة العملاء{% endblock %}
+
+{% block admin_content %}
+<div class="dash-header">
+    <h1 class="dash-title">العملاء المسجلون</h1>
+</div>
+
+<div class="dash-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>العميل</th>
+                    <th>رقم الهاتف</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>تاريخ التسجيل</th>
+                    <th>الإجمالي المنفق</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in customers %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ c.get_full_name }}</div>
+                        <div class="small text-muted">ID: {{ c.id }}</div>
+                    </td>
+                    <td>{{ c.phone|default:"-" }}</td>
+                    <td>{{ c.email }}</td>
+                    <td>{{ c.created_at|date:"Y-m-d" }}</td>
+                    <td class="fw-bold text-gold">ج.م {{ c.total_spent|default:0 }}</td>
+                    <td>
+                        <a href="/admin/accounts/customer/{{ c.pk }}/change/" class="btn btn-sm btn-outline-dark">
+                            <i class="ti ti-user-edit"></i> تعديل
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

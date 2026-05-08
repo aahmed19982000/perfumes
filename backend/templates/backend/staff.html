@@ -1,0 +1,123 @@
+{% extends 'backend/base.html' %}
+
+{% block title %}إدارة الصلاحيات | لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>إدارة الصلاحيات والموظفين</h1>
+    <button class="btn btn-primary"><i class="fas fa-user-shield"></i> إضافة موظف جديد</button>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <h2>فريق العمل</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>الموظف</th>
+                <th>البريد الإلكتروني</th>
+                <th>الصلاحية الحالية</th>
+                <th>تاريخ الانضمام</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in staff %}
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 35px; height: 35px; border-radius: 50%; background: var(--warning); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                            {{ member.first_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;">{{ member.get_full_name }}</div>
+                            <small style="color: var(--text-muted);">#{{ member.id }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ member.email }}</td>
+                <td>
+                    <span class="badge 
+                        {% if member.role == 'admin' %}badge-danger
+                        {% elif member.role == 'manager' %}badge-success
+                        {% elif member.role == 'supervisor' %}badge-warning
+                        {% else %}badge-success{% endif %}">
+                        {{ member.get_role_display }}
+                    </span>
+                </td>
+                <td>{{ member.created_at|date:"Y/m/d" }}</td>
+                <td>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 8px;" title="تغيير الصلاحية" onclick="openEditModal('{{ member.id }}', '{{ member.get_full_name }}', '{{ member.role }}')">
+                            <i class="fas fa-user-edit"></i>
+                        </button>
+                        {% if member != user %}
+                        <button class="btn" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 8px;" title="إيقاف الحساب"><i class="fas fa-user-slash"></i></button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Edit Role Modal -->
+<div id="editModal" class="modal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center;">
+    <div class="login-card" style="position: relative; max-width: 450px;">
+        <span onclick="closeModal()" style="position: absolute; left: 20px; top: 20px; cursor: pointer; color: var(--text-muted); font-size: 1.5rem;">&times;</span>
+        <h2 id="modalTitle" style="margin-bottom: 20px; font-size: 1.2rem;">تعديل صلاحية الموظف</h2>
+        <form id="editForm" method="post" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>اختر الصلاحية الجديدة</label>
+                <select name="role" id="roleSelect" class="btn" style="width: 100%; background: var(--bg-dark); color: white; border: 1px solid var(--border-color); padding: 12px; height: auto;">
+                    {% for role_code, role_name in roles %}
+                        {% if role_code != 'customer' %}
+                        <option value="{{ role_code }}">{{ role_name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="login-btn">حفظ التغييرات</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal(id, name, role) {
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editForm');
+        const title = document.getElementById('modalTitle');
+        const select = document.getElementById('roleSelect');
+        
+        form.action = `/manage-perfumes/staff/edit/${id}/`;
+        title.innerText = `تعديل صلاحية: ${name}`;
+        select.value = role;
+        
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Close if clicked outside
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('editModal')) {
+            closeModal();
+        }
+    }
+</script>
+
+<div class="table-container" style="margin-top: 30px; background: rgba(59, 130, 246, 0.05);">
+    <h3>نظرة عامة على الصلاحيات</h3>
+    <ul style="list-style: none; margin-top: 15px;">
+        <li style="margin-bottom: 10px;"><strong style="color: var(--danger);">مدير النظام:</strong> وصول كامل لكل شيء بما في ذلك إدارة الموظفين وحذف البيانات.</li>
+        <li style="margin-bottom: 10px;"><strong style="color: var(--success);">المدير:</strong> إدارة المنتجات والطلبات والعملاء، لا يمكنه إدارة الموظفين الآخرين.</li>
+        <li style="margin-bottom: 10px;"><strong style="color: var(--warning);">المشرف:</strong> إدارة المنتجات والطلبات (عرض وتعديل فقط)، لا يمكنه الحذف.</li>
+        <li style="margin-bottom: 10px;"><strong style="color: var(--primary);">الموظف:</strong> عرض الطلبات والمنتجات فقط، لا يمكنه التعديل أو الحذف.</li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">تفاصيل الرسالة</h1>
+        <div class="header-actions">
+            <a href="{% url 'backend:message_list' %}" class="btn">
+                <i class="fas fa-arrow-right"></i> العودة للقائمة
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="table-container" style="max-width: 800px; margin: 0 auto; padding: 30px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+        <div>
+            <label style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 5px;">المرسل</label>
+            <div style="font-size: 1.1rem; font-weight: 700;">{{ message.name }}</div>
+        </div>
+        <div>
+            <label style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 5px;">البريد الإلكتروني</label>
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">{{ message.email }}</div>
+        </div>
+        <div>
+            <label style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 5px;">الموضوع</label>
+            <div style="font-size: 1.1rem; font-weight: 700;">{{ message.subject }}</div>
+        </div>
+        <div>
+            <label style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 5px;">تاريخ الإرسال</label>
+            <div style="font-size: 1.1rem; font-weight: 700;">{{ message.created_at|date:"Y-m-d H:i" }}</div>
+        </div>
+    </div>
+
+    <div>
+        <label style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 10px;">نص الرسالة</label>
+        <div style="background: var(--bg-dark); padding: 25px; border-radius: 12px; line-height: 1.8; white-space: pre-wrap; font-size: 1rem; border: 1px solid var(--border-color);">
+            {{ message.message }}
+        </div>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; gap: 15px;">
+        <a href="mailto:{{ message.email }}" class="btn btn-primary" style="flex: 1; justify-content: center;">
+            <i class="fas fa-reply"></i> الرد عبر البريد الإلكتروني
+        </a>
+    </div>
+</div>
+{% endblock %}

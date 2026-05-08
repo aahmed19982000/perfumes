@@ -1,0 +1,59 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">إدارة البنرات الإعلانية</h1>
+        <div class="header-actions">
+            <a href="{% url 'backend:banner_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة بانر جديد
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>الصورة</th>
+                <th>العنوان</th>
+                <th>الموضع</th>
+                <th>الترتيب</th>
+                <th>الحالة</th>
+                <th>العمليات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for banner in banners %}
+            <tr>
+                <td>
+                    <img src="{{ banner.image.url }}" style="width: 100px; height: 50px; border-radius: 6px; object-fit: cover;">
+                </td>
+                <td>
+                    <div style="font-weight: 600;">{{ banner.title_ar }}</div>
+                    <small style="color: var(--text-muted);">{{ banner.title_en }}</small>
+                </td>
+                <td>
+                    <span class="badge" style="background: var(--soft); color: var(--text);">{{ banner.get_position_display }}</span>
+                </td>
+                <td>{{ banner.order }}</td>
+                <td>
+                    {% if banner.is_active %}
+                        <span class="badge badge-success">نشط</span>
+                    {% else %}
+                        <span class="badge badge-danger">معطل</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'backend:banner_edit' banner.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

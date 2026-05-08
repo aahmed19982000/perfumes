@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}لوحة التحكم | عطور مافا{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'backend/css/dashboard.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-gem"></i>
+            <span>مافا للتحكم</span>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'backend:index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>الرئيسية</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'backend:order_list' %}" class="nav-link {% if request.resolver_match.url_name == 'order_list' %}active{% endif %}">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>الطلبات</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'backend:customer_list' %}" class="nav-link {% if request.resolver_match.url_name == 'customer_list' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>العملاء</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'backend:message_list' %}" class="nav-link {% if 'messages' in request.path %}active{% endif %}">
+                    <i class="fas fa-envelope"></i>
+                    <span>الرسائل</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'backend:wishlist_list' %}" class="nav-link {% if 'wishlists' in request.path %}active{% endif %}">
+                    <i class="fas fa-heart"></i>
+                    <span>الأمنيات</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer" style="height: auto; padding-bottom: 20px;">
+            <div class="nav-item">
+                <a href="#" class="nav-link dropdown-toggle" id="settingsDropdown" data-bs-toggle="collapse" data-bs-target="#settingsMenu">
+                    <i class="fas fa-cog"></i>
+                    <span>الإعدادات</span>
+                </a>
+                <div class="collapse {% if 'category' in request.path or 'brand' in request.path or 'banner' in request.path or 'subcategory' in request.path %}show{% endif %}" id="settingsMenu" style="padding-right: 25px; margin-top: 5px;">
+                    <a href="{% url 'backend:category_list' %}" class="nav-link {% if 'categories' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-folder" style="font-size: 0.8rem;"></i> الفئات
+                    </a>
+                    <a href="{% url 'backend:subcategory_list' %}" class="nav-link {% if 'subcategories' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-tags" style="font-size: 0.8rem;"></i> الفئات الفرعية
+                    </a>
+                    <a href="{% url 'backend:brand_list' %}" class="nav-link {% if 'brands' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-copyright" style="font-size: 0.8rem;"></i> الماركات
+                    </a>
+                    <a href="{% url 'backend:banner_list' %}" class="nav-link {% if 'banners' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-bullhorn" style="font-size: 0.8rem;"></i> البنرات
+                    </a>
+                    <a href="{% url 'backend:coupon_list' %}" class="nav-link {% if 'coupons' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-ticket-alt" style="font-size: 0.8rem;"></i> الكوبونات
+                    </a>
+                    <a href="{% url 'backend:governorate_list' %}" class="nav-link {% if 'governorates' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-map-marked-alt" style="font-size: 0.8rem;"></i> المحافظات
+                    </a>
+                    <a href="{% url 'backend:city_list' %}" class="nav-link {% if 'cities' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-city" style="font-size: 0.8rem;"></i> المدن
+                    </a>
+                    {% if user.role == 'admin' %}
+                    <a href="{% url 'backend:staff_list' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_list' %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-user-shield" style="font-size: 0.8rem;"></i> الصلاحيات
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="nav-link">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>تسجيل الخروج</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <div class="header-search">
+                <!-- Search bar can go here if needed -->
+            </div>
+            <div class="user-profile">
+                <div class="user-info" style="text-align: left;">
+                    <p style="font-weight: 700; margin: 0;">{{ user.get_full_name }}</p>
+                    <small style="color: var(--text-muted);">{{ user.get_role_display }}</small>
+                </div>
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="User Avatar" class="avatar">
+                {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ user.first_name }}+{{ user.last_name }}&background=3b82f6&color=fff" alt="User Avatar" class="avatar">
+                {% endif %}
+            </div>
+        </header>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

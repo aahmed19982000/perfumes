@@ -1,0 +1,133 @@
+from django import forms
+from banners.models import Banner
+from django.forms import inlineformset_factory
+from products.models import Product, Category, Brand, SubCategory, ProductImage
+from orders.models import Order, Coupon
+from accounts.models import Customer, Governorate, City
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            'sku', 'name_ar', 'name_en', 'description_ar', 'description_en',
+            'category', 'sub_category', 'brand', 'price',
+            'discount_price', 'stock', 'size', 'thumbnail', 'is_active', 'is_featured'
+        ]
+        widgets = {
+            'description_ar': forms.Textarea(attrs={'rows': 3}),
+            'description_en': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-input'})
+
+class OrderStatusForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['status']
+        widgets = {
+            'status': forms.Select(attrs={'class': 'form-input'}),
+        }
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['has_whatsapp', 'first_name', 'last_name', 'phone', 'role', 'is_active']
+        labels = {
+            'has_whatsapp': 'رقم الهاتف به واتساب؟',
+        }
+        widgets = {
+            'role': forms.Select(attrs={'class': 'form-input'}),
+            'has_whatsapp': forms.CheckboxInput(attrs={'style': 'width: 20px; height: 20px; margin-bottom: 15px;'}),
+        }
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name_ar', 'name_en', 'image', 'is_active']
+        widgets = {
+            'name_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'name_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'image': forms.FileInput(attrs={'class': 'form-input'}),
+        }
+
+class SubCategoryForm(forms.ModelForm):
+    class Meta:
+        model = SubCategory
+        fields = ['category', 'name_ar', 'name_en', 'image', 'is_active']
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-input'}),
+            'name_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'name_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'image': forms.FileInput(attrs={'class': 'form-input'}),
+        }
+
+class BrandForm(forms.ModelForm):
+    class Meta:
+        model = Brand
+        fields = ['name', 'logo', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-input'}),
+            'logo': forms.FileInput(attrs={'class': 'form-input'}),
+        }
+
+class ProductImageForm(forms.ModelForm):
+    class Meta:
+        model = ProductImage
+        fields = ['image', 'alt_text', 'order', 'is_main']
+        widgets = {
+            'image': forms.FileInput(attrs={'class': 'form-input'}),
+            'alt_text': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'وصف الصورة'}),
+            'order': forms.NumberInput(attrs={'class': 'form-input'}),
+        }
+
+ProductImageFormSet = inlineformset_factory(
+    Product, ProductImage, form=ProductImageForm,
+    extra=3, can_delete=True
+)
+
+class BannerForm(forms.ModelForm):
+    class Meta:
+        model = Banner
+        fields = ['title_ar', 'title_en', 'image', 'link', 'position', 'order', 'is_active']
+        widgets = {
+            'title_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'title_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'image': forms.FileInput(attrs={'class': 'form-input'}),
+            'link': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}),
+            'position': forms.Select(attrs={'class': 'form-input'}),
+            'order': forms.NumberInput(attrs={'class': 'form-input'}),
+        }
+
+class CouponForm(forms.ModelForm):
+    class Meta:
+        model = Coupon
+        fields = ['code', 'valid_from', 'valid_to', 'discount', 'active']
+        widgets = {
+            'code': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'كود الخصم'}),
+            'valid_from': forms.DateTimeInput(attrs={'class': 'form-input', 'type': 'datetime-local'}),
+            'valid_to': forms.DateTimeInput(attrs={'class': 'form-input', 'type': 'datetime-local'}),
+            'discount': forms.NumberInput(attrs={'class': 'form-input', 'placeholder': 'مثال: 20'}),
+        }
+
+class GovernorateForm(forms.ModelForm):
+    class Meta:
+        model = Governorate
+        fields = ['name_ar', 'name_en', 'is_active']
+        widgets = {
+            'name_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'name_en': forms.TextInput(attrs={'class': 'form-input'}),
+        }
+
+class CityForm(forms.ModelForm):
+    class Meta:
+        model = City
+        fields = ['governorate', 'name_ar', 'name_en', 'shipping_cost', 'is_active']
+        widgets = {
+            'governorate': forms.Select(attrs={'class': 'form-input'}),
+            'name_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'name_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'shipping_cost': forms.NumberInput(attrs={'class': 'form-input'}),
+        }

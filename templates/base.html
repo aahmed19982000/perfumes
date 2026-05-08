@@ -1,13 +1,32 @@
+{% load static i18n %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'ar' }}" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Mava Perfumes{% endblock %}</title>
-    {% block meta %}{% endblock %}
+    <title>{% block title %}Mava Perfumes - {% if LANGUAGE_CODE == 'en' %}Luxury Fragrances{% else %}عطور فاخرة{% endif %}{% endblock %}</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}{% if LANGUAGE_CODE == 'en' %}Explore Mava Perfumes - Your destination for luxury fragrances and exclusive scents.{% else %}اكتشف مافا للعطور - وجهتك الأولى للعطور الفاخرة والروائح الحصرية.{% endif %}{% endblock %}">
+    <meta name="keywords" content="perfumes, luxury scents, mava, buy perfumes online, عطور, عطور فاخرة, مافا, شراء عطور">
+    <meta name="author" content="Mava Perfumes">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="{% block og_title %}{{ self.title }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'images/og-image.jpg' %}{% endblock %}">
 
-    {% load static i18n %}
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+    <meta property="twitter:title" content="{% block twitter_title %}{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}{% endblock %}">
+    <meta property="twitter:image" content="{% block twitter_image %}{% endblock %}">
+
+    {% block meta %}{% endblock %}
 
     {% if LANGUAGE_CODE == 'en' %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">

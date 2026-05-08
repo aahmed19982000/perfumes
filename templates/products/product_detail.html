@@ -1,22 +1,19 @@
 {% extends "base.html" %}
 {% load static product_filters %}
 
-{% block title %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}{% endblock %}
+{% block title %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %} - Mava Perfumes{% endblock %}
+
+{% block meta_description %}
+{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:20 }}{% else %}{{ product.description_ar|striptags|truncatewords:20 }}{% endif %}
+{% endblock %}
+
+{% block og_title %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}{% endblock %}
+{% block og_description %}{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:20 }}{% else %}{{ product.description_ar|striptags|truncatewords:20 }}{% endif %}{% endblock %}
+{% if product.thumbnail %}
+{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}{% endblock %}
+{% endif %}
 
 {% block meta %}
-<meta name="description" content="{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:30 }}{% else %}{{ product.description_ar|striptags|truncatewords:30 }}{% endif %}">
-<meta property="og:title" content="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %} - Mava Perfumes">
-<meta property="og:description" content="{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:30 }}{% else %}{{ product.description_ar|striptags|truncatewords:30 }}{% endif %}">
-<meta property="og:type" content="product">
-<meta property="og:url" content="{{ request.build_absolute_uri }}">
-{% if product.thumbnail %}
-<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}">
-<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}">
-{% endif %}
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}">
-<meta name="twitter:description" content="{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:30 }}{% else %}{{ product.description_ar|striptags|truncatewords:30 }}{% endif %}">
-
 <!-- JSON-LD Product Schema -->
 <script type="application/ld+json">
 {

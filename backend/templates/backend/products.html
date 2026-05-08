@@ -1,0 +1,79 @@
+{% extends 'backend/base.html' %}
+
+{% block title %}إدارة المنتجات | لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>إدارة المنتجات</h1>
+    {% if user.can_manage_products %}
+    <a href="{% url 'backend:product_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة منتج جديد</a>
+    {% endif %}
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <div class="filters" style="display: flex; gap: 15px;">
+            <select class="btn" style="background: var(--sidebar-bg); color: var(--text-muted); border: 1px solid var(--border-color);">
+                <option>كل الأقسام</option>
+            </select>
+            <select class="btn" style="background: var(--sidebar-bg); color: var(--text-muted); border: 1px solid var(--border-color);">
+                <option>كل العلامات التجارية</option>
+            </select>
+        </div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>صورة</th>
+                <th>اسم المنتج</th>
+                <th>الفئة</th>
+                <th>السعر</th>
+                <th>المخزون</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>
+                    {% if product.thumbnail %}
+                        <img src="{{ product.thumbnail.url }}" style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover;">
+                    {% else %}
+                        <div style="width: 45px; height: 45px; background: var(--border-color); border-radius: 8px;"></div>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="font-weight: 600;">{{ product.name_ar }}</div>
+                    <small style="color: var(--text-muted);">{{ product.sku }}</small>
+                </td>
+                <td>{{ product.category.name_ar }}</td>
+                <td>{{ product.price }} ر.س</td>
+                <td>{{ product.stock }} قطعة</td>
+                <td>
+                    {% if product.stock > 0 %}
+                        <span class="badge badge-success">متوفر</span>
+                    {% else %}
+                        <span class="badge badge-danger">نفذ المخزون</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 8px;">
+                        {% if user.can_manage_products %}
+                        <a href="{% url 'backend:product_edit' product.pk %}" class="btn" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 8px;"><i class="fas fa-edit"></i></a>
+                        {% endif %}
+                        {% if user.can_delete_data %}
+                        <a href="{% url 'backend:product_delete' product.pk %}" class="btn" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 8px;" onclick="return confirm('هل أنت متأكد من حذف هذا المنتج؟')"><i class="fas fa-trash"></i></a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">لا توجد منتجات حالياً</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

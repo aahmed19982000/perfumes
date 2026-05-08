@@ -1,0 +1,80 @@
+{% extends "dashboard_admin/base_admin.html" %}
+{% load static i18n %}
+
+{% block admin_title %}إدارة المنتجات{% endblock %}
+
+{% block admin_content %}
+<div class="dash-header">
+    <h1 class="dash-title">المنتجات</h1>
+    <a href="/admin/products/product/add/" class="btn btn-gold fw-bold">
+        <i class="ti ti-plus"></i> إضافة منتج جديد
+    </a>
+</div>
+
+<div class="dash-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>السعر</th>
+                    <th>المخزون</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            {% if p.thumbnail %}
+                            <img src="{{ p.thumbnail.url }}" width="45" height="45" class="rounded shadow-sm">
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold">{{ p.name_ar }}</div>
+                                <div class="small text-muted">{{ p.category.name_ar }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if p.discount_price %}
+                        <div class="fw-bold text-danger">ج.م {{ p.discount_price }}</div>
+                        <div class="small text-muted text-decoration-line-through">ج.م {{ p.price }}</div>
+                        {% else %}
+                        <div class="fw-bold">ج.م {{ p.price }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if p.stock == 0 %}
+                        <span class="text-danger fw-bold"><i class="ti ti-circle-x"></i> نفد</span>
+                        {% elif p.stock <= 5 %}
+                        <span class="text-warning fw-bold"><i class="ti ti-alert-triangle"></i> منخفض ({{ p.stock }})</span>
+                        {% else %}
+                        <span class="text-success">{{ p.stock }} قطعة</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if p.is_active %}
+                        <span class="badge bg-success-subtle text-success">نشط</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">مسودة</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="/admin/products/product/{{ p.pk }}/change/" class="btn btn-sm btn-outline-dark">
+                                <i class="ti ti-edit"></i> تعديل
+                            </a>
+                            <a href="{% url 'product_detail' p.slug %}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                <i class="ti ti-world"></i> عرض
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

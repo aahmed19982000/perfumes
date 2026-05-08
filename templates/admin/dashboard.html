@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}Dashboard - MAVA Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --dash-bg: #f4f7f6;
+    }
+    body { background: var(--dash-bg); }
+    
+    .dash-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-top: 20px;
+    }
+    .dash-title {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        font-size: 1.8rem;
+        color: var(--ink);
+    }
+
+    /* ── Stat Cards ── */
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid var(--border);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    .stat-val {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 2px;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: var(--mid);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 600;
+    }
+
+    /* ── Tables ── */
+    .dash-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    .dash-card-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dash-card-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--ink);
+    }
+    .table thead th {
+        background: var(--soft);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 15px 25px;
+        border: none;
+    }
+    .table tbody td {
+        padding: 15px 25px;
+        font-size: 14px;
+        vertical-align: middle;
+        border-color: var(--soft);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="dash-header">
+        <h1 class="dash-title">لوحة التحكم</h1>
+        <div class="text-muted">{{ now|date:"d M Y" }}</div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    <i class="ti ti-currency-pound"></i>
+                </div>
+                <div>
+                    <div class="stat-val">ج.م {{ total_revenue|floatformat:0 }}</div>
+                    <div class="stat-label">إجمالي المبيعات</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-success-subtle text-success">
+                    <i class="ti ti-shopping-bag"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ pending_orders }}</div>
+                    <div class="stat-label">طلبات قيد الانتظار</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    <i class="ti ti-users"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ total_customers }}</div>
+                    <div class="stat-label">إجمالي العملاء</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon bg-danger-subtle text-danger">
+                    <i class="ti ti-alert-triangle"></i>
+                </div>
+                <div>
+                    <div class="stat-val">{{ out_of_stock }}</div>
+                    <div class="stat-label">منتجات نفدت</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <!-- Sales Chart -->
+        <div class="col-lg-8">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title">مبيعات آخر 7 أيام</div>
+                </div>
+                <div class="p-4">
+                    <canvas id="salesChart" height="280"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Status Breakdown -->
+        <div class="col-lg-4">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title">توزيع الحالات</div>
+                </div>
+                <div class="p-4">
+                    <canvas id="statusChart" height="280"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Orders -->
+        <div class="col-lg-8">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title">أحدث الطلبات</div>
+                    <a href="/admin/orders/order/" class="btn btn-sm btn-outline-dark">عرض الكل</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>الطلب</th>
+                                <th>العميل</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td class="fw-bold text-ink">#{{ order.order_number }}</td>
+                                <td>{{ order.customer.get_full_name }}</td>
+                                <td>ج.م {{ order.total }}</td>
+                                <td>
+                                    <span class="badge" style="background: {{ order.status_badge_color }}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Top Products -->
+        <div class="col-lg-4">
+            <div class="dash-card">
+                <div class="dash-card-header">
+                    <div class="dash-card-title">الأكثر مبيعاً</div>
+                </div>
+                <div class="p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for p in top_products %}
+                        <li class="list-group-item d-flex align-items-center gap-3 py-3 px-4">
+                            {% if p.thumbnail %}
+                            <img src="{{ p.thumbnail.url }}" width="40" height="40" class="rounded" style="object-fit: cover;">
+                            {% endif %}
+                            <div class="flex-grow-1">
+                                <div class="fw-bold" style="font-size: 13px;">{{ p.name_ar }}</div>
+                                <div class="text-muted small">تم بيع {{ p.sold }} قطعة</div>
+                            </div>
+                            <div class="fw-bold text-gold">ج.م {{ p.final_price }}</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Sales Chart
+    const ctxSales = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctxSales, {
+        type: 'line',
+        data: {
+            labels: [{% for d in sales_chart %}'{{ d.day|date:"D" }}',{% endfor %}],
+            datasets: [{
+                label: 'المبيعات اليومية',
+                data: [{% for d in sales_chart %}{{ d.revenue|default:0 }},{% endfor %}],
+                borderColor: '#c9a96e',
+                backgroundColor: 'rgba(201, 169, 110, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Status Chart
+    const ctxStatus = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for s in orders_by_status %}'{{ s.status }}',{% endfor %}],
+            datasets: [{
+                data: [{% for s in orders_by_status %}{{ s.count }},{% endfor %}],
+                backgroundColor: ['#c9a96e', '#0f0f0f', '#6b6560', '#e8e3dc', '#dc2626']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+</script>
+{% endblock %}

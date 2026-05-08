@@ -1,0 +1,59 @@
+{% extends "dashboard_admin/base_admin.html" %}
+{% load static i18n %}
+
+{% block admin_title %}إدارة الطلبات{% endblock %}
+
+{% block admin_content %}
+<div class="dash-header">
+    <h1 class="dash-title">قائمة الطلبات</h1>
+    <div class="d-flex gap-2">
+        <a href="?status=" class="btn btn-sm {% if not request.GET.status %}btn-dark{% else %}btn-outline-dark{% endif %}">الكل</a>
+        <a href="?status=PENDING" class="btn btn-sm {% if request.GET.status == 'PENDING' %}btn-dark{% else %}btn-outline-dark{% endif %}">قيد الانتظار</a>
+        <a href="?status=SHIPPED" class="btn btn-sm {% if request.GET.status == 'SHIPPED' %}btn-dark{% else %}btn-outline-dark{% endif %}">تم الشحن</a>
+    </div>
+</div>
+
+<div class="dash-card">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="bg-light">
+                <tr>
+                    <th>رقم الطلب</th>
+                    <th>العميل</th>
+                    <th>التاريخ</th>
+                    <th>الإجمالي</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td class="fw-bold">#{{ order.order_number }}</td>
+                    <td>
+                        <div class="fw-bold">{{ order.customer.get_full_name }}</div>
+                        <div class="small text-muted">{{ order.customer.phone }}</div>
+                    </td>
+                    <td>{{ order.created_at|date:"Y-m-d H:i" }}</td>
+                    <td class="fw-bold text-gold">ج.م {{ order.total }}</td>
+                    <td>
+                        <span class="badge" style="background: {{ order.status_badge_color }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'dashboard_admin:order_detail' order.pk %}" class="btn btn-sm btn-outline-dark">
+                            <i class="ti ti-eye"></i> تفاصيل
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">لا يوجد طلبات حالياً</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

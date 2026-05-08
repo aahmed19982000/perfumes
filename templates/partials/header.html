@@ -85,7 +85,7 @@
                     <span>{{ user.first_name }}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item fw-bold" href="{% url 'dashboard' %}"><i class="ti ti-layout-dashboard me-2"></i>{% if LANGUAGE_CODE == 'en' %}Dashboard{% else %}لوحة التحكم{% endif %}</a></li>
+                    <li><a class="dropdown-item fw-bold" href="{% url 'dashboard' %}"><i class="ti ti-layout-dashboard me-2"></i>{% if LANGUAGE_CODE == 'en' %}My Account{% else %}حسابي (لوحة التحكم){% endif %}</a></li>
                     <li><a class="dropdown-item" href="{% url 'order_list' %}">{% if LANGUAGE_CODE == 'en' %}My Orders{% else %}طلباتي{% endif %}</a></li>
                     <li><a class="dropdown-item" href="{% url 'wishlist' %}">{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}</a></li>
                     <li><hr class="dropdown-divider"></li>

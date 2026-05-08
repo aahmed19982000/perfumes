@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% block admin_title %}Dashboard{% endblock %} - MAVA Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --dash-bg: #f4f7f6;
+        --sidebar-w: 260px;
+    }
+    body { background: var(--dash-bg); }
+    
+    .dash-sidebar {
+        width: var(--sidebar-w);
+        background: var(--ink);
+        height: 100vh;
+        position: fixed;
+        left: 0; top: 0;
+        z-index: 1000;
+        padding-top: 20px;
+        color: white;
+    }
+    [dir="rtl"] .dash-sidebar { left: auto; right: 0; }
+    
+    .dash-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 25px;
+        color: rgba(255,255,255,0.7);
+        text-decoration: none;
+        transition: 0.3s;
+        border-left: 4px solid transparent;
+    }
+    [dir="rtl"] .dash-nav-item { border-left: none; border-right: 4px solid transparent; }
+    
+    .dash-nav-item:hover, .dash-nav-item.active {
+        background: rgba(255,255,255,0.05);
+        color: var(--gold);
+        border-color: var(--gold);
+    }
+
+    .dash-main {
+        margin-left: var(--sidebar-w);
+        padding: 40px;
+    }
+    [dir="rtl"] .dash-main { margin-left: 0; margin-right: var(--sidebar-w); }
+    
+    @media (max-width: 991px) {
+        .dash-sidebar { display: none; }
+        .dash-main { margin: 0; padding: 20px; }
+    }
+
+    .dash-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .dash-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    .dash-card-header {
+        padding: 20px 25px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dash-card-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--ink);
+    }
+</style>
+{% block admin_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<aside class="dash-sidebar">
+    <div class="px-4 mb-4">
+        <div class="logo-wordmark text-white" style="font-size: 1.5rem;">MAV<span style="color:var(--gold)">A</span></div>
+    </div>
+    <nav>
+        <a href="{% url 'dashboard_admin:home' %}" class="dash-nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="ti ti-layout-dashboard"></i>
+            <span>الإحصائيات العامة</span>
+        </a>
+
+        {% if user.role == 'ADMIN' or user.role == 'SUPERVISOR' or user.role == 'EMPLOYEE' or user.is_superuser %}
+        <a href="{% url 'dashboard_admin:order_list' %}" class="dash-nav-item {% if 'order' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="ti ti-shopping-cart"></i>
+            <span>إدارة الطلبات</span>
+        </a>
+        {% endif %}
+
+        {% if user.role == 'ADMIN' or user.role == 'SUPERVISOR' or user.role == 'WAREHOUSE' or user.is_superuser %}
+        <a href="{% url 'dashboard_admin:product_list' %}" class="dash-nav-item {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="ti ti-perfume"></i>
+            <span>المنتجات</span>
+        </a>
+        {% endif %}
+
+        {% if user.role == 'ADMIN' or user.role == 'SUPERVISOR' or user.is_superuser %}
+        <a href="{% url 'dashboard_admin:customer_list' %}" class="dash-nav-item {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="ti ti-users"></i>
+            <span>العملاء</span>
+        </a>
+        {% endif %}
+
+        {% if user.is_superuser %}
+        <a href="/admin/banners/banner/" class="dash-nav-item">
+            <i class="ti ti-photo"></i>
+            <span>السلايدر والبانرات</span>
+        </a>
+        <a href="/admin/" class="dash-nav-item mt-5" style="border:none">
+            <i class="ti ti-settings"></i>
+            <span>لوحة Django كاملة</span>
+        </a>
+        {% endif %}
+    </nav>
+</aside>
+
+<main class="dash-main">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% block admin_content %}{% endblock %}
+</main>
+{% endblock %}

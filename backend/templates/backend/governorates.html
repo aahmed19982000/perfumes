@@ -1,0 +1,50 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">إدارة المحافظات</h1>
+        <div class="header-actions">
+            <a href="{% url 'backend:governorate_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة محافظة
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>الاسم بالعربي</th>
+                <th>الاسم بالإنجليزي</th>
+                <th>عدد المدن</th>
+                <th>الحالة</th>
+                <th>العمليات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gov in governorates %}
+            <tr>
+                <td>{{ gov.name_ar }}</td>
+                <td>{{ gov.name_en }}</td>
+                <td><span class="badge" style="background: var(--soft);">{{ gov.cities.count }}</span></td>
+                <td>
+                    {% if gov.is_active %}
+                        <span class="badge badge-success">نشط</span>
+                    {% else %}
+                        <span class="badge badge-danger">معطل</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'backend:governorate_edit' gov.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

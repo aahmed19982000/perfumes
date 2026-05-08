@@ -1,0 +1,105 @@
+{% extends "dashboard_admin/base_admin.html" %}
+{% load static i18n %}
+
+{% block admin_title %}تفاصيل الطلب #{{ order.order_number }}{% endblock %}
+
+{% block admin_content %}
+<div class="dash-header">
+    <h1 class="dash-title">الطلب #{{ order.order_number }}</h1>
+    <a href="{% url 'dashboard_admin:order_list' %}" class="btn btn-outline-dark">
+        <i class="ti ti-arrow-right"></i> عودة للقائمة
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Order Summary -->
+    <div class="col-lg-8">
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="dash-card-title">محتويات الطلب</div>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th>السعر</th>
+                            <th>الكمية</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items.all %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if item.product.thumbnail %}
+                                    <img src="{{ item.product.thumbnail.url }}" width="50" height="50" class="rounded">
+                                    {% endif %}
+                                    <div>{{ item.product.name_ar }}</div>
+                                </div>
+                            </td>
+                            <td>ج.م {{ item.price }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td class="fw-bold">ج.م {{ item.total }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-light">
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">الإجمالي الكلي</td>
+                            <td class="fw-bold text-gold fs-5">ج.م {{ order.total }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Actions & Customer Info -->
+    <div class="col-lg-4">
+        <!-- Status Update -->
+        <div class="dash-card mb-4">
+            <div class="dash-card-header">
+                <div class="dash-card-title">تحديث حالة الطلب</div>
+            </div>
+            <div class="p-4">
+                <form action="{% url 'dashboard_admin:update_status' order.pk %}" method="POST">
+                    {% csrf_token %}
+                    <select name="status" class="form-select mb-3">
+                        {% for code, label in order.Status.choices %}
+                        <option value="{{ code }}" {% if order.status == code %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-gold w-100 fw-bold">حفظ التغييرات</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="dash-card-title">بيانات العميل</div>
+            </div>
+            <div class="p-4">
+                <div class="mb-3">
+                    <label class="text-muted small">الاسم الكامل</label>
+                    <div class="fw-bold">{{ order.customer.get_full_name }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">رقم الهاتف</label>
+                    <div class="fw-bold">{{ order.customer.phone }}</div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small">عنوان الشحن</label>
+                    <div class="fw-bold">{{ order.address.get_full_address }}</div>
+                </div>
+                <div>
+                    <label class="text-muted small">تاريخ الطلب</label>
+                    <div class="fw-bold">{{ order.created_at|date:"d M Y, H:i" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

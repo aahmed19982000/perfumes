@@ -1,0 +1,111 @@
+{% extends 'backend/base.html' %}
+
+{% block title %}إدارة العملاء | لوحة التحكم{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">إدارة العملاء</h1>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>إجمالي العملاء</h3>
+            <p class="value">{{ total_customers_count }}</p>
+        </div>
+        <div class="stat-icon customers"><i class="fas fa-users"></i></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-info">
+            <h3>نشطون اليوم</h3>
+            <p class="value">{{ active_today_count }}</p>
+        </div>
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);"><i class="fas fa-bolt"></i></div>
+    </div>
+</div>
+
+<div class="filter-bar" style="background: var(--card-bg); padding: 15px 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color);">
+    <form method="GET" style="display: flex; gap: 15px; align-items: center;">
+        <div style="flex: 1; position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+            <input type="text" name="q" value="{{ q }}" class="form-input" placeholder="بحث بالاسم، البريد، أو الهاتف..." style="margin-bottom: 0; padding-left: 45px;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: 42px; padding: 0 25px;">بحث</button>
+        {% if q %}
+            <a href="{% url 'backend:customer_list' %}" class="btn" style="height: 42px; background: var(--bg-dark);"><i class="fas fa-undo"></i></a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>العميل</th>
+                <th>البريد الإلكتروني</th>
+                <th>الموقع</th>
+                <th>الطلبات</th>
+                <th>إجمالي المشتريات</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 35px; height: 35px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                            {{ customer.first_name|slice:":1" }}
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;">{{ customer.get_full_name }}</div>
+                            <small style="color: var(--text-muted);">#{{ customer.id }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ customer.email }}</td>
+                <td>
+                    {% with address=customer.get_default_address %}
+                        {% if address %}
+                            <i class="fas fa-map-marker-alt" style="color: var(--danger); margin-left: 5px;"></i>
+                            {{ address.city.name_ar }}، {{ address.governorate.name_ar }}
+                        {% else %}
+                            <span style="color: var(--text-muted);">غير محدد</span>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
+                        {{ customer.total_orders_count }} طلبات
+                    </span>
+                </td>
+                <td>
+                    <span style="color: var(--gold); font-weight: 700;">
+                        {{ customer.total_spent|default:0 }} ج.م
+                    </span>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="{% url 'backend:customer_edit' customer.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                    </div>
+                </td>
+{% if False %}
+                <td>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" style="background: transparent; color: var(--text-muted);"><i class="fas fa-comment-alt"></i></button>
+                        <a href="{% url 'backend:customer_edit' customer.pk %}" class="btn" style="background: transparent; color: var(--text-muted);"><i class="fas fa-edit"></i></a>
+                    </div>
+                </td>
+{% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 40px;">لا يوجد عملاء حالياً</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

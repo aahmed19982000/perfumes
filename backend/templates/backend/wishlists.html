@@ -1,0 +1,40 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">قوائم الأمنيات (Wishlists)</h1>
+    </div>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>العميل</th>
+                <th>عدد المنتجات</th>
+                <th>تاريخ الإنشاء</th>
+                <th>العمليات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for wishlist in wishlists %}
+            <tr>
+                <td>
+                    <div style="font-weight: 600;">{{ wishlist.customer.get_full_name }}</div>
+                    <small style="color: var(--text-muted);">{{ wishlist.customer.email }}</small>
+                </td>
+                <td><span class="badge" style="background: var(--soft);">{{ wishlist.total_items }} منتجات</span></td>
+                <td>{{ wishlist.created_at|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'backend:wishlist_detail' wishlist.pk %}" class="btn-icon" title="عرض العناصر"><i class="fas fa-heart"></i></a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
