@@ -16,6 +16,7 @@
         width: 100%;
         height: 85vh;
         background: #0a0a0a;
+        position: relative;
     }
     .hero-slide {
         position: relative;
@@ -78,6 +79,49 @@
     .btn-hero:hover {
         background: var(--white);
         transform: translateY(-5px);
+    }
+
+    /* ── Scroll Down Arrow ── */
+    .scroll-down {
+        position: absolute;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .scroll-down span {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,.6);
+    }
+    .scroll-arrow {
+        width: 38px;
+        height: 38px;
+        border: 2px solid rgba(255,255,255,.3);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold);
+        font-size: 18px;
+        animation: bounceDown 1.6s infinite;
+        transition: border-color .2s, background .2s;
+    }
+    .scroll-down:hover .scroll-arrow {
+        border-color: var(--gold);
+        background: rgba(201,169,110,.15);
+    }
+    @keyframes bounceDown {
+        0%, 100% { transform: translateY(0); }
+        50%       { transform: translateY(8px); }
     }
 
     /* ── Sections ── */
@@ -221,10 +265,16 @@
         {% endfor %}
     </div>
     <div class="swiper-pagination"></div>
+
+    <!-- Scroll Down Arrow -->
+    <a class="scroll-down" onclick="document.getElementById('categories-section').scrollIntoView({behavior:'smooth'})">
+        <span>{% if LANGUAGE_CODE == 'en' %}scroll{% else %}للأسفل{% endif %}</span>
+        <div class="scroll-arrow"><i class="ti ti-chevron-down"></i></div>
+    </a>
 </div>
 
 <!-- Categories -->
-<section class="section-padding">
+<section class="section-padding" id="categories-section">
     <div class="container">
         <div class="section-title-wrap">
             <span class="section-sub">{% if LANGUAGE_CODE == 'en' %}Explore{% else %}استكشف{% endif %}</span>
