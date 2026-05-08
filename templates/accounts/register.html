@@ -111,6 +111,25 @@
                 <input type="text" name="phone" class="form-control" placeholder="01xxxxxxxxx">
             </div>
 
+            <!-- WhatsApp Toggle -->
+            <div class="form-group">
+                <label class="whatsapp-toggle" for="id_has_whatsapp" style="display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: rgba(37,211,102,0.07); border: 1.5px solid rgba(37,211,102,0.25); border-radius: 14px; cursor: pointer; transition: background 0.2s;">
+                    <span style="position: relative; flex-shrink: 0;">
+                        <input type="checkbox" name="has_whatsapp" id="id_has_whatsapp"
+                            style="width: 20px; height: 20px; accent-color: #25D366; cursor: pointer;">
+                    </span>
+                    <span>
+                        <span style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; color: var(--ink);">
+                            <i class="fab fa-whatsapp" style="font-size: 20px; color: #25D366;"></i>
+                            {% if LANGUAGE_CODE == 'en' %}This number has WhatsApp{% else %}رقم هاتفي به واتساب{% endif %}
+                        </span>
+                        <span style="display: block; font-size: 12px; color: var(--mid); margin-top: 3px;">
+                            {% if LANGUAGE_CODE == 'en' %}We'll send you order updates via WhatsApp{% else %}سنرسل لك تحديثات طلباتك عبر الواتساب{% endif %}
+                        </span>
+                    </span>
+                </label>
+            </div>
+
             <div class="row">
                 <div class="col-md-6 form-group">
                     <label class="form-label">{% if LANGUAGE_CODE == 'en' %}Password{% else %}كلمة المرور{% endif %}</label>

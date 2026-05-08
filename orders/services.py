@@ -6,6 +6,11 @@ from accounts.models import Address
 from .tasks import send_order_confirmation_email
 
 
+class OutOfStockError(Exception):
+    """يُرفع عندما يكون مخزون أحد المنتجات غير كافٍ"""
+    pass
+
+
 @transaction.atomic
 def create_order_from_cart(customer, address_id, payment_method, notes=""):
     """
@@ -18,6 +23,11 @@ def create_order_from_cart(customer, address_id, payment_method, notes=""):
         raise ValueError("السلة فارغة")
 
     address = Address.objects.get(id=address_id, customer=customer)
+
+    # ── التحقق من المخزون قبل أي عملية ──────────────────────────
+    for item in cart.items.select_related("product"):
+        if item.product.stock < item.quantity:
+            raise OutOfStockError(item.product.name_ar or item.product.name_en)
 
     # ── حساب الخصم ───────────────────────────────────────────────
     discount_amount = cart.discount_amount

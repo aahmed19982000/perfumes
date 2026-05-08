@@ -25,6 +25,13 @@
             <label>رقم الهاتف</label>
             {{ form.phone }}
         </div>
+        <div class="form-group" style="background: rgba(37, 211, 102, 0.08); border: 1px solid rgba(37, 211, 102, 0.3); border-radius: 12px; padding: 15px 20px; display: flex; align-items: center; gap: 15px;">
+            {{ form.has_whatsapp }}
+            <div>
+                <label style="margin: 0; font-weight: 700; color: var(--text); cursor: pointer;">رقم الهاتف به واتساب؟</label>
+                <p style="margin: 3px 0 0; font-size: 0.8rem; color: var(--text-muted);">فعّل هذا الخيار لإرسال إشعارات الطلبات عبر واتساب</p>
+            </div>
+        </div>
         <div class="form-group">
             <label>الصلاحية</label>
             {{ form.role }}

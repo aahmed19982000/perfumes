@@ -9,7 +9,7 @@ from django.utils import timezone
 from .models import Cart, CartItem, Order, Coupon
 from products.models import Product
 from django.contrib import messages
-from .services import create_order_from_cart
+from .services import create_order_from_cart, OutOfStockError
 
 
 
@@ -280,6 +280,15 @@ def checkout_view(request):
                     notes          = notes,
                 )
                 return redirect("order_success", order_number=order.order_number)
+            except OutOfStockError as product_name:
+                # المنتج نفد من المخزون — تحويل العميل لصفحة المنتجات مع رسالة واضحة
+                lang = getattr(request, 'LANGUAGE_CODE', 'ar')
+                if lang == 'en':
+                    msg = f'Sorry, "{product_name}" is out of stock. Please choose another product.'
+                else:
+                    msg = f'عذراً، المنتج "{product_name}" نفد من المخزون. يرجى اختيار منتج آخر.'
+                messages.error(request, msg)
+                return redirect("products")
             except Exception as e:
                 messages.error(request, str(e))
 
