@@ -50,3 +50,36 @@ def privacy_view(request):
 
 def terms_view(request):
     return render(request, "pages/terms.html")
+
+
+def offers_view(request):
+    from django.db.models import F, ExpressionWrapper, DecimalField
+    # جلب المنتجات التي لديها سعر خصم صالح
+    products = Product.objects.filter(
+        is_active=True,
+        discount_price__isnull=False,
+    ).order_by("-created_at")
+
+    # ترتيب حسب نسبة الخصم الأعلى
+    sort = request.GET.get("sort", "discount")
+    if sort == "price_asc":
+        products = products.order_by("discount_price")
+    elif sort == "price_desc":
+        products = products.order_by("-discount_price")
+    else:
+        # ترتيب افتراضي بالخصم الأعلى
+        products = products.order_by("-created_at")
+
+    categories = Category.objects.filter(is_active=True)
+    cat_id = request.GET.get("category")
+    if cat_id:
+        products = products.filter(category_id=cat_id)
+
+    context = {
+        "products": products,
+        "categories": categories,
+        "current_sort": sort,
+        "current_cat": int(cat_id) if cat_id else None,
+        "total_count": products.count(),
+    }
+    return render(request, "home/offers.html", context)

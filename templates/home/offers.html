@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if LANGUAGE_CODE == 'en' %}Offers & Discounts{% else %}العروض والخصومات{% endif %} - Mava Perfumes{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Hero Banner ── */
+    .offers-hero {
+        background: linear-gradient(135deg, #0f0f0f 0%, #1a1008 50%, #0f0f0f 100%);
+        padding: 80px 0;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    .offers-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(201,169,110,0.15) 0%, transparent 70%);
+    }
+    .offers-hero .floating-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(201,169,110,0.15);
+        border: 1px solid rgba(201,169,110,0.3);
+        color: var(--gold);
+        padding: 6px 18px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .05em;
+        margin-bottom: 20px;
+    }
+    .offers-hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 15px;
+        line-height: 1.1;
+    }
+    .offers-hero h1 span { color: var(--gold); }
+    .offers-hero p {
+        color: #888;
+        font-size: 1.1rem;
+        margin-bottom: 0;
+    }
+
+    /* ── Countdown Timer ── */
+    .countdown-bar {
+        background: var(--gold);
+        padding: 12px 0;
+        text-align: center;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--ink);
+        letter-spacing: .04em;
+    }
+    .countdown-bar .timer {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        margin-inline-start: 20px;
+    }
+    .timer-unit {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        background: var(--ink);
+        color: var(--gold);
+        border-radius: 8px;
+        padding: 4px 12px;
+        min-width: 48px;
+    }
+    .timer-value { font-size: 1.4rem; font-weight: 700; line-height: 1; }
+    .timer-label { font-size: 9px; color: #888; letter-spacing: .08em; }
+
+    /* ── Filters Bar ── */
+    .filters-bar {
+        background: var(--white);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 0;
+        position: sticky;
+        top: var(--header-total);
+        z-index: 100;
+        box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    }
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 16px;
+        border: 1.5px solid var(--border);
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--mid);
+        background: var(--white);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .2s;
+    }
+    .filter-chip:hover, .filter-chip.active {
+        border-color: var(--gold);
+        color: var(--gold-dark);
+        background: rgba(201,169,110,0.06);
+    }
+    .filter-chip.active { background: var(--gold); color: var(--white); border-color: var(--gold); }
+
+    /* ── Product Grid ── */
+    .offers-grid { padding: 50px 0; }
+
+    .offer-card {
+        background: var(--white);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        transition: transform .3s, box-shadow .3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    .offer-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,.1);
+        border-color: var(--gold-light);
+    }
+    .offer-img-wrap {
+        position: relative;
+        aspect-ratio: 1/1;
+        overflow: hidden;
+        background: var(--soft);
+    }
+    .offer-img-wrap img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform .5s ease;
+    }
+    .offer-card:hover .offer-img-wrap img { transform: scale(1.08); }
+
+    /* Discount Badge */
+    .discount-badge {
+        position: absolute;
+        top: 14px;
+        inset-inline-start: 14px;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        padding: 6px 12px;
+        border-radius: 10px;
+        z-index: 3;
+        box-shadow: 0 4px 12px rgba(231,76,60,.4);
+        letter-spacing: .02em;
+    }
+
+    /* Savings Pill */
+    .savings-pill {
+        position: absolute;
+        bottom: 14px;
+        inset-inline-end: 14px;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(4px);
+        color: var(--gold);
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        z-index: 3;
+    }
+
+    .offer-actions {
+        position: absolute;
+        bottom: 50px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        gap: 8px;
+        transform: translateY(120%);
+        transition: transform .3s ease;
+        z-index: 5;
+    }
+    .offer-card:hover .offer-actions { transform: translateY(0); }
+
+    .offer-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+    .offer-category { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+    .offer-title { font-size: 15px; font-weight: 700; color: var(--ink); margin-bottom: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .offer-title a { color: inherit; text-decoration: none; }
+    .offer-price { margin-top: auto; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .price-new { font-size: 1.2rem; font-weight: 800; color: var(--gold-dark); }
+    .price-was { font-size: 0.9rem; color: #bbb; text-decoration: line-through; }
+    .price-save { font-size: 11px; font-weight: 700; background: rgba(231,76,60,.1); color: #e74c3c; padding: 2px 8px; border-radius: 6px; }
+
+    .btn-add-cart {
+        width: 100%;
+        padding: 12px;
+        background: var(--ink);
+        color: var(--white);
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background .2s;
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-add-cart:hover { background: var(--gold-dark); }
+
+    /* Empty State */
+    .empty-offers {
+        text-align: center;
+        padding: 100px 20px;
+    }
+    .empty-offers i { font-size: 5rem; color: var(--gold); opacity: .3; }
+
+    /* Stats bar */
+    .stats-bar {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .stat-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mid); }
+    .stat-item strong { color: var(--ink); font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="offers-hero">
+    <div class="container position-relative">
+        <div class="floating-tag">
+            <i class="ti ti-flame"></i>
+            {% if LANGUAGE_CODE == 'en' %}Limited Time Offers{% else %}عروض لفترة محدودة{% endif %}
+        </div>
+        <h1>
+            {% if LANGUAGE_CODE == 'en' %}
+                Hot <span>Deals</span> & Discounts
+            {% else %}
+                العروض <span>الحصرية</span> والخصومات
+            {% endif %}
+        </h1>
+        <p>
+            {% if LANGUAGE_CODE == 'en' %}
+                {{ total_count }} products with special prices — don't miss out
+            {% else %}
+                {{ total_count }} منتج بأسعار مخفضة — لا تفوّت الفرصة
+            {% endif %}
+        </p>
+    </div>
+</section>
+
+<!-- Countdown -->
+<div class="countdown-bar">
+    <span>{% if LANGUAGE_CODE == 'en' %}Offers end in:{% else %}تنتهي العروض خلال:{% endif %}</span>
+    <div class="timer" id="countdown">
+        <div class="timer-unit"><span class="timer-value" id="cd-h">00</span><span class="timer-label">{% if LANGUAGE_CODE == 'en' %}HRS{% else %}س{% endif %}</span></div>
+        <span style="color: var(--gold); font-size: 1.2rem;">:</span>
+        <div class="timer-unit"><span class="timer-value" id="cd-m">00</span><span class="timer-label">{% if LANGUAGE_CODE == 'en' %}MIN{% else %}د{% endif %}</span></div>
+        <span style="color: var(--gold); font-size: 1.2rem;">:</span>
+        <div class="timer-unit"><span class="timer-value" id="cd-s">00</span><span class="timer-label">{% if LANGUAGE_CODE == 'en' %}SEC{% else %}ث{% endif %}</span></div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="stats-bar me-auto">
+                <div class="stat-item">
+                    <i class="ti ti-tag" style="color:var(--gold)"></i>
+                    <strong>{{ total_count }}</strong>
+                    {% if LANGUAGE_CODE == 'en' %}Offers{% else %}عرض{% endif %}
+                </div>
+            </div>
+
+            <!-- Sort -->
+            <div class="d-flex gap-2 flex-wrap align-items-center">
+                <span style="font-size:12px;color:var(--mid);font-weight:600;">
+                    {% if LANGUAGE_CODE == 'en' %}Sort:{% else %}ترتيب:{% endif %}
+                </span>
+                <a href="?sort=discount{% if current_cat %}&category={{ current_cat }}{% endif %}"
+                   class="filter-chip {% if current_sort == 'discount' or not current_sort %}active{% endif %}">
+                    {% if LANGUAGE_CODE == 'en' %}Top Deals{% else %}أعلى خصم{% endif %}
+                </a>
+                <a href="?sort=price_asc{% if current_cat %}&category={{ current_cat }}{% endif %}"
+                   class="filter-chip {% if current_sort == 'price_asc' %}active{% endif %}">
+                    {% if LANGUAGE_CODE == 'en' %}Lowest Price{% else %}أقل سعر{% endif %}
+                </a>
+                <a href="?sort=price_desc{% if current_cat %}&category={{ current_cat }}{% endif %}"
+                   class="filter-chip {% if current_sort == 'price_desc' %}active{% endif %}">
+                    {% if LANGUAGE_CODE == 'en' %}Highest Price{% else %}أعلى سعر{% endif %}
+                </a>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="?sort={{ current_sort }}"
+                   class="filter-chip {% if not current_cat %}active{% endif %}">
+                    {% if LANGUAGE_CODE == 'en' %}All{% else %}الكل{% endif %}
+                </a>
+                {% for cat in categories %}
+                <a href="?sort={{ current_sort }}&category={{ cat.id }}"
+                   class="filter-chip {% if current_cat == cat.id %}active{% endif %}">
+                    {% if LANGUAGE_CODE == 'en' %}{{ cat.name_en }}{% else %}{{ cat.name_ar }}{% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products -->
+<section class="offers-grid">
+    <div class="container">
+        {% if products %}
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="offer-card">
+                    <div class="offer-img-wrap">
+                        <div class="discount-badge">-{{ product.discount_percent }}%</div>
+                        {% if product.thumbnail %}
+                        <img src="{{ product.thumbnail.url }}" alt="{{ product.name_ar }}" loading="lazy">
+                        {% endif %}
+                        <div class="savings-pill">
+                            {% if LANGUAGE_CODE == 'en' %}Save{% else %}وفّر{% endif %}
+                            {{ product.price|floatformat:0 }} - {{ product.discount_price|floatformat:0 }}
+                        </div>
+                        <div class="offer-actions">
+                            <button type="button" class="action-btn" onclick="addToWishlist({{ product.id }})">
+                                <i class="ti ti-heart"></i>
+                            </button>
+                            <a href="{% url 'product_detail' product.slug %}" class="action-btn">
+                                <i class="ti ti-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="offer-body">
+                        <div class="offer-category">
+                            {% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}
+                        </div>
+                        <h3 class="offer-title">
+                            <a href="{% url 'product_detail' product.slug %}">
+                                {% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}
+                            </a>
+                        </h3>
+                        <div class="offer-price">
+                            <span class="price-new">ج.م {{ product.discount_price }}</span>
+                            <span class="price-was">ج.م {{ product.price }}</span>
+                        </div>
+                        <button class="btn-add-cart" onclick="addToCart({{ product.id }}, 1)">
+                            <i class="ti ti-shopping-cart-plus"></i>
+                            {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-offers">
+            <i class="ti ti-mood-sad d-block mb-4"></i>
+            <h3>{% if LANGUAGE_CODE == 'en' %}No Offers Available{% else %}لا توجد عروض حالياً{% endif %}</h3>
+            <p class="text-muted">{% if LANGUAGE_CODE == 'en' %}Check back soon for great deals!{% else %}تابعنا قريباً لعروض رائعة!{% endif %}</p>
+            <a href="{% url 'products' %}" class="btn-hero" style="margin-top: 20px; display: inline-block;">
+                {% if LANGUAGE_CODE == 'en' %}Browse All Products{% else %}تصفح جميع المنتجات{% endif %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Countdown Timer — ينتهي الساعة منتصف الليل
+function updateCountdown() {
+    const now = new Date();
+    const midnight = new Date();
+    midnight.setHours(23, 59, 59, 999);
+    const diff = midnight - now;
+
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+
+    document.getElementById('cd-h').textContent = String(h).padStart(2, '0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2, '0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2, '0');
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+{% endblock %}

@@ -30,6 +30,7 @@ urlpatterns = [
     path("faq/",     views.faq_view,     name="faq"),
     path("privacy/", views.privacy_view, name="privacy"),
     path("terms/",   views.terms_view,   name="terms"),
+    path("offers/",  views.offers_view,  name="offers"),
 ]
 
 if settings.DEBUG:

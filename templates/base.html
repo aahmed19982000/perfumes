@@ -263,6 +263,44 @@
             document.querySelectorAll('.badge-count, .mob-bar-badge').forEach(b => b.textContent = count);
         }
 
+        async function addToCart(productId, quantity = 1) {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            formData.append('quantity', quantity);
+            try {
+                const res = await fetch(`/cart/add/${productId}/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    showToast(data.message || '{% if LANGUAGE_CODE == "en" %}Added to cart{% else %}تمت الإضافة للسلة{% endif %}', 'success');
+                    updateGlobalCartCount(data.cart_count);
+                } else {
+                    showToast(data.message || '{% if LANGUAGE_CODE == "en" %}Error adding to cart{% else %}خطأ أثناء الإضافة للسلة{% endif %}', 'error');
+                }
+            } catch (e) {
+                showToast('{% if LANGUAGE_CODE == "en" %}Connection error{% else %}خطأ في الاتصال{% endif %}', 'error');
+            }
+        }
+
+        async function addToWishlist(productId) {
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            try {
+                const res = await fetch(`/wishlist/toggle/${productId}/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                showToast(data.message || '{% if LANGUAGE_CODE == "en" %}Updated{% else %}تم التحديث{% endif %}', data.status === 'added' ? 'success' : 'info');
+            } catch (e) {
+                showToast('{% if LANGUAGE_CODE == "en" %}Connection error{% else %}خطأ في الاتصال{% endif %}', 'error');
+            }
+        }
+
         // Auto-display Django Messages
         document.addEventListener('DOMContentLoaded', function() {
             {% if messages %}
