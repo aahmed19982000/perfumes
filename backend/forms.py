@@ -131,3 +131,26 @@ class CityForm(forms.ModelForm):
             'name_en': forms.TextInput(attrs={'class': 'form-input'}),
             'shipping_cost': forms.NumberInput(attrs={'class': 'form-input'}),
         }
+
+
+from orders.models import Offer
+
+class OfferForm(forms.ModelForm):
+    class Meta:
+        model  = Offer
+        fields = [
+            'name_ar', 'name_en', 'description', 'offer_type',
+            'is_active', 'valid_from', 'valid_to',
+            'apply_to_all', 'eligible_products', 'eligible_categories',
+            'buy_quantity', 'get_quantity', 'free_product',
+            'discount_percent',
+            'min_quantity', 'quantity_discount_percent',
+            'min_order_amount',
+        ]
+        widgets = {
+            'valid_from':          forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'valid_to':            forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description':         forms.Textarea(attrs={'rows': 3}),
+            'eligible_products':   forms.SelectMultiple(attrs={'size': 6}),
+            'eligible_categories': forms.SelectMultiple(attrs={'size': 4}),
+        }

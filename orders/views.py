@@ -15,80 +15,103 @@ from .services import create_order_from_cart, OutOfStockError
 
 
 def get_cart_data(request):
-    """
-    يوحد التعامل مع السلة سواء للمسجلين أو الضيوف مع دعم الكوبونات
-    """
+    from .services import apply_single_offer, get_available_offers_for_cart
+
+    selected_offer_id = request.session.get('selected_offer_id')
+
     if request.user.is_authenticated:
         cart, created = Cart.objects.get_or_create(customer=request.user)
         items = []
         for item in cart.items.select_related('product'):
             items.append({
-                'id': item.id,
-                'product': item.product,
-                'quantity': item.quantity,
+                'id':         item.id,
+                'product':    item.product,
+                'quantity':   item.quantity,
                 'unit_price': item.unit_price,
                 'line_total': item.line_total,
             })
-        return {
-            'items':           items,
-            'total_items':     cart.total_items,
-            'subtotal':        cart.subtotal,
-            'discount_amount': cart.discount_amount,
-            'total':           cart.total,
-            'coupon_code':     cart.coupon.code if cart.coupon else None,
-            'is_empty':        cart.is_empty,
-        }
+
+        subtotal        = cart.subtotal
+        coupon_discount = cart.discount_amount
+        coupon_code     = cart.coupon.code if cart.coupon else None
+
     else:
-        # للضيوف: تخزين في السيشن
         session_cart = request.session.get('cart', {})
         items = []
-        subtotal = 0
+        subtotal    = 0
         total_items = 0
-        
-        # التأكد من صحة البيانات في السيشن وحذف المنتجات غير الموجودة
-        to_delete = []
+        to_delete   = []
+
         for p_id, qty in session_cart.items():
             product = Product.objects.filter(id=p_id, is_active=True).first()
             if product:
-                price = product.final_price
+                price      = product.final_price
                 line_total = price * qty
                 items.append({
-                    'id': p_id,
-                    'product': product,
-                    'quantity': qty,
+                    'id':         p_id,
+                    'product':    product,
+                    'quantity':   qty,
                     'unit_price': price,
                     'line_total': line_total,
                 })
-                subtotal += line_total
+                subtotal    += line_total
                 total_items += qty
             else:
                 to_delete.append(p_id)
-        
+
         for p_id in to_delete:
             del session_cart[p_id]
         if to_delete:
             request.session.modified = True
-            
-        # معالجة الكوبون للضيوف
-        coupon_id = request.session.get('coupon_id')
-        discount_amount = 0
-        coupon_code = None
+
+        coupon_id       = request.session.get('coupon_id')
+        coupon_discount = 0
+        coupon_code     = None
         if coupon_id:
             coupon = Coupon.objects.filter(id=coupon_id, active=True).first()
             if coupon:
-                discount_amount = (subtotal * coupon.discount) / 100
-                coupon_code = coupon.code
+                coupon_discount = (subtotal * coupon.discount) / 100
+                coupon_code     = coupon.code
 
-        return {
-            'items':           items,
-            'total_items':     total_items,
-            'subtotal':        subtotal,
-            'discount_amount': discount_amount,
-            'total':           subtotal - discount_amount,
-            'coupon_code':     coupon_code,
-            'is_empty':        not items,
+    # ── العروض المتاحة للاختيار ──────────────────────
+    available_offers = get_available_offers_for_cart(items, subtotal)
+
+    # ── تطبيق العرض المختار فقط ──────────────────────
+    if selected_offer_id:
+        offers_result = apply_single_offer(items, subtotal, selected_offer_id)
+    else:
+        offers_result = {
+            'discount_amount': 0,
+            'free_items':      [],
+            'free_shipping':   False,
+            'applied_offers':  [],
         }
 
+    offers_discount = offers_result['discount_amount']
+    total_discount  = coupon_discount + offers_discount
+
+    base = {
+        'items':            items,
+        'subtotal':         subtotal,
+        'coupon_discount':  coupon_discount,
+        'offers_discount':  offers_discount,
+        'discount_amount':  total_discount,
+        'total':            max(subtotal - total_discount, 0),
+        'coupon_code':      coupon_code,
+        'is_empty':         not items,
+        'free_items':       offers_result['free_items'],
+        'free_shipping':    offers_result['free_shipping'],
+        'applied_offers':   offers_result['applied_offers'],
+        'available_offers': available_offers,
+        'selected_offer_id': selected_offer_id,
+    }
+
+    if request.user.is_authenticated:
+        base['total_items'] = cart.total_items
+    else:
+        base['total_items'] = total_items
+
+    return base
 
 def cart_view(request):
     cart_data = get_cart_data(request)
@@ -244,60 +267,93 @@ def checkout_view(request):
         return redirect("cart")
 
     from accounts.models import Governorate, Address, City
+    from .services import apply_single_offer
+
     addresses    = request.user.addresses.all()
     governorates = Governorate.objects.filter(is_active=True)
+
+    # ── حساب العروض للعرض في صفحة الـ checkout ──────────
+    cart_items = []
+    for item in cart.items.select_related('product'):
+        cart_items.append({
+            'id':         item.id,
+            'product':    item.product,
+            'quantity':   item.quantity,
+            'unit_price': item.unit_price,
+            'line_total': item.line_total,
+        })
+
+    selected_offer_id = request.session.get('selected_offer_id')
+    if selected_offer_id:
+        offers_result = apply_single_offer(cart_items, cart.subtotal, selected_offer_id)
+    else:
+        offers_result = {
+            'discount_amount': 0,
+            'free_items':      [],
+            'free_shipping':   False,
+            'applied_offers':  [],
+        }
+
+    # cart_context يجمع بيانات السلة + العروض للـ template
+    cart_context = {
+        'items':           cart_items,
+        'subtotal':        cart.subtotal,
+        'discount_amount': cart.discount_amount + offers_result['discount_amount'],
+        'total':           max(cart.subtotal - cart.discount_amount - offers_result['discount_amount'], 0),
+        'applied_offers':  offers_result['applied_offers'],
+        'free_items':      offers_result['free_items'],
+        'free_shipping':   offers_result['free_shipping'],
+    }
 
     if request.method == "POST":
         address_id     = request.POST.get("address_id")
         payment_method = request.POST.get("payment_method", "cod")
         notes          = request.POST.get("notes", "")
 
-        # ── معالجة عنوان جديد ──────────────────────────────────────
         if not address_id and request.POST.get("new_full_name"):
             try:
                 new_addr = Address.objects.create(
-                    customer     = request.user,
-                    full_name    = request.POST.get("new_full_name"),
-                    phone        = request.POST.get("new_phone"),
+                    customer       = request.user,
+                    full_name      = request.POST.get("new_full_name"),
+                    phone          = request.POST.get("new_phone"),
                     governorate_id = request.POST.get("new_governorate"),
                     city_id        = request.POST.get("new_city"),
-                    street       = request.POST.get("new_street"),
-                    building     = request.POST.get("new_building"),
-                    is_default   = request.POST.get("save_address") == "on"
+                    street         = request.POST.get("new_street"),
+                    building       = request.POST.get("new_building"),
+                    is_default     = request.POST.get("save_address") == "on"
                 )
                 address_id = new_addr.id
             except Exception as e:
                 messages.error(request, f"خطأ في إنشاء العنوان: {str(e)}")
 
         if not address_id:
-            messages.error(request, "يرجى اختيار عنوان الشحن") if request.LANGUAGE_CODE == 'ar' else messages.error(request, "Please select a shipping address")
+            messages.error(request, "يرجى اختيار عنوان الشحن")
         else:
             try:
                 order = create_order_from_cart(
-                    customer       = request.user,
-                    address_id     = address_id,
-                    payment_method = payment_method,
-                    notes          = notes,
+                    customer          = request.user,
+                    address_id        = address_id,
+                    payment_method    = payment_method,
+                    notes             = notes,
+                    selected_offer_id = selected_offer_id,
                 )
+                # امسح العرض من السيشن بعد الطلب
+                if 'selected_offer_id' in request.session:
+                    del request.session['selected_offer_id']
                 return redirect("order_success", order_number=order.order_number)
             except OutOfStockError as product_name:
-                # المنتج نفد من المخزون — تحويل العميل لصفحة المنتجات مع رسالة واضحة
                 lang = getattr(request, 'LANGUAGE_CODE', 'ar')
-                if lang == 'en':
-                    msg = f'Sorry, "{product_name}" is out of stock. Please choose another product.'
-                else:
-                    msg = f'عذراً، المنتج "{product_name}" نفد من المخزون. يرجى اختيار منتج آخر.'
+                msg  = f'عذراً، المنتج "{product_name}" نفد من المخزون.' if lang != 'en' else f'Sorry, "{product_name}" is out of stock.'
                 messages.error(request, msg)
                 return redirect("products")
             except Exception as e:
                 messages.error(request, str(e))
 
     return render(request, "orders/checkout.html", {
-        "cart":         cart,
+        "cart":         cart_context,
         "addresses":    addresses,
         "governorates": governorates,
     })
-
 
 @login_required
 def order_success_view(request, order_number):
@@ -398,4 +454,16 @@ def remove_coupon(request):
             request.session.modified = True
             
     messages.success(request, _("تم إزالة الكوبون") if request.LANGUAGE_CODE == 'ar' else "Coupon removed")
-    return redirect("cart")
+    return redirect("cart")
+
+@require_POST
+def select_offer(request):
+    offer_id = request.POST.get('offer_id')
+    if offer_id == 'none':
+        # إلغاء العرض
+        if 'selected_offer_id' in request.session:
+            del request.session['selected_offer_id']
+    else:
+        request.session['selected_offer_id'] = int(offer_id)
+    request.session.modified = True
+    return redirect('cart')

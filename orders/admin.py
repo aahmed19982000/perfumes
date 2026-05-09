@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Cart, CartItem, Order, OrderItem , Coupon
+from .models import Cart, CartItem, Order, OrderItem , Coupon , Offer
 
 
 class CartItemInline(admin.TabularInline):
@@ -101,4 +101,41 @@ class CouponAdmin(admin.ModelAdmin):
             "fields": ("created_at", "updated_at"),
             "classes": ("collapse",)
         }),
-    )
+    )
+
+
+@admin.register(Offer)
+class OfferAdmin(admin.ModelAdmin):
+    list_display       = ['name_ar', 'offer_type', 'is_active', 'valid_from', 'valid_to', 'is_valid_now']
+    list_filter        = ['offer_type', 'is_active']
+    search_fields      = ['name_ar', 'name_en']
+    filter_horizontal  = ['eligible_products', 'eligible_categories']
+
+    fieldsets = (
+        ('معلومات أساسية', {
+            'fields': ('name_ar', 'name_en', 'description', 'offer_type', 'is_active', 'valid_from', 'valid_to')
+        }),
+        ('المنتجات المؤهلة', {
+            'fields': ('apply_to_all', 'eligible_products', 'eligible_categories')
+        }),
+        ('BOGO — اشتري X وخذ Y', {
+            'fields': ('buy_quantity', 'get_quantity', 'free_product'),
+            'classes': ('collapse',)
+        }),
+        ('خصم نسبة مئوية', {
+            'fields': ('discount_percent',),
+            'classes': ('collapse',)
+        }),
+        ('خصم الكمية', {
+            'fields': ('min_quantity', 'quantity_discount_percent'),
+            'classes': ('collapse',)
+        }),
+        ('شحن مجاني', {
+            'fields': ('min_order_amount',),
+            'classes': ('collapse',)
+        }),
+    )
+
+    @admin.display(boolean=True, description="نشط الآن؟")
+    def is_valid_now(self, obj):
+        return obj.is_valid

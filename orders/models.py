@@ -4,6 +4,9 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import uuid
+from django.utils import timezone
+from products.models import Product, Category
+
 
 
 class Coupon(models.Model):
@@ -271,4 +274,64 @@ def order_status_changed(sender, instance, created, **kwargs):
     if not created and instance.status != getattr(instance, '_original_status', None):
         # Update original status to avoid double triggers if saved again in same request
         # Update original status to avoid double triggers if saved again in same request
-        instance._original_status = instance.status
+        instance._original_status = instance.status
+
+
+
+
+class Offer(models.Model):
+
+    class OfferType(models.TextChoices):
+        BOGO          = 'bogo',          'اشتري X وخذ Y مجاناً'
+        PERCENTAGE    = 'percentage',    'خصم نسبة مئوية'
+        QUANTITY      = 'quantity',      'خصم عند شراء كمية معينة'
+        FREE_SHIPPING = 'free_shipping', 'شحن مجاني'
+
+    # ── معلومات أساسية ─────────────────────────────────
+    name_ar     = models.CharField(max_length=200, verbose_name="اسم العرض بالعربي")
+    name_en     = models.CharField(max_length=200, blank=True, verbose_name="اسم العرض بالإنجليزي")
+    description = models.TextField(blank=True, verbose_name="وصف العرض")
+    offer_type  = models.CharField(max_length=20, choices=OfferType.choices, verbose_name="نوع العرض")
+    is_active   = models.BooleanField(default=True, verbose_name="نشط")
+    valid_from  = models.DateTimeField(verbose_name="يبدأ من")
+    valid_to    = models.DateTimeField(verbose_name="ينتهي في")
+
+    # ── المنتجات والفئات المؤهلة ────────────────────────
+    apply_to_all        = models.BooleanField(default=False, verbose_name="ينطبق على كل المنتجات")
+    eligible_products   = models.ManyToManyField(Product,  blank=True, related_name="offers",  verbose_name="المنتجات")
+    eligible_categories = models.ManyToManyField(Category, blank=True, related_name="offers",  verbose_name="الفئات")
+
+    # ── BOGO ────────────────────────────────────────────
+    buy_quantity = models.PositiveIntegerField(default=2, verbose_name="اشتري كمية")
+    get_quantity = models.PositiveIntegerField(default=1, verbose_name="احصل على كمية مجاناً")
+    free_product = models.ForeignKey(
+        Product, null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="free_in_offers",
+        verbose_name="المنتج المجاني (فارغ = نفس المنتج)"
+    )
+
+    # ── خصم % ──────────────────────────────────────────
+    discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="نسبة الخصم %")
+
+    # ── خصم الكمية ─────────────────────────────────────
+    min_quantity              = models.PositiveIntegerField(default=1, verbose_name="الحد الأدنى للكمية")
+    quantity_discount_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="نسبة خصم الكمية %")
+
+    # ── شحن مجاني ───────────────────────────────────────
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="الحد الأدنى لمبلغ الطلب")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = "عرض"
+        verbose_name_plural = "العروض"
+        ordering            = ["-created_at"]
+
+    def __str__(self):
+        return self.name_ar
+
+    @property
+    def is_valid(self):
+        now = timezone.now()
+        return self.is_active and self.valid_from <= now <= self.valid_to

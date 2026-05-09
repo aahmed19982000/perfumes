@@ -47,9 +47,7 @@
         flex-shrink: 0;
     }
 
-    .cart-item-info {
-        flex: 1;
-    }
+    .cart-item-info { flex: 1; }
 
     .cart-item-name {
         font-size: 16px;
@@ -135,7 +133,7 @@
 
     .btn-remove:hover {
         background: #e74c3c;
-        color: #white;
+        color: white;
     }
 
     /* ── Summary ── */
@@ -190,6 +188,47 @@
         transform: translateY(-2px);
     }
 
+    /* ── Offer Badges ── */
+    .offer-badge {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        border-radius: 10px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .offer-badge.offer-green {
+        background: rgba(34, 197, 94, 0.08);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        color: #16a34a;
+    }
+
+    .offer-badge.offer-blue {
+        background: rgba(59, 130, 246, 0.08);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: #2563eb;
+    }
+
+    .offer-badge.offer-yellow {
+        background: rgba(234, 179, 8, 0.08);
+        border: 1px solid rgba(234, 179, 8, 0.25);
+        color: #854d0e;
+    }
+
+    .offer-badge i {
+        font-size: 1rem;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .offer-badge.offer-green i  { color: #22c55e; }
+    .offer-badge.offer-blue  i  { color: #3b82f6; }
+    .offer-badge.offer-yellow i { color: #eab308; }
+
+    /* ── Empty State ── */
     .empty-state {
         text-align: center;
         padding: 100px 20px;
@@ -213,7 +252,8 @@
 
     {% if cart.items %}
     <div class="row g-4">
-        <!-- Items List -->
+
+        <!-- ── Items List ── -->
         <div class="col-lg-8">
             <div id="cartItemsList">
                 {% for item in cart.items %}
@@ -252,41 +292,156 @@
             </div>
         </div>
 
-        <!-- Summary -->
+        <!-- ── Summary ── -->
         <div class="col-lg-4">
             <div class="summary-card">
-                <h3 class="summary-title">{% if LANGUAGE_CODE == 'en' %}Order Summary{% else %}ملخص الطلب{% endif %}
+                <h3 class="summary-title">
+                    {% if LANGUAGE_CODE == 'en' %}Order Summary{% else %}ملخص الطلب{% endif %}
                 </h3>
 
+                <!-- المجموع الجزئي -->
                 <div class="summary-row">
                     <span>{% if LANGUAGE_CODE == 'en' %}Subtotal{% else %}المجموع الجزئي{% endif %}</span>
                     <span id="cartSubtotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.subtotal }}</span>
                 </div>
 
-                {% if cart.discount_amount > 0 %}
+                <!-- خصم الكوبون -->
+                {% if cart.coupon_discount > 0 %}
                 <div class="summary-row text-success">
-                    <span>{% if LANGUAGE_CODE == 'en' %}Discount{% else %}الخصم{% endif %}</span>
-                    <span id="cartDiscount">- {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.discount_amount }}</span>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Coupon Discount{% else %}خصم الكوبون{% endif %}</span>
+                    <span>- {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.coupon_discount }}</span>
                 </div>
                 {% endif %}
 
+                <!-- خصم العروض -->
+                {% if cart.offers_discount > 0 %}
+                <div class="summary-row text-success">
+                    <span>{% if LANGUAGE_CODE == 'en' %}Offers Discount{% else %}خصم العروض{% endif %}</span>
+                    <span id="cartDiscount">- {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.offers_discount }}</span>
+                </div>
+                {% endif %}
+
+                <!-- تفاصيل العروض المطبقة -->
+                {% if cart.applied_offers %}
+                <div style="margin-bottom: 8px;">
+                    {% for applied in cart.applied_offers %}
+                    <div class="offer-badge offer-green">
+                        <i class="ti ti-gift"></i>
+                        <span>{{ applied.description }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- شحن مجاني -->
+                {% if cart.free_shipping %}
+                <div class="offer-badge offer-blue" style="margin-bottom: 8px;">
+                    <i class="ti ti-truck-delivery"></i>
+                    <span>{% if LANGUAGE_CODE == 'en' %}Free shipping applied!{% else %}تم تطبيق الشحن المجاني!{% endif %}</span>
+                </div>
+                {% endif %}
+
+                <!-- منتجات مجانية -->
+                {% if cart.free_items %}
+                <div style="margin-bottom: 8px;">
+                    {% for free in cart.free_items %}
+                    <div class="offer-badge offer-yellow">
+                        <i class="ti ti-star-filled"></i>
+                        <div>
+                            <div>{% if LANGUAGE_CODE == 'en' %}Free Item{% else %}منتج مجاني{% endif %}: {{ free.product.name_ar }}</div>
+                            <div style="font-size: 0.75rem; opacity: 0.8;">
+                                {% if LANGUAGE_CODE == 'en' %}Quantity{% else %}الكمية{% endif %}: {{ free.quantity }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- الإجمالي -->
                 <div class="summary-row total">
                     <span>{% if LANGUAGE_CODE == 'en' %}Total{% else %}الإجمالي{% endif %}</span>
                     <span id="cartTotal">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ cart.total }}</span>
                 </div>
 
-                <!-- Coupon Section -->
+                {% if cart.available_offers %}
+<div class="mt-3 mb-3 pt-3 border-top">
+    <div class="small fw-bold mb-2">
+        <i class="ti ti-gift" style="color:var(--gold)"></i>
+        {% if LANGUAGE_CODE == 'en' %}Available Offers{% else %}العروض المتاحة{% endif %}
+    </div>
+    <form action="{% url 'select_offer' %}" method="POST">
+        {% csrf_token %}
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;">
+
+            <!-- بدون عرض -->
+            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;
+                          background: var(--white); border: 1.5px solid var(--border);
+                          border-radius: 10px; padding: 10px 14px;
+                          {% if not cart.selected_offer_id %}border-color: var(--ink);{% endif %}">
+                <input type="radio" name="offer_id" value="none"
+                       {% if not cart.selected_offer_id %}checked{% endif %}
+                       style="accent-color: var(--ink);">
+                <span style="font-size:13px; font-weight:600; color:var(--mid);">
+                    {% if LANGUAGE_CODE == 'en' %}No offer{% else %}بدون عرض{% endif %}
+                </span>
+            </label>
+
+            {% for item in cart.available_offers %}
+            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;
+                          background: var(--white); border: 1.5px solid var(--border);
+                          border-radius: 10px; padding: 10px 14px; transition: border-color .2s;
+                          {% if cart.selected_offer_id == item.offer.id %}
+                              border-color: #22c55e; background: rgba(34,197,94,0.04);
+                          {% endif %}">
+                <input type="radio" name="offer_id" value="{{ item.offer.id }}"
+                       {% if cart.selected_offer_id == item.offer.id %}checked{% endif %}
+                       style="accent-color: #22c55e; margin-top:3px;">
+                <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:700; color:var(--ink);">
+                        {{ item.description }}
+                    </div>
+                    {% if item.saving > 0 %}
+                    <div style="font-size:11px; color:#16a34a; font-weight:600; margin-top:2px;">
+                        {% if LANGUAGE_CODE == 'en' %}You save{% else %}توفّر{% endif %}
+                        {{ item.saving|floatformat:0 }}
+                        {% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% if item.saving > 0 %}
+                <span style="font-size:11px; font-weight:800; background:rgba(34,197,94,0.12);
+                             color:#15803d; padding:3px 8px; border-radius:8px; white-space:nowrap;">
+                    -{{ item.saving|floatformat:0 }} ج.م
+                </span>
+                {% endif %}
+            </label>
+            {% endfor %}
+
+        </div>
+        <button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill">
+            {% if LANGUAGE_CODE == 'en' %}Apply Selected Offer{% else %}تطبيق العرض المختار{% endif %}
+        </button>
+    </form>
+</div>
+{% endif %}
+
+                <!-- كوبون -->
                 <div class="mt-4 mb-3 pt-3 border-top">
-                    <div class="small fw-bold mb-2">{% if LANGUAGE_CODE == 'en' %}Have a Coupon?{% else %}هل لديك كوبون خصم؟{% endif %}</div>
+                    <div class="small fw-bold mb-2">
+                        {% if LANGUAGE_CODE == 'en' %}Have a Coupon?{% else %}هل لديك كوبون خصم؟{% endif %}
+                    </div>
                     <form action="{% url 'apply_coupon' %}" method="POST" class="d-flex gap-2">
                         {% csrf_token %}
-                        <input type="text" name="code" class="form-control form-control-sm rounded-pill px-3" 
-                               placeholder="{% if LANGUAGE_CODE == 'en' %}Enter code{% else %}أدخل الكود{% endif %}" required>
+                        <input type="text" name="code"
+                            class="form-control form-control-sm rounded-pill px-3"
+                            placeholder="{% if LANGUAGE_CODE == 'en' %}Enter code{% else %}أدخل الكود{% endif %}"
+                            required>
                         <button type="submit" class="btn btn-dark btn-sm rounded-pill px-3">
                             {% if LANGUAGE_CODE == 'en' %}Apply{% else %}تطبيق{% endif %}
                         </button>
                     </form>
-                    
+
                     {% if cart.coupon_code %}
                     <div class="mt-3 d-flex justify-content-between align-items-center bg-white p-2 rounded-3 border border-dashed border-success">
                         <div class="d-flex align-items-center text-success small">
@@ -315,18 +470,24 @@
                 </div>
             </div>
         </div>
+
     </div>
+
     {% else %}
+
+    <!-- Empty State -->
     <div class="empty-state">
         <i class="ti ti-shopping-cart-x empty-icon"></i>
         <h2>{% if LANGUAGE_CODE == 'en' %}Your cart is empty{% else %}سلتك فارغة حالياً{% endif %}</h2>
-        <p class="text-muted mb-4">{% if LANGUAGE_CODE == 'en' %}Add some of our luxury perfumes to your cart!{% else
-            %}أضف بعض عطورنا الفاخرة لتبدأ التسوق!{% endif %}</p>
+        <p class="text-muted mb-4">
+            {% if LANGUAGE_CODE == 'en' %}Add some of our luxury perfumes to your cart!{% else %}أضف بعض عطورنا الفاخرة لتبدأ التسوق!{% endif %}
+        </p>
         <a href="{% url 'products' %}" class="btn-checkout"
             style="display:inline-block;width:auto;padding:12px 40px;text-decoration:none">
             {% if LANGUAGE_CODE == 'en' %}Shop Now{% else %}تسوق الآن{% endif %}
         </a>
     </div>
+
     {% endif %}
 
 </div>
@@ -351,7 +512,6 @@
             const data = await res.json();
 
             if (data.status === 'updated') {
-                // Refresh page to update totals with coupons correctly
                 location.reload();
             } else if (data.status === 'error') {
                 alert(data.message);
@@ -380,11 +540,6 @@
         } catch (e) {
             console.error('Remove item error', e);
         }
-    }
-
-    function updateGlobalCartCount(count) {
-        const badges = document.querySelectorAll('.badge-count, .mob-bar-badge');
-        badges.forEach(b => b.textContent = count);
     }
 </script>
 {% endblock %}

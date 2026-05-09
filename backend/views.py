@@ -5,7 +5,7 @@ from django.contrib.auth.views import LoginView
 from django.core.exceptions import PermissionDenied
 from products.models import Product, Category, Brand, SubCategory
 from banners.models import Banner
-from orders.models import Order, Coupon
+from orders.models import Order, Coupon   , Offer
 from accounts.models import Customer, Governorate, City
 from contact.models import ContactMessage
 from wishlist.models import Wishlist
@@ -15,7 +15,6 @@ from .forms import (
     CategoryForm, SubCategoryForm, BrandForm, BannerForm,
     GovernorateForm, CityForm, CouponForm
 )
-
 
 class DashboardLoginView(LoginView):
     template_name = 'backend/login.html'
@@ -326,12 +325,35 @@ def customer_list(request):
 def staff_list(request):
     if request.user.role != 'admin':
         raise PermissionDenied
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name')
+        last_name  = request.POST.get('last_name')
+        email      = request.POST.get('email')
+        password   = request.POST.get('password')
+        role       = request.POST.get('role')
+
+        if Customer.objects.filter(email=email).exists():
+            messages.error(request, 'البريد الإلكتروني مستخدم بالفعل.')
+        else:
+            Customer.objects.create_user(
+                username=email,
+                email=email,
+                first_name=first_name,
+                last_name=last_name,
+                password=password,
+                role=role
+            )
+            messages.success(request, f'تم إضافة الموظف {first_name} {last_name} بنجاح.')
+            return redirect('staff_list')
+
     staff = Customer.objects.exclude(role='customer').order_by('role')
     context = {
         'staff': staff,
         'roles': Customer.ROLE_CHOICES
     }
     return render(request, 'backend/staff.html', context)
+
 
 @dashboard_access_required
 def edit_staff(request, pk):
@@ -450,3 +472,38 @@ def customer_edit(request, pk):
     else:
         form = CustomerForm(instance=customer)
     return render(request, 'backend/customer_form.html', {'customer': customer, 'form': form})
+
+
+# ── Offers ───────────────────────────────────────────────────────
+
+@dashboard_access_required
+def offer_list(request):
+    offers = Offer.objects.all().order_by('-created_at')
+    return render(request, 'backend/offers.html', {'offers': offers})
+
+
+@dashboard_access_required
+def offer_upsert(request, pk=None):
+    if not request.user.can_manage_products:
+        raise PermissionDenied
+    from .forms import OfferForm
+    instance = get_object_or_404(Offer, pk=pk) if pk else None
+    if request.method == 'POST':
+        form = OfferForm(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            return redirect('backend:offer_list')
+    else:
+        form = OfferForm(instance=instance)
+    return render(request, 'backend/offer_form.html', {
+        'form':  form,
+        'title': 'إضافة عرض' if not instance else 'تعديل العرض',
+    })
+
+
+@dashboard_access_required
+def offer_delete(request, pk):
+    if not request.user.can_delete_data:
+        raise PermissionDenied
+    get_object_or_404(Offer, pk=pk).delete()
+    return redirect('backend:offer_list')

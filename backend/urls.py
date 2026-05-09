@@ -54,4 +54,10 @@ urlpatterns = [
     
     path('staff/', views.staff_list, name='staff_list'),
     path('staff/edit/<int:pk>/', views.edit_staff, name='edit_staff'),
+
+
+    path('offers/',                  views.offer_list,   name='offer_list'),
+    path('offers/create/',           views.offer_upsert, name='offer_create'),
+    path('offers/edit/<int:pk>/',    views.offer_upsert, name='offer_edit'),
+    path('offers/delete/<int:pk>/',  views.offer_delete, name='offer_delete'),
 ]

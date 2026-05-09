@@ -1,0 +1,615 @@
+{% extends 'backend/base.html' %}
+
+{% block title %}{{ title }} | لوحة التحكم{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── Layout ─────────────────────────────────────── */
+    .offer-form-wrap {
+        max-width: 860px;
+        margin: 0 auto;
+        padding-bottom: 60px;
+    }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .page-header h1 i {
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    /* ── Cards ──────────────────────────────────────── */
+    .form-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 28px;
+        margin-bottom: 20px;
+    }
+
+    .form-card-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        margin-bottom: 22px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-card-title i {
+        color: var(--primary);
+    }
+
+    /* ── Grid ───────────────────────────────────────── */
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .form-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 18px;
+    }
+
+    .col-full { grid-column: 1 / -1; }
+
+    /* ── Fields ─────────────────────────────────────── */
+    .field-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .field-wrap label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .field-wrap input[type="text"],
+    .field-wrap input[type="number"],
+    .field-wrap input[type="datetime-local"],
+    .field-wrap textarea,
+    .field-wrap select {
+        background: var(--bg-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 9px;
+        color: white;
+        padding: 11px 14px;
+        font-size: 0.9rem;
+        width: 100%;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .field-wrap input:focus,
+    .field-wrap textarea:focus,
+    .field-wrap select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    }
+
+    .field-wrap select[multiple] {
+        height: 130px;
+        padding: 8px;
+    }
+
+    .field-wrap select[multiple] option {
+        padding: 6px 10px;
+        border-radius: 5px;
+        margin-bottom: 2px;
+    }
+
+    .field-wrap select[multiple] option:checked {
+        background: var(--primary);
+    }
+
+    .field-wrap textarea {
+        resize: vertical;
+        min-height: 90px;
+    }
+
+    .field-errors {
+        font-size: 0.78rem;
+        color: #f87171;
+        margin-top: 2px;
+    }
+
+    /* ── Toggle / Checkbox ──────────────────────────── */
+    .toggle-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--bg-dark);
+        border: 1px solid var(--border-color);
+        border-radius: 9px;
+        padding: 12px 16px;
+    }
+
+    .toggle-label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .toggle-label span {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .toggle-label small {
+        font-size: 0.76rem;
+        color: var(--text-muted);
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .toggle-switch input { display: none; }
+
+    .toggle-slider {
+        position: absolute;
+        inset: 0;
+        background: var(--border-color);
+        border-radius: 999px;
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+    .toggle-slider::before {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        background: white;
+        border-radius: 50%;
+        top: 3px;
+        right: 3px;
+        transition: 0.25s;
+    }
+
+    .toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(-20px); }
+
+    /* ── Offer Type Pills ───────────────────────────── */
+    .type-pills {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .type-pill {
+        position: relative;
+    }
+
+    .type-pill input[type="radio"] { display: none; }
+
+    .type-pill label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 10px;
+        background: var(--bg-dark);
+        border: 1.5px solid var(--border-color);
+        border-radius: 11px;
+        cursor: pointer;
+        transition: 0.2s;
+        text-align: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .type-pill label i {
+        font-size: 1.3rem;
+    }
+
+    .type-pill input:checked + label {
+        border-color: var(--primary);
+        background: rgba(59,130,246,0.08);
+        color: white;
+    }
+
+    .type-pill input:checked + label i { color: var(--primary); }
+
+    .type-pill label:hover {
+        border-color: rgba(59,130,246,0.4);
+        color: white;
+    }
+
+    /* ── Conditional Sections ───────────────────────── */
+    .conditional-section {
+        display: none;
+        animation: fadeIn 0.25s ease;
+    }
+
+    .conditional-section.visible { display: block; }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Info Box ───────────────────────────────────── */
+    .info-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: rgba(59,130,246,0.07);
+        border: 1px solid rgba(59,130,246,0.2);
+        border-radius: 9px;
+        padding: 12px 16px;
+        font-size: 0.82rem;
+        color: #93c5fd;
+        margin-bottom: 18px;
+    }
+
+    .info-box i { margin-top: 2px; flex-shrink: 0; }
+
+    /* ── Actions ────────────────────────────────────── */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 28px;
+    }
+
+    .btn-save {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 9px;
+        padding: 12px 28px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: 'Cairo', sans-serif;
+        transition: 0.2s;
+    }
+
+    .btn-save:hover { background: #2563eb; transform: translateY(-1px); }
+
+    .btn-cancel {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg-dark);
+        color: var(--text-muted);
+        border: 1px solid var(--border-color);
+        border-radius: 9px;
+        padding: 12px 20px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Cairo', sans-serif;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+
+    .btn-cancel:hover { color: white; border-color: rgba(255,255,255,0.2); }
+
+    /* ── Number Input Styled ────────────────────────── */
+    .number-input-wrap {
+        position: relative;
+    }
+
+    .number-input-wrap input { padding-left: 45px; }
+
+    .number-input-wrap .unit {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="offer-form-wrap">
+
+    <div class="page-header">
+        <h1><i class="fas fa-tags"></i> {{ title }}</h1>
+        <a href="{% url 'backend:offer_list' %}" class="btn-cancel">
+            <i class="fas fa-arrow-right"></i> العودة للعروض
+        </a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- ── المعلومات الأساسية ───────────────────── -->
+        <div class="form-card">
+            <div class="form-card-title">
+                <i class="fas fa-info-circle"></i> المعلومات الأساسية
+            </div>
+            <div class="form-grid-2">
+                <div class="field-wrap">
+                    <label>{{ form.name_ar.label }}</label>
+                    {{ form.name_ar }}
+                    <div class="field-errors">{{ form.name_ar.errors }}</div>
+                </div>
+                <div class="field-wrap">
+                    <label>{{ form.name_en.label }}</label>
+                    {{ form.name_en }}
+                    <div class="field-errors">{{ form.name_en.errors }}</div>
+                </div>
+                <div class="field-wrap col-full">
+                    <label>{{ form.description.label }}</label>
+                    {{ form.description }}
+                    <div class="field-errors">{{ form.description.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── نوع العرض ───────────────────────────── -->
+        <div class="form-card">
+            <div class="form-card-title">
+                <i class="fas fa-layer-group"></i> نوع العرض
+            </div>
+            <div class="type-pills">
+                <div class="type-pill">
+                    <input type="radio" name="offer_type" id="type_bogo" value="bogo"
+                        {% if form.offer_type.value == 'bogo' %}checked{% endif %}>
+                    <label for="type_bogo">
+                        <i class="fas fa-gift"></i>
+                        اشتري X وخذ Y
+                    </label>
+                </div>
+                <div class="type-pill">
+                    <input type="radio" name="offer_type" id="type_percentage" value="percentage"
+                        {% if form.offer_type.value == 'percentage' %}checked{% endif %}>
+                    <label for="type_percentage">
+                        <i class="fas fa-percent"></i>
+                        خصم نسبة مئوية
+                    </label>
+                </div>
+                <div class="type-pill">
+                    <input type="radio" name="offer_type" id="type_quantity" value="quantity"
+                        {% if form.offer_type.value == 'quantity' %}checked{% endif %}>
+                    <label for="type_quantity">
+                        <i class="fas fa-layer-group"></i>
+                        خصم عند الكمية
+                    </label>
+                </div>
+                <div class="type-pill">
+                    <input type="radio" name="offer_type" id="type_shipping" value="free_shipping"
+                        {% if form.offer_type.value == 'free_shipping' %}checked{% endif %}>
+                    <label for="type_shipping">
+                        <i class="fas fa-truck"></i>
+                        شحن مجاني
+                    </label>
+                </div>
+            </div>
+            <div class="field-errors" style="margin-top:8px;">{{ form.offer_type.errors }}</div>
+        </div>
+
+        <!-- ── التفعيل والتواريخ ───────────────────── -->
+        <div class="form-card">
+            <div class="form-card-title">
+                <i class="fas fa-calendar-alt"></i> التفعيل والمدة
+            </div>
+            <div class="form-grid-3">
+                <div class="field-wrap">
+                    <label>{{ form.valid_from.label }}</label>
+                    {{ form.valid_from }}
+                    <div class="field-errors">{{ form.valid_from.errors }}</div>
+                </div>
+                <div class="field-wrap">
+                    <label>{{ form.valid_to.label }}</label>
+                    {{ form.valid_to }}
+                    <div class="field-errors">{{ form.valid_to.errors }}</div>
+                </div>
+                <div class="field-wrap" style="justify-content: flex-end;">
+                    <label>&nbsp;</label>
+                    <div class="toggle-wrap">
+                        <div class="toggle-label">
+                            <span>{{ form.is_active.label }}</span>
+                            <small>تفعيل العرض فوراً</small>
+                        </div>
+                        <label class="toggle-switch">
+                            {{ form.is_active }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── المنتجات المؤهلة ───────────────────── -->
+        <div class="form-card">
+            <div class="form-card-title">
+                <i class="fas fa-box"></i> المنتجات والفئات المؤهلة
+            </div>
+            <div class="toggle-wrap" style="margin-bottom: 18px;">
+                <div class="toggle-label">
+                    <span>{{ form.apply_to_all.label }}</span>
+                    <small>سيُطبَّق العرض على جميع المنتجات النشطة</small>
+                </div>
+                <label class="toggle-switch">
+                    {{ form.apply_to_all }}
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div id="eligibleSection" class="form-grid-2">
+                <div class="field-wrap">
+                    <label>{{ form.eligible_products.label }}</label>
+                    {{ form.eligible_products }}
+                    <small style="color:var(--text-muted); font-size:0.75rem;">اضغط Ctrl للاختيار المتعدد</small>
+                    <div class="field-errors">{{ form.eligible_products.errors }}</div>
+                </div>
+                <div class="field-wrap">
+                    <label>{{ form.eligible_categories.label }}</label>
+                    {{ form.eligible_categories }}
+                    <small style="color:var(--text-muted); font-size:0.75rem;">اضغط Ctrl للاختيار المتعدد</small>
+                    <div class="field-errors">{{ form.eligible_categories.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── BOGO ───────────────────────────────── -->
+        <div class="form-card conditional-section" id="section_bogo">
+            <div class="form-card-title">
+                <i class="fas fa-gift"></i> إعدادات BOGO — اشتري X وخذ Y مجاناً
+            </div>
+            <div class="info-box">
+                <i class="fas fa-lightbulb"></i>
+                <span>مثال: اشتري 2 واحصل على 1 مجاناً — اترك "المنتج المجاني" فارغاً ليكون نفس المنتج المشترى.</span>
+            </div>
+            <div class="form-grid-3">
+                <div class="field-wrap">
+                    <label>{{ form.buy_quantity.label }}</label>
+                    {{ form.buy_quantity }}
+                    <div class="field-errors">{{ form.buy_quantity.errors }}</div>
+                </div>
+                <div class="field-wrap">
+                    <label>{{ form.get_quantity.label }}</label>
+                    {{ form.get_quantity }}
+                    <div class="field-errors">{{ form.get_quantity.errors }}</div>
+                </div>
+                <div class="field-wrap">
+                    <label>{{ form.free_product.label }}</label>
+                    {{ form.free_product }}
+                    <div class="field-errors">{{ form.free_product.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── خصم % ──────────────────────────────── -->
+        <div class="form-card conditional-section" id="section_percentage">
+            <div class="form-card-title">
+                <i class="fas fa-percent"></i> إعدادات خصم النسبة المئوية
+            </div>
+            <div style="max-width: 280px;">
+                <div class="field-wrap">
+                    <label>{{ form.discount_percent.label }}</label>
+                    <div class="number-input-wrap">
+                        {{ form.discount_percent }}
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="field-errors">{{ form.discount_percent.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── خصم الكمية ─────────────────────────── -->
+        <div class="form-card conditional-section" id="section_quantity">
+            <div class="form-card-title">
+                <i class="fas fa-layer-group"></i> إعدادات خصم الكمية
+            </div>
+            <div class="form-grid-2" style="max-width: 520px;">
+                <div class="field-wrap">
+                    <label>{{ form.min_quantity.label }}</label>
+                    {{ form.min_quantity }}
+                    <div class="field-errors">{{ form.min_quantity.errors }}</div>
+                </div>
+                <div class="field-wrap">
+                    <label>{{ form.quantity_discount_percent.label }}</label>
+                    <div class="number-input-wrap">
+                        {{ form.quantity_discount_percent }}
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="field-errors">{{ form.quantity_discount_percent.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── شحن مجاني ──────────────────────────── -->
+        <div class="form-card conditional-section" id="section_free_shipping">
+            <div class="form-card-title">
+                <i class="fas fa-truck"></i> إعدادات الشحن المجاني
+            </div>
+            <div style="max-width: 280px;">
+                <div class="field-wrap">
+                    <label>{{ form.min_order_amount.label }}</label>
+                    <div class="number-input-wrap">
+                        {{ form.min_order_amount }}
+                        <span class="unit">ج.م</span>
+                    </div>
+                    <div class="field-errors">{{ form.min_order_amount.errors }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Actions ────────────────────────────── -->
+        <div class="form-actions">
+            <a href="{% url 'backend:offer_list' %}" class="btn-cancel">
+                <i class="fas fa-times"></i> إلغاء
+            </a>
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> حفظ العرض
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    // ── نوع العرض → إظهار القسم المناسب ──────────────
+    const sections = {
+        bogo:          document.getElementById('section_bogo'),
+        percentage:    document.getElementById('section_percentage'),
+        quantity:      document.getElementById('section_quantity'),
+        free_shipping: document.getElementById('section_free_shipping'),
+    };
+
+    function showSection(type) {
+        Object.values(sections).forEach(s => s.classList.remove('visible'));
+        if (sections[type]) sections[type].classList.add('visible');
+    }
+
+    document.querySelectorAll('input[name="offer_type"]').forEach(radio => {
+        radio.addEventListener('change', () => showSection(radio.value));
+    });
+
+    // تفعيل القسم الصحيح عند التحميل
+    const checked = document.querySelector('input[name="offer_type"]:checked');
+    if (checked) showSection(checked.value);
+
+    // ── apply_to_all → إخفاء قائمة المنتجات ─────────
+    const applyAll = document.getElementById('{{ form.apply_to_all.id_for_label }}');
+    const eligibleSection = document.getElementById('eligibleSection');
+
+    function toggleEligible() {
+        eligibleSection.style.display = applyAll.checked ? 'none' : 'grid';
+    }
+
+    if (applyAll) {
+        applyAll.addEventListener('change', toggleEligible);
+        toggleEligible();
+    }
+</script>
+{% endblock %}
