@@ -4,6 +4,7 @@ from django.forms import inlineformset_factory
 from products.models import Product, Category, Brand, SubCategory, ProductImage
 from orders.models import Order, Coupon
 from accounts.models import Customer, Governorate, City
+from .models import HeaderSettings
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -131,6 +132,41 @@ class CityForm(forms.ModelForm):
             'name_en': forms.TextInput(attrs={'class': 'form-input'}),
             'shipping_cost': forms.NumberInput(attrs={'class': 'form-input'}),
         }
+
+
+class HeaderSettingsForm(forms.ModelForm):
+    class Meta:
+        model = HeaderSettings
+        exclude = ['updated_at']
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'class': 'form-input'}),
+            'logo_text': forms.TextInput(attrs={'class': 'form-input'}),
+            'logo_accent': forms.TextInput(attrs={'class': 'form-input'}),
+            'search_placeholder_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'search_placeholder_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'mobile_search_placeholder_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'mobile_search_placeholder_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'home_label_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'home_label_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'categories_label_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'categories_label_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'categories_menu_title_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'categories_menu_title_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'offers_label_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'offers_label_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'brands_label_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'brands_label_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'track_order_label_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'track_order_label_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'about_label_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'about_label_en': forms.TextInput(attrs={'class': 'form-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-check-input'})
 
 
 from orders.models import Offer

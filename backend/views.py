@@ -5,6 +5,7 @@ from django.contrib.auth.views import LoginView
 from django.core.exceptions import PermissionDenied
 from products.models import Product, Category, Brand, SubCategory
 from banners.models import Banner
+from .models import HeaderSettings
 from orders.models import Order, Coupon   , Offer
 from accounts.models import Customer, Governorate, City
 from contact.models import ContactMessage
@@ -13,7 +14,7 @@ from django.db.models import Sum, Count, Q
 from .forms import (
     ProductForm, OrderStatusForm, CustomerForm, ProductImageFormSet,
     CategoryForm, SubCategoryForm, BrandForm, BannerForm,
-    GovernorateForm, CityForm, CouponForm
+    GovernorateForm, CityForm, CouponForm, HeaderSettingsForm
 )
 
 class DashboardLoginView(LoginView):
@@ -50,6 +51,27 @@ def coupon_upsert(request, pk=None):
     else:
         form = CouponForm(instance=instance)
     return render(request, 'backend/generic_form.html', {'form': form, 'title': 'إدارة الكوبونات'})
+
+
+# ── Header Settings ──────────────────────────────────────────────
+
+@dashboard_access_required
+def header_settings(request):
+    if not request.user.can_manage_products:
+        raise PermissionDenied
+    settings = HeaderSettings.load()
+    if request.method == 'POST':
+        form = HeaderSettingsForm(request.POST, instance=settings)
+        if form.is_valid():
+            form.save()
+            return redirect('backend:header_settings')
+    else:
+        form = HeaderSettingsForm(instance=settings)
+    return render(request, 'backend/generic_form.html', {
+        'form': form,
+        'title': 'إعدادات الهيدر',
+        'form_width': '900px',
+    })
 
 # ── Contact Messages ─────────────────────────────────────────────
 

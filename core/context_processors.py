@@ -1,9 +1,15 @@
 # core/context_processors.py
 
 from products.models import Category, Brand
+from backend.models import HeaderSettings
 
 
 def nav_context(request):
+    try:
+        header_settings = HeaderSettings.load()
+    except Exception:
+        header_settings = None
+
     return {
         "nav_categories": Category.objects.filter(
             is_active=True
@@ -14,6 +20,7 @@ def nav_context(request):
         )[:10],
 
         "is_en": request.LANGUAGE_CODE == "en",
+        "header_settings": header_settings,
     }
 
 
