@@ -61,6 +61,30 @@
   {% endif %}
 }
 </script>
+
+<!-- BreadcrumbList Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}",
+    "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'home' %}"
+  }{% if product.category %},{
+    "@type": "ListItem",
+    "position": 2,
+    "name": "{% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en|escapejs }}{% else %}{{ product.category.name_ar|escapejs }}{% endif %}",
+    "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'products' %}?category_id={{ product.category.id }}"
+  }{% endif %},{
+    "@type": "ListItem",
+    "position": {% if product.category %}3{% else %}2{% endif %},
+    "name": "{% if LANGUAGE_CODE == 'en' %}{{ product.name_en|escapejs }}{% else %}{{ product.name_ar|escapejs }}{% endif %}",
+    "item": "{{ request.build_absolute_uri }}"
+  }]
+}
+</script>
 {% endblock %}
 
 {% block extra_css %}

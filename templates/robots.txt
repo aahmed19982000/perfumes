@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Disallow sensitive pages
+Disallow: /admin/
+Disallow: /manage-perfumes/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /accounts/login/
+Disallow: /accounts/register/
+
+Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap.xml

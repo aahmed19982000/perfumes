@@ -5,10 +5,21 @@ from django.urls import path, include
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
-from django.conf.urls.i18n import i18n_patterns
-import django.conf.urls.i18n as i18n
+from django.contrib.sitemaps.views import sitemap
+from .sitemaps import StaticViewSitemap
+from products.sitemaps import ProductSitemap, CategorySitemap
+
+sitemaps = {
+    'static': StaticViewSitemap,
+    'products': ProductSitemap,
+    'categories': CategorySitemap,
+}
+
+from django.views.generic import TemplateView
 
 urlpatterns = [
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path("manage-perfumes/", include("backend.urls")),
     path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin/",            admin.site.urls),
