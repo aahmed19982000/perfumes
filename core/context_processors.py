@@ -1,7 +1,7 @@
 # core/context_processors.py
 
 from products.models import Category, Brand
-from backend.models import HeaderSettings
+from backend.models import HeaderSettings, FooterSettings
 
 
 def nav_context(request):
@@ -9,6 +9,11 @@ def nav_context(request):
         header_settings = HeaderSettings.load()
     except Exception:
         header_settings = None
+
+    try:
+        footer_settings = FooterSettings.load()
+    except Exception:
+        footer_settings = None
 
     return {
         "nav_categories": Category.objects.filter(
@@ -21,6 +26,7 @@ def nav_context(request):
 
         "is_en": request.LANGUAGE_CODE == "en",
         "header_settings": header_settings,
+        "footer_settings": footer_settings,
     }
 
 

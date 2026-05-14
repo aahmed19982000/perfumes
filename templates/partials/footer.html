@@ -5,17 +5,44 @@
         <div class="row g-5">
             <!-- Brand -->
             <div class="col-lg-4 col-md-6">
-                <div class="footer-logo">MAV<span>A</span></div>
-                <p class="footer-tagline">{% if LANGUAGE_CODE == 'en' %}Luxury Perfumes — Est. 2020{% else %}عطور فاخرة — منذ ٢٠٢٠{% endif %}</p>
+                <div class="footer-logo">
+                    {% if footer_settings %}
+                        {% if footer_settings.logo_image %}
+                            <img src="{{ footer_settings.logo_image.url }}" alt="{{ footer_settings.logo_text }}" style="max-height: 50px;">
+                        {% else %}
+                            {{ footer_settings.logo_text }}<span>{{ footer_settings.logo_accent }}</span>
+                        {% endif %}
+                    {% else %}
+                        MAV<span>A</span>
+                    {% endif %}
+                </div>
+                <p class="footer-tagline">
+                    {% if LANGUAGE_CODE == 'en' %}
+                        {% if footer_settings %}{{ footer_settings.tagline_en }}{% else %}Luxury Perfumes — Est. 2020{% endif %}
+                    {% else %}
+                        {% if footer_settings %}{{ footer_settings.tagline_ar }}{% else %}عطور فاخرة — منذ ٢٠٢٠{% endif %}
+                    {% endif %}
+                </p>
                 <p style="font-size:13px;color:#555;margin-top:14px;line-height:1.8">
-                    {% if LANGUAGE_CODE == 'en' %}Discover our curated collection of luxury fragrances from around the world.
-                    {% else %}اكتشف مجموعتنا المختارة من العطور الفاخرة من حول العالم.{% endif %}
+                    {% if LANGUAGE_CODE == 'en' %}
+                        {% if footer_settings %}{{ footer_settings.about_text_en }}{% else %}Discover our curated collection of luxury fragrances from around the world.{% endif %}
+                    {% else %}
+                        {% if footer_settings %}{{ footer_settings.about_text_ar }}{% else %}اكتشف مجموعتنا المختارة من العطور الفاخرة من حول العالم.{% endif %}
+                    {% endif %}
                 </p>
                 <div class="footer-social">
-                    <a href="#" class="social-btn" aria-label="Instagram"><i class="ti ti-brand-instagram"></i></a>
-                    <a href="#" class="social-btn" aria-label="Facebook"><i class="ti ti-brand-facebook"></i></a>
-                    <a href="https://wa.me/201069545469" class="social-btn" aria-label="WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
-                    <a href="#" class="social-btn" aria-label="TikTok"><i class="ti ti-brand-tiktok"></i></a>
+                    {% if footer_settings.insta_link %}
+                    <a href="{{ footer_settings.insta_link }}" class="social-btn" target="_blank" aria-label="Instagram"><i class="ti ti-brand-instagram"></i></a>
+                    {% endif %}
+                    {% if footer_settings.fb_link %}
+                    <a href="{{ footer_settings.fb_link }}" class="social-btn" target="_blank" aria-label="Facebook"><i class="ti ti-brand-facebook"></i></a>
+                    {% endif %}
+                    {% if footer_settings.wa_link %}
+                    <a href="https://wa.me/{{ footer_settings.wa_link }}" class="social-btn" target="_blank" aria-label="WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
+                    {% endif %}
+                    {% if footer_settings.tiktok_link %}
+                    <a href="{{ footer_settings.tiktok_link }}" class="social-btn" target="_blank" aria-label="TikTok"><i class="ti ti-brand-tiktok"></i></a>
+                    {% endif %}
                 </div>
             </div>
 
@@ -24,8 +51,8 @@
                 <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Quick Links{% else %}روابط سريعة{% endif %}</div>
                 <a href="{% url 'home' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</a>
                 <a href="{% url 'products' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}All Products{% else %}جميع المنتجات{% endif %}</a>
-                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
-                <a href="#" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
+                <a href="{% url 'offers' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Offers{% else %}العروض{% endif %}</a>
+                <a href="{% url 'brands' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</a>
                 <a href="{% url 'about' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}About Us{% else %}من نحن{% endif %}</a>
                 <a href="{% url 'contact' %}" class="footer-link">{% if LANGUAGE_CODE == 'en' %}Contact Us{% else %}تواصل معنا{% endif %}</a>
             </div>
@@ -44,26 +71,44 @@
                 <div class="footer-title">{% if LANGUAGE_CODE == 'en' %}Contact Us{% else %}تواصل معنا{% endif %}</div>
                 <div class="footer-contact-item">
                     <i class="ti ti-phone"></i>
-                    <span>+201069545469</span>
+                    <span>{% if footer_settings %}{{ footer_settings.phone }}{% else %}+201069545469{% endif %}</span>
                 </div>
                 <div class="footer-contact-item">
                     <i class="ti ti-mail"></i>
-                    <span>info@mavaperfumes.com</span>
+                    <span>{% if footer_settings %}{{ footer_settings.email }}{% else %}info@mavaperfumes.com{% endif %}</span>
                 </div>
                 <div class="footer-contact-item">
                     <i class="ti ti-clock"></i>
-                    <span>{% if LANGUAGE_CODE == 'en' %}Sat – Thu: 10am – 10pm{% else %}السبت – الخميس: ١٠ص – ١٠م{% endif %}</span>
+                    <span>
+                        {% if LANGUAGE_CODE == 'en' %}
+                            {% if footer_settings %}{{ footer_settings.working_hours_en }}{% else %}Sat – Thu: 10am – 10pm{% endif %}
+                        {% else %}
+                            {% if footer_settings %}{{ footer_settings.working_hours_ar }}{% else %}السبت – الخميس: ١٠ص – ١٠م{% endif %}
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="footer-contact-item">
                     <i class="ti ti-map-pin"></i>
-                    <span>{% if LANGUAGE_CODE == 'en' %}Egypt{% else %}مصر{% endif %}</span>
+                    <span>
+                        {% if LANGUAGE_CODE == 'en' %}
+                            {% if footer_settings %}{{ footer_settings.address_en }}{% else %}Egypt{% endif %}
+                        {% else %}
+                            {% if footer_settings %}{{ footer_settings.address_ar }}{% else %}مصر{% endif %}
+                        {% endif %}
+                    </span>
                 </div>
             </div>
         </div>
 
         <hr class="footer-divider">
         <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <span>© 2025 MAVA Perfumes. {% if LANGUAGE_CODE == 'en' %}All rights reserved.{% else %}جميع الحقوق محفوظة.{% endif %}</span>
+            <span>
+                {% if LANGUAGE_CODE == 'en' %}
+                    {% if footer_settings %}{{ footer_settings.copyright_text_en }}{% else %}© 2025 MAVA Perfumes. All rights reserved.{% endif %}
+                {% else %}
+                    {% if footer_settings %}{{ footer_settings.copyright_text_ar }}{% else %}© 2025 مافا للعطور. جميع الحقوق محفوظة.{% endif %}
+                {% endif %}
+            </span>
             <div class="d-flex align-items-center gap-2" style="font-size:11px">
                 <i class="ti ti-shield-check" style="color:var(--gold)"></i>
                 <span>{% if LANGUAGE_CODE == 'en' %}Secured Payments{% else %}مدفوعات آمنة{% endif %}</span>

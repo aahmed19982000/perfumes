@@ -5,6 +5,8 @@ class HeaderSettings(models.Model):
     phone_number = models.CharField("رقم الهاتف", max_length=30, default="+201069545469")
     logo_text = models.CharField("نص اللوجو", max_length=30, default="MAV")
     logo_accent = models.CharField("الحرف المميز في اللوجو", max_length=5, default="A")
+    logo_image = models.ImageField("صورة اللوجو", upload_to="settings/", null=True, blank=True)
+    favicon = models.ImageField("الأيقونة (Favicon)", upload_to="settings/", null=True, blank=True)
 
     show_top_bar = models.BooleanField("إظهار الشريط العلوي", default=True)
     show_phone = models.BooleanField("إظهار رقم الهاتف", default=True)
@@ -52,6 +54,54 @@ class HeaderSettings(models.Model):
 
     def __str__(self):
         return "إعدادات الهيدر"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
+class FooterSettings(models.Model):
+    logo_text = models.CharField("نص اللوجو (الفوتر)", max_length=30, default="MAV")
+    logo_accent = models.CharField("الحرف المميز (الفوتر)", max_length=5, default="A")
+    logo_image = models.ImageField("صورة اللوجو (الفوتر)", upload_to="settings/", null=True, blank=True)
+
+    tagline_ar = models.CharField("النص التعريفي القصير بالعربي", max_length=100, default="عطور فاخرة — منذ ٢٠٢٠")
+    tagline_en = models.CharField("النص التعريفي القصير بالإنجليزي", max_length=100, default="Luxury Perfumes — Est. 2020")
+
+    about_text_ar = models.TextField("عن المتجر بالعربي", default="اكتشف مجموعتنا المختارة من العطور الفاخرة من حول العالم.")
+    about_text_en = models.TextField("عن المتجر بالإنجليزي", default="Discover our curated collection of luxury fragrances from around the world.")
+
+    # Social links
+    fb_link = models.URLField("رابط فيسبوك", blank=True, null=True)
+    insta_link = models.URLField("رابط إنستجرام", blank=True, null=True)
+    wa_link = models.CharField("رابط/رقم واتساب", max_length=100, default="201069545469")
+    tiktok_link = models.URLField("رابط تيك توك", blank=True, null=True)
+
+    # Contact
+    phone = models.CharField("رقم الهاتف", max_length=30, default="+201069545469")
+    email = models.EmailField("البريد الإلكتروني", default="info@mavaperfumes.com")
+    working_hours_ar = models.CharField("ساعات العمل بالعربي", max_length=100, default="السبت – الخميس: ١٠ص – ١٠م")
+    working_hours_en = models.CharField("ساعات العمل بالإنجليزي", max_length=100, default="Sat – Thu: 10am – 10pm")
+    address_ar = models.CharField("العنوان بالعربي", max_length=200, default="مصر")
+    address_en = models.CharField("العنوان بالإنجليزي", max_length=200, default="Egypt")
+
+    # Copyright
+    copyright_text_ar = models.CharField("نص حقوق النشر بالعربي", max_length=200, default="© 2025 مافا للعطور. جميع الحقوق محفوظة.")
+    copyright_text_en = models.CharField("نص حقوق النشر بالإنجليزي", max_length=200, default="© 2025 MAVA Perfumes. All rights reserved.")
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "إعدادات الفوتر"
+        verbose_name_plural = "إعدادات الفوتر"
+
+    def __str__(self):
+        return "إعدادات الفوتر"
 
     def save(self, *args, **kwargs):
         self.pk = 1

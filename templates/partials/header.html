@@ -62,8 +62,12 @@
         </button>
 
         <a href="{% url 'home' %}" class="logo">
-            <div class="logo-dot"></div>
-            <div class="logo-wordmark">{% if header_settings %}{{ header_settings.logo_text }}<span>{{ header_settings.logo_accent }}</span>{% else %}MAV<span>A</span>{% endif %}</div>
+            {% if header_settings and header_settings.logo_image %}
+                <img src="{{ header_settings.logo_image.url }}" alt="{{ header_settings.logo_text }}" style="max-height: 40px;">
+            {% else %}
+                <div class="logo-dot"></div>
+                <div class="logo-wordmark">{% if header_settings %}{{ header_settings.logo_text }}<span>{{ header_settings.logo_accent }}</span>{% else %}MAV<span>A</span>{% endif %}</div>
+            {% endif %}
         </a>
 
         {% if not header_settings or header_settings.show_search %}
@@ -188,10 +192,14 @@
 <div class="offcanvas offcanvas-start" id="mobileMenu" tabindex="-1">
     <div class="offcanvas-header">
         <div class="d-flex align-items-center gap-2">
-            <div class="logo-dot" style="background:#c9a96e"></div>
-            <span style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;letter-spacing:.08em">{% if header_settings %}{{ header_settings.logo_text }}<span
-                    style="color:#c9a96e">{{ header_settings.logo_accent }}</span>{% else %}MAV<span
-                    style="color:#c9a96e">A</span>{% endif %}</span>
+            {% if header_settings and header_settings.logo_image %}
+                <img src="{{ header_settings.logo_image.url }}" alt="{{ header_settings.logo_text }}" style="max-height: 35px;">
+            {% else %}
+                <div class="logo-dot" style="background:#c9a96e"></div>
+                <span style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;letter-spacing:.08em">{% if header_settings %}{{ header_settings.logo_text }}<span
+                        style="color:#c9a96e">{{ header_settings.logo_accent }}</span>{% else %}MAV<span
+                        style="color:#c9a96e">A</span>{% endif %}</span>
+            {% endif %}
         </div>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>

@@ -67,6 +67,9 @@
                     <a href="{% url 'backend:header_settings' %}" class="nav-link {% if 'header-settings' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
                         <i class="fas fa-heading" style="font-size: 0.8rem;"></i> الهيدر
                     </a>
+                    <a href="{% url 'backend:footer_settings' %}" class="nav-link {% if 'footer-settings' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fas fa-shoe-prints" style="font-size: 0.8rem; transform: rotate(-90deg);"></i> الفوتر
+                    </a>
                     <a href="{% url 'backend:category_list' %}" class="nav-link {% if 'categories' in request.path %}active{% endif %}" style="font-size: 0.85rem; padding: 8px 15px;">
                         <i class="fas fa-folder" style="font-size: 0.8rem;"></i> الفئات
                     </a>

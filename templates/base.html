@@ -7,6 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Mava Perfumes - {% if LANGUAGE_CODE == 'en' %}Luxury Fragrances{% else %}عطور فاخرة{% endif %}{% endblock %}</title>
     
+    {% if header_settings and header_settings.favicon %}
+    <link rel="icon" type="image/x-icon" href="{{ header_settings.favicon.url }}">
+    {% endif %}
     <!-- SEO Meta Tags -->
     <meta name="description" content="{% block meta_description %}{% if LANGUAGE_CODE == 'en' %}Explore Mava Perfumes - Your destination for luxury fragrances and exclusive scents.{% else %}اكتشف مافا للعطور - وجهتك الأولى للعطور الفاخرة والروائح الحصرية.{% endif %}{% endblock %}">
     <meta name="keywords" content="perfumes, luxury scents, mava, buy perfumes online, عطور, عطور فاخرة, مافا, شراء عطور">

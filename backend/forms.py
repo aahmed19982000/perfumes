@@ -4,7 +4,7 @@ from django.forms import inlineformset_factory
 from products.models import Product, Category, Brand, SubCategory, ProductImage
 from orders.models import Order, Coupon
 from accounts.models import Customer, Governorate, City
-from .models import HeaderSettings
+from .models import HeaderSettings, FooterSettings
 
 class ProductForm(forms.ModelForm):
     class Meta:
@@ -167,6 +167,41 @@ class HeaderSettingsForm(forms.ModelForm):
         for field in self.fields.values():
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs.update({'class': 'form-check-input'})
+            else:
+                field.widget.attrs.update({'class': 'form-input'})
+
+
+class FooterSettingsForm(forms.ModelForm):
+    class Meta:
+        model = FooterSettings
+        exclude = ['updated_at']
+        widgets = {
+            'logo_text': forms.TextInput(attrs={'class': 'form-input'}),
+            'logo_accent': forms.TextInput(attrs={'class': 'form-input'}),
+            'logo_image': forms.FileInput(attrs={'class': 'form-input'}),
+            'tagline_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'tagline_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'about_text_ar': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
+            'about_text_en': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
+            'fb_link': forms.URLInput(attrs={'class': 'form-input'}),
+            'insta_link': forms.URLInput(attrs={'class': 'form-input'}),
+            'wa_link': forms.TextInput(attrs={'class': 'form-input'}),
+            'tiktok_link': forms.URLInput(attrs={'class': 'form-input'}),
+            'phone': forms.TextInput(attrs={'class': 'form-input'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input'}),
+            'working_hours_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'working_hours_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'address_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'address_en': forms.TextInput(attrs={'class': 'form-input'}),
+            'copyright_text_ar': forms.TextInput(attrs={'class': 'form-input'}),
+            'copyright_text_en': forms.TextInput(attrs={'class': 'form-input'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if not isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-input'})
 
 
 from orders.models import Offer

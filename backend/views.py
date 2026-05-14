@@ -5,7 +5,7 @@ from django.contrib.auth.views import LoginView
 from django.core.exceptions import PermissionDenied
 from products.models import Product, Category, Brand, SubCategory
 from banners.models import Banner
-from .models import HeaderSettings
+from .models import HeaderSettings, FooterSettings
 from orders.models import Order, Coupon   , Offer
 from accounts.models import Customer, Governorate, City
 from contact.models import ContactMessage
@@ -14,7 +14,7 @@ from django.db.models import Sum, Count, Q
 from .forms import (
     ProductForm, OrderStatusForm, CustomerForm, ProductImageFormSet,
     CategoryForm, SubCategoryForm, BrandForm, BannerForm,
-    GovernorateForm, CityForm, CouponForm, HeaderSettingsForm
+    GovernorateForm, CityForm, CouponForm, HeaderSettingsForm, FooterSettingsForm
 )
 
 class DashboardLoginView(LoginView):
@@ -61,7 +61,7 @@ def header_settings(request):
         raise PermissionDenied
     settings = HeaderSettings.load()
     if request.method == 'POST':
-        form = HeaderSettingsForm(request.POST, instance=settings)
+        form = HeaderSettingsForm(request.POST, request.FILES, instance=settings)
         if form.is_valid():
             form.save()
             return redirect('backend:header_settings')
@@ -70,6 +70,25 @@ def header_settings(request):
     return render(request, 'backend/generic_form.html', {
         'form': form,
         'title': 'إعدادات الهيدر',
+        'form_width': '900px',
+    })
+
+
+@dashboard_access_required
+def footer_settings(request):
+    if not request.user.can_manage_products:
+        raise PermissionDenied
+    settings = FooterSettings.load()
+    if request.method == 'POST':
+        form = FooterSettingsForm(request.POST, request.FILES, instance=settings)
+        if form.is_valid():
+            form.save()
+            return redirect('backend:footer_settings')
+    else:
+        form = FooterSettingsForm(instance=settings)
+    return render(request, 'backend/generic_form.html', {
+        'form': form,
+        'title': 'إعدادات الفوتر',
         'form_width': '900px',
     })
 

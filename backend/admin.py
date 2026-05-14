@@ -1,12 +1,15 @@
 from django.contrib import admin
-from .models import HeaderSettings
+from .models import HeaderSettings, FooterSettings
 
 
 @admin.register(HeaderSettings)
 class HeaderSettingsAdmin(admin.ModelAdmin):
     fieldsets = (
+        ("اللوجو والهوية", {
+            "fields": ("logo_text", "logo_accent", "logo_image", "favicon"),
+        }),
         ("البيانات الأساسية", {
-            "fields": ("phone_number", "logo_text", "logo_accent"),
+            "fields": ("phone_number",),
         }),
         ("إظهار وإخفاء عناصر الهيدر", {
             "fields": (
@@ -35,3 +38,30 @@ class HeaderSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not HeaderSettings.objects.exists()
+
+
+@admin.register(FooterSettings)
+class FooterSettingsAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ("اللوجو", {
+            "fields": ("logo_text", "logo_accent"),
+        }),
+        ("النصوص التعريفية", {
+            "fields": ("tagline_ar", "tagline_en", "about_text_ar", "about_text_en"),
+        }),
+        ("روابط التواصل الاجتماعي", {
+            "fields": ("fb_link", "insta_link", "wa_link", "tiktok_link"),
+        }),
+        ("معلومات التواصل", {
+            "fields": (
+                "phone", "email", "working_hours_ar", "working_hours_en",
+                "address_ar", "address_en",
+            ),
+        }),
+        ("حقوق النشر", {
+            "fields": ("copyright_text_ar", "copyright_text_en"),
+        }),
+    )
+
+    def has_add_permission(self, request):
+        return not FooterSettings.objects.exists()
