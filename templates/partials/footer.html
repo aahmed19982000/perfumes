@@ -37,7 +37,10 @@
                     {% if footer_settings.fb_link %}
                     <a href="{{ footer_settings.fb_link }}" class="social-btn" target="_blank" aria-label="Facebook"><i class="ti ti-brand-facebook"></i></a>
                     {% endif %}
-                    {% if footer_settings.wa_link %}
+                    {% load product_filters %}
+                    {% if header_settings.phone_number %}
+                    <a href="https://wa.me/{{ header_settings.phone_number|clean_wa }}" class="social-btn" target="_blank" aria-label="WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
+                    {% elif footer_settings.wa_link %}
                     <a href="https://wa.me/{{ footer_settings.wa_link }}" class="social-btn" target="_blank" aria-label="WhatsApp"><i class="ti ti-brand-whatsapp"></i></a>
                     {% endif %}
                     {% if footer_settings.tiktok_link %}

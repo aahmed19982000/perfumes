@@ -313,7 +313,14 @@
     {% endif %}
 </div>
 
-<!-- ══ WhatsApp ══ -->
-<a href="https://wa.me/201069545469" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
-    <i class="ti ti-brand-whatsapp"></i>
-</a>
+<!-- ══ Floating Contact Icons ══ -->
+<div class="floating-contacts">
+    <a href="{{ footer_settings.messenger_link|default:'#' }}" class="messenger-float" target="_blank" aria-label="Messenger">
+        <i class="ti ti-brand-messenger"></i>
+    </a>
+    
+    {% load product_filters %}
+    <a href="https://wa.me/{% if header_settings %}{{ header_settings.phone_number|clean_wa }}{% elif footer_settings %}{{ footer_settings.wa_link }}{% else %}201069545469{% endif %}" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+        <i class="ti ti-brand-whatsapp"></i>
+    </a>
+</div>

@@ -163,7 +163,7 @@
                                 <i class="ti ti-map-pin"></i>
                                 <div class="contact-item-text">
                                     <h5>{% if LANGUAGE_CODE == 'en' %}Address{% else %}العنوان{% endif %}</h5>
-                                    <p>القاهرة، مصر - شارع التسعين، التجمع الخامس</p>
+                                    <p>{% if footer_settings %}{{ footer_settings.address }}{% else %}القاهرة، مصر - شارع التسعين، التجمع الخامس{% endif %}</p>
                                 </div>
                             </div>
                             
@@ -171,7 +171,7 @@
                                 <i class="ti ti-phone"></i>
                                 <div class="contact-item-text">
                                     <h5>{% if LANGUAGE_CODE == 'en' %}Phone{% else %}الهاتف{% endif %}</h5>
-                                    <p dir="ltr" style="text-align:inherit">+20 106 954 5469</p>
+                                    <p dir="ltr" style="text-align:inherit">{% if header_settings %}{{ header_settings.phone_number }}{% else %}+20 106 954 5469{% endif %}</p>
                                 </div>
                             </div>
                             
@@ -179,7 +179,7 @@
                                 <i class="ti ti-mail"></i>
                                 <div class="contact-item-text">
                                     <h5>{% if LANGUAGE_CODE == 'en' %}Email{% else %}البريد الإلكتروني{% endif %}</h5>
-                                    <p>support@mavaperfumes.com</p>
+                                    <p>{% if footer_settings %}{{ footer_settings.email }}{% else %}support@mavaperfumes.com{% endif %}</p>
                                 </div>
                             </div>
                             
@@ -187,15 +187,16 @@
                                 <i class="ti ti-clock"></i>
                                 <div class="contact-item-text">
                                     <h5>{% if LANGUAGE_CODE == 'en' %}Work Hours{% else %}ساعات العمل{% endif %}</h5>
-                                    <p>السبت - الخميس: 10 ص - 10 م</p>
+                                    <p>{% if footer_settings %}{{ footer_settings.work_hours }}{% else %}السبت - الخميس: 10 ص - 10 م{% endif %}</p>
                                 </div>
                             </div>
                             
                             <div class="social-links">
-                                <a href="#" class="social-link"><i class="ti ti-brand-facebook"></i></a>
-                                <a href="#" class="social-link"><i class="ti ti-brand-instagram"></i></a>
-                                <a href="#" class="social-link"><i class="ti ti-brand-twitter"></i></a>
-                                <a href="#" class="social-link"><i class="ti ti-brand-whatsapp"></i></a>
+                                {% if footer_settings.fb_link %}<a href="{{ footer_settings.fb_link }}" class="social-link" target="_blank"><i class="ti ti-brand-facebook"></i></a>{% endif %}
+                                {% if footer_settings.insta_link %}<a href="{{ footer_settings.insta_link }}" class="social-link" target="_blank"><i class="ti ti-brand-instagram"></i></a>{% endif %}
+                                {% if footer_settings.tiktok_link %}<a href="{{ footer_settings.tiktok_link }}" class="social-link" target="_blank"><i class="ti ti-brand-tiktok"></i></a>{% endif %}
+                                {% load product_filters %}
+                                <a href="https://wa.me/{% if header_settings %}{{ header_settings.phone_number|clean_wa }}{% else %}{{ footer_settings.wa_link }}{% endif %}" class="social-link" target="_blank"><i class="ti ti-brand-whatsapp"></i></a>
                             </div>
                         </div>
                     </div>

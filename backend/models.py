@@ -79,7 +79,8 @@ class FooterSettings(models.Model):
     # Social links
     fb_link = models.URLField("رابط فيسبوك", blank=True, null=True)
     insta_link = models.URLField("رابط إنستجرام", blank=True, null=True)
-    wa_link = models.CharField("رابط/رقم واتساب", max_length=100, default="201069545469")
+    wa_link = models.CharField("رقم واتساب (بدون +)", max_length=100, default="201069545469")
+    messenger_link = models.URLField("رابط ماسنجر", blank=True, null=True)
     tiktok_link = models.URLField("رابط تيك توك", blank=True, null=True)
 
     # Contact

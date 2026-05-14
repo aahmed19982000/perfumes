@@ -5,47 +5,116 @@
 <div class="dashboard-header">
     <div class="header-main">
         <h1 class="header-title">{{ title }}</h1>
+        <p class="header-subtitle">قم بتحديث البيانات والإعدادات من هنا بكل سهولة</p>
     </div>
 </div>
 
-<div class="table-container" style="max-width: {{ form_width|default:'600px' }}; margin: 0 auto;">
-    <form method="post" enctype="multipart/form-data">
+<div class="form-container-wrapper" style="max-width: {{ form_width|default:'800px' }}; margin: 0 auto;">
+    <form method="post" enctype="multipart/form-data" class="premium-form">
         {% csrf_token %}
         
-        {% for field in form %}
-        <div class="form-group">
-            <label>{{ field.label }}</label>
-            
-            {% if field.value and field.field.widget.input_type == 'file' %}
-                <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-                    {% if field.name == 'logo_image' or field.name == 'favicon' or 'image' in field.name or 'logo' in field.name %}
-                        <img src="{{ MEDIA_URL }}{{ field.value }}" alt="Current" style="max-height: 50px; border-radius: 4px; border: 1px solid var(--border-color);">
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-sections">
+            {% for field in form %}
+                {# logic to add section headers for large forms like Header/Footer Settings #}
+                {% if title == 'إعدادات الهيدر' %}
+                    {% if forloop.counter0 == 0 %}
+                        <div class="form-section-header"><i class="fas fa-id-card"></i> الهوية والاتصال</div>
+                    {% elif field.name == 'show_top_bar' %}
+                        <div class="form-section-header"><i class="fas fa-eye"></i> خيارات العرض (إظهار/إخفاء)</div>
+                    {% elif field.name == 'search_placeholder_ar' %}
+                        <div class="form-section-header"><i class="fas fa-search"></i> نصوص البحث</div>
+                    {% elif field.name == 'home_label_ar' %}
+                        <div class="form-section-header"><i class="fas fa-language"></i> عناوين القائمة والتنقل (عربي/إنجليزي)</div>
                     {% endif %}
-                    <span style="font-size: 0.8rem; color: var(--text-muted);">
-                        الملف الحالي: <a href="{{ MEDIA_URL }}{{ field.value }}" target="_blank" style="color: var(--primary);">{{ field.value }}</a>
-                    </span>
-                </div>
-            {% endif %}
+                {% elif title == 'إعدادات الفوتر' %}
+                    {% if forloop.counter0 == 0 %}
+                        <div class="form-section-header"><i class="fas fa-branding"></i> الهوية والتعريف</div>
+                    {% elif field.name == 'fb_link' %}
+                        <div class="form-section-header"><i class="fas fa-share-alt"></i> روابط التواصل الاجتماعي</div>
+                    {% elif field.name == 'phone' %}
+                        <div class="form-section-header"><i class="fas fa-headset"></i> معلومات التواصل والعمل</div>
+                    {% elif field.name == 'copyright_text_ar' %}
+                        <div class="form-section-header"><i class="fas fa-copyright"></i> حقوق النشر</div>
+                    {% endif %}
+                {% endif %}
 
-            {{ field }}
-            
-            {% if field.errors %}
-                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 5px;">
-                    {{ field.errors }}
+                <div class="form-group {% if field.field.widget.input_type == 'checkbox' %}checkbox-group{% endif %}">
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="required">*</span>{% endif %}
+                    </label>
+                    
+                    <div class="field-wrapper">
+                        {% if field.field.widget.input_type == 'file' %}
+                            <div class="file-upload-preview">
+                                {% if field.value %}
+                                    <div class="current-file">
+                                        {% if 'image' in field.name or 'logo' in field.name or 'favicon' in field.name or 'thumb' in field.name %}
+                                            <div class="image-preview-container">
+                                                <img src="{{ MEDIA_URL }}{{ field.value }}" alt="Current">
+                                            </div>
+                                        {% endif %}
+                                        <div class="file-info">
+                                            <span class="file-label">الملف الحالي:</span>
+                                            <a href="{{ MEDIA_URL }}{{ field.value }}" target="_blank" class="file-link">{{ field.value }}</a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                                <div class="file-input-custom">
+                                    {{ field }}
+                                    <div class="file-custom-ui">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>اضغط هنا لرفع ملف جديد</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif field.field.widget.input_type == 'checkbox' %}
+                            <label class="switch">
+                                {{ field }}
+                                <span class="slider round"></span>
+                            </label>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        
+                        {% if field.errors %}
+                            <div class="field-errors">
+                                {% for error in field.errors %}
+                                    <span class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if field.help_text %}
+                            <small class="help-text">{{ field.help_text }}</small>
+                        {% endif %}
+                    </div>
                 </div>
-            {% endif %}
-            {% if field.help_text %}
-                <small style="color: var(--text-muted);">{{ field.help_text }}</small>
-            {% endif %}
+            {% endfor %}
         </div>
-        {% endfor %}
 
-        <div style="display: flex; gap: 15px; margin-top: 30px;">
-            <button type="submit" class="btn btn-primary" style="flex: 2; justify-content: center; padding: 12px;">
-                <i class="fas fa-save"></i> حفظ البيانات
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> حفظ التغييرات
             </button>
-            <a href="javascript:history.back()" class="btn" style="flex: 1; justify-content: center; background: var(--bg-card); color: var(--text-muted);">إلغاء</a>
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                إلغاء
+            </a>
         </div>
     </form>
 </div>
+
+<style>
+    /* Section Headers Logic */
+    .form-section-header {
+        grid-column: 1 / -1;
+    }
+</style>
 {% endblock %}
+

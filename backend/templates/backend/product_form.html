@@ -3,18 +3,24 @@
 {% block title %}{{ title }} | لوحة التحكم{% endblock %}
 
 {% block content %}
-<div class="header">
-    <h1>{{ title }}</h1>
-    <a href="{% url 'backend:product_list' %}" class="btn" style="background: var(--bg-card); color: var(--text-muted);"><i class="fas fa-arrow-right"></i> العودة للقائمة</a>
+<div class="dashboard-header">
+    <div class="header-main">
+        <h1 class="header-title">{{ title }}</h1>
+        <p class="header-subtitle">إدارة تفاصيل المنتج، الصور، والأسعار</p>
+    </div>
+    <a href="{% url 'backend:product_list' %}" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> العودة للقائمة</a>
 </div>
 
-<div class="table-container" style="max-width: 800px; margin: 0 auto;">
-    <form method="post" enctype="multipart/form-data">
+<div class="form-container-wrapper" style="max-width: 900px; margin: 0 auto;">
+    <form method="post" enctype="multipart/form-data" class="premium-form">
         {% csrf_token %}
         
+        <div class="form-section-header"><i class="fas fa-info-circle"></i> المعلومات الأساسية</div>
+        
         <div class="form-group">
-            <label>كود المنتج (SKU) - اتركه فارغاً للتوليد التلقائي</label>
+            <label>كود المنتج (SKU)</label>
             {{ form.sku }}
+            <small class="help-text">اتركه فارغاً للتوليد التلقائي</small>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -37,6 +43,7 @@
             {{ form.description_en }}
         </div>
 
+        <div class="form-section-header"><i class="fas fa-layer-group"></i> التصنيف والعلامة</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
             <div class="form-group">
                 <label>الفئة</label>
@@ -52,6 +59,7 @@
             </div>
         </div>
 
+        <div class="form-section-header"><i class="fas fa-tags"></i> السعر والمخزون</div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px;">
             <div class="form-group">
                 <label>السعر</label>
@@ -66,77 +74,99 @@
                 {{ form.stock }}
             </div>
             <div class="form-group">
-                <label>الحجم (مثل: 100 مل)</label>
+                <label>الحجم</label>
                 {{ form.size }}
             </div>
         </div>
 
+        <div class="form-section-header"><i class="fas fa-image"></i> الصورة الرئيسية</div>
         <div class="form-group">
-            <label>الصورة الرئيسية</label>
-            {% if product.thumbnail %}
-                <img src="{{ product.thumbnail.url }}" style="width: 100px; margin-bottom: 10px; border-radius: 8px;">
-            {% endif %}
-            {{ form.thumbnail }}
+            <div class="file-upload-preview">
+                {% if product.thumbnail %}
+                    <div class="current-file">
+                        <div class="image-preview-container">
+                            <img src="{{ product.thumbnail.url }}" alt="Current">
+                        </div>
+                        <div class="file-info">
+                            <span class="file-label">الصورة الحالية</span>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="file-input-custom">
+                    {{ form.thumbnail }}
+                    <div class="file-custom-ui">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>ارفع الصورة الرئيسية للمنتج</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Statistics Section (Read-only) -->
         {% if product %}
-        <div class="table-container" style="background: rgba(59, 130, 246, 0.05); margin-bottom: 30px; border: 1px solid var(--primary);">
-            <h3 style="margin-bottom: 15px; color: var(--primary);"><i class="fas fa-chart-line"></i> إحصائيات ونظام المنتج</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
-                <div style="text-align: center;">
-                    <small style="color: var(--text-muted);">متوسط التقييم</small>
-                    <div style="font-size: 1.2rem; font-weight: 700;">{{ product.avg_rating }} / 5</div>
-                </div>
-                <div style="text-align: center;">
-                    <small style="color: var(--text-muted);">عدد المراجعات</small>
-                    <div style="font-size: 1.2rem; font-weight: 700;">{{ product.review_count }}</div>
-                </div>
-                <div style="text-align: center;">
-                    <small style="color: var(--text-muted);">تاريخ الإضافة</small>
-                    <div style="font-size: 0.9rem;">{{ product.created_at|date:"Y/m/d H:i" }}</div>
-                </div>
-                <div style="text-align: center;">
-                    <small style="color: var(--text-muted);">آخر تحديث</small>
-                    <div style="font-size: 0.9rem;">{{ product.updated_at|date:"Y/m/d H:i" }}</div>
-                </div>
+        <div class="form-section-header"><i class="fas fa-chart-line"></i> إحصائيات النظام</div>
+        <div class="stats-mini-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background: rgba(59, 130, 246, 0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--primary);">
+            <div style="text-align: center;">
+                <small style="color: var(--text-muted); display: block; margin-bottom: 5px;">متوسط التقييم</small>
+                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">{{ product.avg_rating }} / 5</div>
+            </div>
+            <div style="text-align: center;">
+                <small style="color: var(--text-muted); display: block; margin-bottom: 5px;">عدد المراجعات</small>
+                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary);">{{ product.review_count }}</div>
+            </div>
+            <div style="text-align: center;">
+                <small style="color: var(--text-muted); display: block; margin-bottom: 5px;">تاريخ الإضافة</small>
+                <div style="font-size: 0.9rem; font-weight: 600;">{{ product.created_at|date:"Y/m/d" }}</div>
+            </div>
+            <div style="text-align: center;">
+                <small style="color: var(--text-muted); display: block; margin-bottom: 5px;">آخر تحديث</small>
+                <div style="font-size: 0.9rem; font-weight: 600;">{{ product.updated_at|date:"Y/m/d" }}</div>
             </div>
         </div>
         {% endif %}
 
         <!-- Product Gallery Section -->
-        <div class="table-container" style="margin-bottom: 30px;">
-            <h3 style="margin-bottom: 20px;"><i class="fas fa-images"></i> معرض صور المنتج</h3>
+        <div class="form-section-header"><i class="fas fa-images"></i> معرض الصور الإضافية</div>
+        <div class="gallery-wrapper">
             {{ formset.management_form }}
             <div id="gallery-formset">
                 {% for image_form in formset %}
-                <div class="formset-row" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 15px; background: var(--bg-dark);">
+                <div class="formset-row premium-card">
                     {{ image_form.id }}
-                    <div style="display: grid; grid-template-columns: 2fr 2fr 1fr 1fr auto; gap: 15px; align-items: center;">
-                        <div>
-                            <label style="font-size: 0.8rem;">الصورة</label>
+                    <div class="formset-grid">
+                        <div class="gallery-img-col">
                             {% if image_form.instance.image %}
-                                <div style="margin-bottom: 8px;">
-                                    <img src="{{ image_form.instance.image.url }}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-color);">
+                                <div class="mini-preview">
+                                    <img src="{{ image_form.instance.image.url }}" alt="Preview">
                                 </div>
                             {% endif %}
-                            {{ image_form.image }}
+                            <div class="file-input-custom mini">
+                                {{ image_form.image }}
+                                <div class="file-custom-ui mini">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label style="font-size: 0.8rem;">النص البديل</label>
+                        <div class="gallery-info-col">
+                            <label>وصف الصورة</label>
                             {{ image_form.alt_text }}
                         </div>
-                        <div>
-                            <label style="font-size: 0.8rem;">الترتيب</label>
+                        <div class="gallery-order-col">
+                            <label>الترتيب</label>
                             {{ image_form.order }}
                         </div>
-                        <div style="text-align: center;">
-                            <label style="font-size: 0.8rem; display: block;">رئيسية؟</label>
-                            {{ image_form.is_main }}
+                        <div class="gallery-switch-col">
+                            <label>رئيسية؟</label>
+                            <label class="switch small">
+                                {{ image_form.is_main }}
+                                <span class="slider round"></span>
+                            </label>
                         </div>
-                        <div style="text-align: center;">
-                            <label style="font-size: 0.8rem; display: block; color: var(--danger);">حذف؟</label>
-                            {{ image_form.DELETE }}
+                        <div class="gallery-delete-col">
+                            <label class="text-danger">حذف؟</label>
+                            <div class="custom-checkbox">
+                                {{ image_form.DELETE }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -144,30 +174,77 @@
             </div>
         </div>
 
-        <!-- Status & Promotion Section -->
-        <div class="table-container" style="margin-bottom: 30px;">
-            <h3 style="margin-bottom: 20px;"><i class="fas fa-toggle-on"></i> الحالة والظهور</h3>
-            <div style="display: flex; gap: 40px;">
-                <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
-                    <div style="transform: scale(1.2);">{{ form.is_active }}</div>
-                    <label style="margin: 0; cursor: pointer;">منتج نشط (يظهر في المتجر)</label>
-                </div>
-                <div class="form-group" style="display: flex; align-items: center; gap: 12px; margin-bottom: 0;">
-                    <div style="transform: scale(1.2);">{{ form.is_featured }}</div>
-                    <label style="margin: 0; cursor: pointer;">منتج مميز (يظهر في الواجهة)</label>
-                </div>
+        <div class="form-section-header"><i class="fas fa-toggle-on"></i> الحالة والظهور</div>
+        <div class="visibility-switches">
+            <div class="form-group checkbox-group">
+                <label>تفعيل المنتج (يظهر في المتجر)</label>
+                <label class="switch">
+                    {{ form.is_active }}
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="form-group checkbox-group">
+                <label>منتج مميز (يظهر في الواجهة الرئيسية)</label>
+                <label class="switch">
+                    {{ form.is_featured }}
+                    <span class="slider round"></span>
+                </label>
             </div>
         </div>
 
-        <div style="display: flex; gap: 15px; margin-top: 30px;">
-            <button type="submit" name="_save" class="btn btn-primary" style="flex: 2; justify-content: center; padding: 15px; font-size: 1.1rem;">
-                <i class="fas fa-save"></i> حفظ المنتج والعودة
+        <div class="form-actions sticky-actions">
+            <button type="submit" name="_save" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> حفظ المنتج
             </button>
-            <button type="submit" name="_continue" class="btn" style="flex: 2; justify-content: center; background: var(--warning); color: #000; padding: 15px; font-size: 1.1rem; font-weight: 700;">
-                <i class="fas fa-sync-alt"></i> حفظ واستمرار التعديل
+            <button type="submit" name="_continue" class="btn btn-warning">
+                <i class="fas fa-sync-alt"></i> حفظ واستمرار
             </button>
-            <a href="{% url 'backend:product_list' %}" class="btn" style="flex: 1; justify-content: center; background: var(--bg-card); color: var(--text-muted);">إلغاء</a>
+            <a href="{% url 'backend:product_list' %}" class="btn btn-secondary">إلغاء</a>
         </div>
     </form>
 </div>
+
+<style>
+    .premium-card {
+        background: rgba(255,255,255,0.02);
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        margin-bottom: 15px;
+    }
+    .formset-grid {
+        display: grid;
+        grid-template-columns: 80px 1fr 80px 80px 60px;
+        gap: 20px;
+        align-items: center;
+    }
+    .mini-preview img {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-bottom: 5px;
+        border: 1px solid var(--border-color);
+    }
+    .file-custom-ui.mini { padding: 10px; font-size: 0.8rem; }
+    .switch.small { width: 40px; height: 20px; }
+    .switch.small .slider:before { height: 14px; width: 14px; left: 3px; bottom: 3px; }
+    .switch.small input:checked + .slider:before { transform: translateX(20px); }
+    
+    .visibility-switches {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .btn-warning { background: var(--warning); color: #000; flex: 2; justify-content: center; font-weight: 700; }
+    .sticky-actions {
+        position: sticky;
+        bottom: 0;
+        background: var(--bg-card);
+        padding: 20px 0;
+        margin-top: 50px;
+        z-index: 10;
+    }
+</style>
 {% endblock %}
+
