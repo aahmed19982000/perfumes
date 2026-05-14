@@ -3,91 +3,94 @@
 
 {% block extra_css %}
 <style>
-    .filter-section { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
-    .filter-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; }
-    .filter-list { list-style: none; padding: 0; margin: 0; max-height: 250px; overflow-y: auto; }
+    /* ── Professional Product List ── */
+    .search-header { background: #fff; border-bottom: 1px solid var(--border); padding: 40px 0; margin-bottom: 40px; position: relative; overflow: hidden; }
+    .search-header::before { content: ''; position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; background: var(--soft); border-radius: 50%; z-index: 0; opacity: 0.5; }
+    .search-header .container { position: relative; z-index: 1; }
+    
+    .filter-card { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 25px; position: sticky; top: 100px; }
+    .filter-section { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px dashed var(--border); }
+    .filter-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    
+    .filter-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+    .filter-title i { color: var(--gold); font-size: 1.2rem; }
+    
+    .filter-list { list-style: none; padding: 0; margin: 0; max-height: 220px; overflow-y: auto; }
     .filter-list::-webkit-scrollbar { width: 4px; }
-    .filter-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-    .filter-item { margin-bottom: 0.5rem; }
+    .filter-list::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 10px; }
+    
+    .filter-item { margin-bottom: 10px; }
+    .form-check-input { cursor: pointer; border-color: var(--border); }
     .form-check-input:checked { background-color: var(--gold); border-color: var(--gold); }
-    .form-check-label { font-size: 0.85rem; color: var(--mid); cursor: pointer; transition: color 0.2s; }
+    .form-check-label { font-size: 0.9rem; color: var(--mid); cursor: pointer; transition: all 0.2s; font-weight: 500; }
     .form-check-label:hover { color: var(--gold); }
     
-    .product-card { transition: transform 0.3s ease, box-shadow 0.3s ease; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: white; }
-    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-color: var(--gold-light); }
-    .product-img-wrap { position: relative; padding-top: 100%; overflow: hidden; background: var(--soft); }
-    .product-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; padding: 20px; transition: transform 0.5s ease; }
-    .product-card:hover .product-img { transform: scale(1.08); }
+    .price-input-wrap { display: flex; align-items: center; gap: 10px; }
+    .price-input-wrap input { border-radius: 12px; border: 1.5px solid var(--border); padding: 8px 12px; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+    .price-input-wrap input:focus { border-color: var(--gold); }
     
-    .badge-discount { position: absolute; top: 12px; right: 12px; background: #e74c3c; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; z-index: 10; }
-    html[dir="ltr"] .badge-discount { right: auto; left: 12px; }
-
-    .price-current { color: var(--gold-dark); font-weight: 700; font-size: 1.1rem; }
-    .price-old { color: #999; text-decoration: line-through; font-size: 0.85rem; margin-inline-end: 8px; }
+    /* Toolbar */
+    .list-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: var(--soft); padding: 12px 20px; border-radius: 15px; border: 1px solid var(--border); }
+    .toolbar-label { font-size: 12px; font-weight: 700; color: var(--mid); text-transform: uppercase; letter-spacing: 0.05em; }
     
-    .pagination .page-link { color: var(--ink); border-radius: 8px; margin: 0 3px; border: 1px solid var(--border); }
-    .pagination .page-item.active .page-link { background-color: var(--gold); border-color: var(--gold); color: white; }
-    
-    .search-header { background: var(--soft); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border); }
-    
+    /* Grid Adjustments */
     @media (max-width: 991.98px) {
-        .filter-sidebar { display: none; }
-        .filter-sidebar.show-mobile { display: block; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000; background: white; padding: 2rem; overflow-y: auto; }
+        .search-header { padding: 30px 0; text-align: center; }
+        .list-toolbar { padding: 10px 15px; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    
-    <!-- Header & Search -->
-    <div class="search-header">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-6">
-                <h1 class="h3 mb-1 fw-bold">
+<div class="search-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <nav aria-label="breadcrumb" class="mb-2">
+                    <ol class="breadcrumb" style="font-size: 12px;">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-muted">{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</a></li>
+                        <li class="breadcrumb-item active">{% if LANGUAGE_CODE == 'en' %}All Products{% else %}جميع المنتجات{% endif %}</li>
+                    </ol>
+                </nav>
+                <h1 class="h2 fw-bold mb-2" style="font-family: 'Playfair Display', serif;">
                     {% if current_search %}
-                        {% if LANGUAGE_CODE == 'en' %}Search results for "{{ current_search }}"{% else %}نتائج البحث عن "{{ current_search }}"{% endif %}
+                        {% if LANGUAGE_CODE == 'en' %}Results for "{{ current_search }}"{% else %}نتائج البحث عن "{{ current_search }}"{% endif %}
                     {% else %}
-                        {% if LANGUAGE_CODE == 'en' %}Explore All Products{% else %}استكشف جميع المنتجات{% endif %}
+                        {% if LANGUAGE_CODE == 'en' %}Luxury Collection{% else %}المجموعة الفاخرة{% endif %}
                     {% endif %}
                 </h1>
-                <p class="text-muted mb-0 small">{% if LANGUAGE_CODE == 'en' %}Showing {{ products.start_index }}-{{ products.end_index }} of {{ products.paginator.count }} items{% else %}عرض {{ products.start_index }}-{{ products.end_index }} من أصل {{ products.paginator.count }} منتج{% endif %}</p>
+                <p class="text-muted mb-0">
+                    <i class="ti ti-package me-1 text-gold"></i>
+                    {% if LANGUAGE_CODE == 'en' %}Showing {{ products.paginator.count }} premium fragrances{% else %}نعرض {{ products.paginator.count }} عطر فاخر{% endif %}
+                </p>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-5 mt-4 mt-lg-0">
                 <form method="GET" class="position-relative">
-                    <!-- Preserve existing filters when searching -->
                     {% for cat in selected_cats %}<input type="hidden" name="category" value="{{ cat }}">{% endfor %}
                     {% for br in selected_brands %}<input type="hidden" name="brand" value="{{ br }}">{% endfor %}
-                    {% if min_p %}<input type="hidden" name="min_price" value="{{ min_p }}">{% endif %}
-                    {% if max_p %}<input type="hidden" name="max_price" value="{{ max_p }}">{% endif %}
-                    {% if current_sort %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
-                    
-                    <input type="text" name="search" class="form-control form-control-lg rounded-pill ps-4 shadow-sm" 
-                           placeholder="{% if LANGUAGE_CODE == 'en' %}Search perfumes, brands...{% else %}ابحث عن عطور، ماركات...{% endif %}"
+                    <input type="text" name="search" class="form-control form-control-lg rounded-pill border-2" 
+                           style="padding-inline-start: 25px; font-size: 15px;"
+                           placeholder="{% if LANGUAGE_CODE == 'en' %}Search perfumes...{% else %}ابحث عن عطر...{% endif %}"
                            value="{{ current_search|default:'' }}">
-                    <button type="submit" class="btn btn-dark position-absolute top-50 end-0 translate-middle-y me-2 rounded-pill px-4" style="height: calc(100% - 10px)">
-                        <i class="ti ti-search me-1"></i> {% if LANGUAGE_CODE == 'en' %}Search{% else %}بحث{% endif %}
+                    <button type="submit" class="btn btn-gold rounded-pill position-absolute top-50 end-0 translate-middle-y me-2 px-4 py-2" style="background: var(--ink); color: white;">
+                        <i class="ti ti-search"></i>
                     </button>
                 </form>
             </div>
         </div>
     </div>
+</div>
 
+<div class="container mb-5">
     <div class="row g-4">
         <!-- Sidebar Filters -->
-        <div class="col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px; z-index: 100;">
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="filter-card shadow-sm">
                 <form method="GET" id="filterForm">
-                    <!-- Preserve search query -->
-                    {% if current_search %}
-                    <input type="hidden" name="search" value="{{ current_search }}">
-                    {% endif %}
+                    {% if current_search %}<input type="hidden" name="search" value="{{ current_search }}">{% endif %}
 
-                    <!-- Categories -->
                     <div class="filter-section">
-                        <div class="filter-title">
-                            {% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}
-                        </div>
+                        <div class="filter-title"><i class="ti ti-category"></i> {% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}</div>
                         <ul class="filter-list">
                             {% for category in categories %}
                             <li class="filter-item">
@@ -103,48 +106,33 @@
                         </ul>
                     </div>
 
-                    <!-- Brands -->
                     <div class="filter-section">
-                        <div class="filter-title">
-                            {% if LANGUAGE_CODE == 'en' %}Brands{% else %}العلامات التجارية{% endif %}
-                        </div>
+                        <div class="filter-title"><i class="ti ti-award"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</div>
                         <ul class="filter-list">
                             {% for brand in brands %}
                             <li class="filter-item">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="brand" value="{{ brand.id }}" id="brand{{ brand.id }}"
                                            {% if brand.id in selected_brands %}checked{% endif %} onchange="this.form.submit()">
-                                    <label class="form-check-label" for="brand{{ brand.id }}">
-                                        {{ brand.name }}
-                                    </label>
+                                    <label class="form-check-label" for="brand{{ brand.id }}">{{ brand.name }}</label>
                                 </div>
                             </li>
                             {% endfor %}
                         </ul>
                     </div>
 
-                    <!-- Price Range -->
                     <div class="filter-section">
-                        <div class="filter-title">
-                            {% if LANGUAGE_CODE == 'en' %}Price Range{% else %}نطاق السعر{% endif %}
+                        <div class="filter-title"><i class="ti ti-coin"></i> {% if LANGUAGE_CODE == 'en' %}Price Range{% else %}نطاق السعر{% endif %}</div>
+                        <div class="price-input-wrap mb-3">
+                            <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ min_p|default:'' }}">
+                            <span class="text-muted">-</span>
+                            <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ max_p|default:'' }}">
                         </div>
-                        <div class="row g-2 align-items-center">
-                            <div class="col-5">
-                                <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min" value="{{ min_p|default:'' }}">
-                            </div>
-                            <div class="col-2 text-center text-muted">-</div>
-                            <div class="col-5">
-                                <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max" value="{{ max_p|default:'' }}">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-outline-dark btn-sm w-100 mt-3 rounded-pill">
-                            {% if LANGUAGE_CODE == 'en' %}Apply{% else %}تطبيق{% endif %}
-                        </button>
+                        <button type="submit" class="btn btn-dark w-100 rounded-pill py-2" style="background: var(--ink);">{% if LANGUAGE_CODE == 'en' %}Apply{% else %}تطبيق{% endif %}</button>
                     </div>
 
-                    <!-- Clear All -->
-                    <a href="{% url 'products' %}" class="btn btn-link btn-sm text-decoration-none text-danger w-100 p-0">
-                        <i class="ti ti-x small"></i> {% if LANGUAGE_CODE == 'en' %}Clear All Filters{% else %}مسح جميع الفلاتر{% endif %}
+                    <a href="{% url 'products' %}" class="btn btn-link btn-sm text-decoration-none text-muted w-100 mt-2">
+                        <i class="ti ti-refresh"></i> {% if LANGUAGE_CODE == 'en' %}Reset All{% else %}إعادة ضبط{% endif %}
                     </a>
                 </form>
             </div>
@@ -161,69 +149,50 @@
                     </button>
                 </div>
                 
-                <div class="d-flex align-items-center gap-2">
-                    <label class="small text-muted d-none d-md-block">{% if LANGUAGE_CODE == 'en' %}Sort by:{% else %}ترتيب حسب:{% endif %}</label>
-                    <select class="form-select form-select-sm rounded-pill" style="width: auto" onchange="location.href='?{% if current_search %}search={{ current_search }}&{% endif %}{% for c in selected_cats %}category={{ c }}&{% endfor %}{% for b in selected_brands %}brand={{ b }}&{% endfor %}{% if min_p %}min_price={{ min_p }}&{% endif %}{% if max_p %}max_price={{ max_p }}&{% endif %}sort=' + this.value">
-                        <option value="" {% if not current_sort %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Newest{% else %}الأحدث{% endif %}</option>
-                        <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Price: Low to High{% else %}السعر: من الأقل للأعلى{% endif %}</option>
-                        <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Price: High to Low{% else %}السعر: من الأعلى للأقل{% endif %}</option>
-                        <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Oldest{% else %}الأقدم{% endif %}</option>
-                    </select>
+                <div class="list-toolbar shadow-sm">
+                    <div class="toolbar-label d-none d-sm-block">
+                        {% if LANGUAGE_CODE == 'en' %}Sort By{% else %}ترتيب حسب{% endif %}
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-grow-1 flex-sm-grow-0 justify-content-between justify-content-sm-end">
+                        <select class="form-select form-select-sm border-0 bg-transparent fw-bold" style="cursor:pointer; min-width: 150px;" 
+                                onchange="location.href='?{% if current_search %}search={{ current_search }}&{% endif %}{% for c in selected_cats %}category={{ c }}&{% endfor %}{% for b in selected_brands %}brand={{ b }}&{% endfor %}{% if min_p %}min_price={{ min_p }}&{% endif %}{% if max_p %}max_price={{ max_p }}&{% endif %}sort=' + this.value">
+                            <option value="-created_at" {% if current_sort == '-created_at' or not current_sort %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Newest First{% else %}الأحدث أولاً{% endif %}</option>
+                            <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Price: Low to High{% else %}السعر: من الأقل للأعلى{% endif %}</option>
+                            <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Price: High to Low{% else %}السعر: من الأعلى للأقل{% endif %}</option>
+                            <option value="popular" {% if current_sort == 'popular' %}selected{% endif %}>{% if LANGUAGE_CODE == 'en' %}Most Popular{% else %}الأكثر رواجاً{% endif %}</option>
+                        </select>
+                        
+                        <button class="btn btn-outline-dark btn-sm d-lg-none rounded-pill px-3" data-bs-toggle="offcanvas" data-bs-target="#filterMobile">
+                            <i class="ti ti-filter"></i> {% if LANGUAGE_CODE == 'en' %}Filters{% else %}الفلاتر{% endif %}
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {% if products %}
             <div class="row g-3 g-md-4">
                 {% for product in products %}
-                <div class="col-6 col-md-4 col-xl-3">
-                    <div class="product-card h-100">
-                        <div class="product-img-wrap">
-                            {% if product.discount_percent > 0 %}
-                            <div class="badge-discount">-{{ product.discount_percent }}%</div>
-                            {% endif %}
-                            <a href="{% url 'product_detail' product.slug %}">
-                                <img src="{{ product.thumbnail.url }}" class="product-img" alt="{{ product.name_ar }}">
-                            </a>
-                        </div>
-                        <div class="card-body p-3 text-center">
-                            <p class="text-muted small mb-1">{{ product.brand.name }}</p>
-                            <h6 class="mb-2 text-truncate px-2">
-                                <a href="{% url 'product_detail' product.slug %}" class="text-decoration-none text-ink">
-                                    {% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}
-                                </a>
-                            </h6>
-                            <div class="d-flex align-items-center justify-content-center">
-                                {% if product.discount_price %}
-                                <span class="price-old">{{ product.price }}</span>
-                                {% endif %}
-                                <span class="price-current">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.final_price }}</span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-transparent border-0 p-3 pt-0">
-                            <button class="btn btn-dark w-100 rounded-pill btn-sm py-2" onclick="addToCart('{{ product.id }}')">
-                                <i class="ti ti-shopping-cart-plus me-1"></i> {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
-                            </button>
-                        </div>
-                    </div>
+                <div class="col-6 col-md-4 col-xl-4">
+                    {% include "products/partials/product_card.html" with product=product %}
                 </div>
                 {% endfor %}
             </div>
 
             <!-- Pagination -->
             {% if products.has_other_pages %}
-            <nav class="mt-5">
-                <ul class="pagination justify-content-center">
+            <nav class="mt-5 d-flex justify-content-center">
+                <ul class="pagination pagination-md">
                     {% if products.has_previous %}
                     <li class="page-item">
                         <a class="page-link" href="?page={{ products.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% for c in selected_cats %}&category={{ c }}{% endfor %}{% for b in selected_brands %}&brand={{ b }}{% endfor %}{% if min_p %}&min_price={{ min_p }}{% endif %}{% if max_p %}&max_price={{ max_p }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
-                            <i class="ti ti-chevron-right"></i>
+                            <i class="ti ti-chevron-{% if LANGUAGE_CODE == 'en' %}left{% else %}right{% endif %}"></i>
                         </a>
                     </li>
                     {% endif %}
 
                     {% for i in products.paginator.page_range %}
                         {% if products.number == i %}
-                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        <li class="page-item active"><span class="page-link" style="background: var(--gold); border-color: var(--gold);">{{ i }}</span></li>
                         {% elif i > products.number|add:'-3' and i < products.number|add:'3' %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ i }}{% if current_search %}&search={{ current_search }}{% endif %}{% for c in selected_cats %}&category={{ c }}{% endfor %}{% for b in selected_brands %}&brand={{ b }}{% endfor %}{% if min_p %}&min_price={{ min_p }}{% endif %}{% if max_p %}&max_price={{ max_p }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">{{ i }}</a>
@@ -234,7 +203,7 @@
                     {% if products.has_next %}
                     <li class="page-item">
                         <a class="page-link" href="?page={{ products.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% for c in selected_cats %}&category={{ c }}{% endfor %}{% for b in selected_brands %}&brand={{ b }}{% endfor %}{% if min_p %}&min_price={{ min_p }}{% endif %}{% if max_p %}&max_price={{ max_p }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
-                            <i class="ti ti-chevron-left"></i>
+                            <i class="ti ti-chevron-{% if LANGUAGE_CODE == 'en' %}right{% else %}left{% endif %}"></i>
                         </a>
                     </li>
                     {% endif %}
@@ -248,7 +217,7 @@
                 <i class="ti ti-search-off text-muted mb-3" style="font-size: 4rem"></i>
                 <h4 class="fw-bold">{% if LANGUAGE_CODE == 'en' %}No products found{% else %}لم يتم العثور على منتجات{% endif %}</h4>
                 <p class="text-muted">{% if LANGUAGE_CODE == 'en' %}Try adjusting your filters or search query.{% else %}حاول تعديل الفلاتر أو كلمة البحث.{% endif %}</p>
-                <a href="{% url 'products' %}" class="btn btn-dark rounded-pill px-4 mt-3">{% if LANGUAGE_CODE == 'en' %}Clear All Filters{% else %}مسح جميع الفلاتر{% endif %}</a>
+                <a href="{% url 'products' %}" class="btn btn-dark rounded-pill px-4 mt-3" style="background: var(--ink);">{% if LANGUAGE_CODE == 'en' %}Clear All Filters{% else %}مسح جميع الفلاتر{% endif %}</a>
             </div>
             {% endif %}
         </div>
@@ -256,56 +225,65 @@
 </div>
 
 <!-- Mobile Filters Offcanvas -->
-<div class="offcanvas offcanvas-start" tabindex="-1" id="filterMobile">
-    <div class="offcanvas-header">
+<div class="offcanvas offcanvas-{% if LANGUAGE_CODE == 'en' %}start{% else %}end{% endif %}" tabindex="-1" id="filterMobile" style="background: var(--white); z-index: 3000;">
+    <div class="offcanvas-header" style="background: var(--ink);">
         <h5 class="offcanvas-title text-white">{% if LANGUAGE_CODE == 'en' %}Filters{% else %}الفلاتر{% endif %}</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body p-4">
-        <!-- Re-use of the form could be done with an include, but for simplicity here we'll assume the desktop form is enough or user can apply from there -->
-        <p class="text-muted small">{% if LANGUAGE_CODE == 'en' %}Please use the main filter sidebar for detailed options.{% else %}يرجى استخدام قائمة الفلاتر الرئيسية للخيارات المفصلة.{% endif %}</p>
+        <form method="GET">
+            {% if current_search %}<input type="hidden" name="search" value="{{ current_search }}">{% endif %}
+            
+            <div class="filter-section">
+                <div class="filter-title"><i class="ti ti-category"></i> {% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}</div>
+                <ul class="filter-list">
+                    {% for category in categories %}
+                    <li class="filter-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="category" value="{{ category.id }}" id="mcat{{ category.id }}"
+                                   {% if category.id in selected_cats %}checked{% endif %}>
+                            <label class="form-check-label" for="mcat{{ category.id }}">
+                                {% if LANGUAGE_CODE == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ar }}{% endif %}
+                            </label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title"><i class="ti ti-award"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}العلامات التجارية{% endif %}</div>
+                <ul class="filter-list">
+                    {% for brand in brands %}
+                    <li class="filter-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="brand" value="{{ brand.id }}" id="mbrand{{ brand.id }}"
+                                   {% if brand.id in selected_brands %}checked{% endif %}>
+                            <label class="form-check-label" for="mbrand{{ brand.id }}">{{ brand.name }}</label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title"><i class="ti ti-coin"></i> {% if LANGUAGE_CODE == 'en' %}Price Range{% else %}نطاق السعر{% endif %}</div>
+                <div class="price-input-wrap mb-3" style="gap: 10px;">
+                    <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ min_p|default:'' }}">
+                    <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ max_p|default:'' }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100 rounded-pill py-3 mt-3" style="background: var(--ink);">{% if LANGUAGE_CODE == 'en' %}Apply Filters{% else %}تطبيق الفلاتر{% endif %}</button>
+            <a href="{% url 'products' %}" class="btn btn-outline-secondary w-100 rounded-pill mt-2">{% if LANGUAGE_CODE == 'en' %}Reset All{% else %}إعادة ضبط{% endif %}</a>
+        </form>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    async function addToCart(productId) {
-        const formData = new FormData();
-        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-        formData.append('quantity', 1);
-
-        try {
-            const res = await fetch(`/cart/add/${productId}/`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            const data = await res.json();
-
-            if (data.status === 'success') {
-                if (typeof showToast === 'function') {
-                    showToast(data.message, 'success');
-                }
-                // Update cart count in header if the function exists
-                if (typeof updateGlobalCartCount === 'function') {
-                    updateGlobalCartCount(data.cart_count);
-                }
-            } else {
-                if (typeof showToast === 'function') {
-                    showToast(data.message, 'error');
-                }
-            }
-        } catch (e) {
-            console.error('Add to cart error', e);
-            if (typeof showToast === 'function') {
-                showToast('{% if LANGUAGE_CODE == "en" %}Error adding to cart{% else %}خطأ أثناء الإضافة للسلة{% endif %}', 'error');
-            }
-        }
-    }
+    // Inherit common functions from base.html
 </script>
 {% endblock %}
 

@@ -1,497 +1,351 @@
 {% extends "base.html" %}
 {% load static i18n %}
 
-{% block title %}{% if LANGUAGE_CODE == 'en' %}Offers & Discounts{% else %}العروض والخصومات{% endif %} - Mava Perfumes{% endblock %}
+{% block title %}{% if LANGUAGE_CODE == 'en' %}Exclusive Offers{% else %}العروض الحصرية{% endif %} - Mava Perfumes{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* ── Hero ── */
+    /* ── Luxury Offers Redesign ── */
+    :root {
+        --pd-gold: #c9a96e;
+        --pd-gold-light: #f0e0c0;
+        --pd-ink: #0f0f0f;
+        --pd-soft: #f9f7f4;
+        --pd-border: #e8e3dc;
+    }
+
+    /* ── Hero Section ── */
     .offers-hero {
-        background: linear-gradient(135deg, #0f0f0f 0%, #1a1008 50%, #0f0f0f 100%);
-        padding: 80px 0;
+        background: var(--pd-ink);
+        padding: 100px 0 80px;
         position: relative;
-        overflow: hidden;
         text-align: center;
+        overflow: hidden;
     }
     .offers-hero::before {
         content: '';
         position: absolute;
-        inset: 0;
-        background: radial-gradient(ellipse at center, rgba(201,169,110,0.15) 0%, transparent 70%);
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(201,169,110,0.1) 0%, transparent 60%);
+        animation: rotateGlow 20s linear infinite;
     }
-    .offers-hero .floating-tag {
+    @keyframes rotateGlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .hero-tag {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         background: rgba(201,169,110,0.15);
-        border: 1px solid rgba(201,169,110,0.3);
-        color: var(--gold);
-        padding: 6px 18px;
-        border-radius: 30px;
+        color: var(--pd-gold);
+        padding: 8px 24px;
+        border-radius: 40px;
         font-size: 13px;
-        font-weight: 700;
-        letter-spacing: .05em;
-        margin-bottom: 20px;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+        border: 1px solid rgba(201,169,110,0.3);
     }
     .offers-hero h1 {
         font-family: 'Playfair Display', serif;
-        font-size: clamp(2.5rem, 6vw, 4.5rem);
-        font-weight: 700;
+        font-size: clamp(2.5rem, 8vw, 4.5rem);
         color: #fff;
-        margin-bottom: 15px;
+        font-weight: 700;
+        margin-bottom: 20px;
         line-height: 1.1;
     }
-    .offers-hero h1 span { color: var(--gold); }
-    .offers-hero p { color: #888; font-size: 1.1rem; margin-bottom: 0; }
-
-    /* ── Countdown ── */
-    .countdown-bar {
-        background: var(--gold);
-        padding: 12px 0;
-        text-align: center;
-        font-weight: 700;
-        font-size: 14px;
-        color: var(--ink);
-        letter-spacing: .04em;
+    .offers-hero h1 span { color: var(--pd-gold); }
+    .offers-hero p {
+        color: rgba(255,255,255,0.6);
+        max-width: 600px;
+        margin: 0 auto;
+        font-size: 1.1rem;
+        font-weight: 400;
     }
-    .countdown-bar .timer {
-        display: inline-flex;
+
+    /* ── Countdown Bar ── */
+    .countdown-wrap {
+        background: var(--pd-gold);
+        padding: 15px 0;
+        position: sticky;
+        top: var(--nav-h);
+        z-index: 100;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    .timer-flex {
+        display: flex;
         align-items: center;
-        gap: 16px;
-        margin-inline-start: 20px;
+        justify-content: center;
+        gap: 20px;
+    }
+    .timer-label-main {
+        font-weight: 800;
+        color: var(--pd-ink);
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 0.05em;
     }
     .timer-unit {
-        display: inline-flex;
-        flex-direction: column;
+        display: flex;
         align-items: center;
-        background: var(--ink);
-        color: var(--gold);
-        border-radius: 8px;
-        padding: 4px 12px;
-        min-width: 48px;
+        gap: 5px;
+        background: var(--pd-ink);
+        color: var(--pd-gold);
+        padding: 5px 15px;
+        border-radius: 10px;
+        min-width: 80px;
+        justify-content: center;
     }
-    .timer-value { font-size: 1.4rem; font-weight: 700; line-height: 1; }
-    .timer-label { font-size: 9px; color: #888; letter-spacing: .08em; }
+    .timer-val { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+    .timer-suffix { font-size: 10px; font-weight: 700; opacity: 0.6; }
 
-    /* ── Offer Cards ── */
-    .offers-section { padding: 60px 0; }
-
+    /* ── Offers Grid ── */
+    .offers-container { padding: 80px 0; background: #fff; }
+    
     .offer-card {
-        background: var(--white);
-        border-radius: 20px;
-        border: 1px solid var(--border);
+        background: #fff;
+        border-radius: 24px;
+        border: 1px solid var(--pd-border);
         overflow: hidden;
-        transition: transform .3s, box-shadow .3s;
         height: 100%;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         display: flex;
         flex-direction: column;
         position: relative;
     }
     .offer-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(0,0,0,.1);
-        border-color: var(--gold-light);
+        transform: translateY(-10px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.08);
+        border-color: var(--pd-gold);
     }
 
-    /* ── Type Icon Header ── */
-    .offer-card-header {
-        padding: 24px 24px 0;
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-    }
-    .offer-type-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
+    .offer-header {
+        height: 140px;
+        background: var(--pd-soft);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.4rem;
-        flex-shrink: 0;
+        position: relative;
     }
-    .icon-bogo         { background: rgba(234,179,8,0.12);  color: #b45309; }
-    .icon-percentage   { background: rgba(34,197,94,0.12);  color: #15803d; }
-    .icon-quantity     { background: rgba(59,130,246,0.12); color: #1d4ed8; }
-    .icon-free_shipping{ background: rgba(168,85,247,0.12); color: #7e22ce; }
-
-    .offer-type-badge {
+    .offer-icon-box {
+        width: 70px;
+        height: 70px;
+        background: #fff;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        color: var(--pd-gold);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        z-index: 2;
+    }
+    .offer-badge {
+        position: absolute;
+        top: 20px;
+        inset-inline-end: 20px;
+        background: var(--pd-ink);
+        color: #fff;
+        padding: 4px 14px;
+        border-radius: 30px;
         font-size: 10px;
         font-weight: 800;
-        letter-spacing: .07em;
         text-transform: uppercase;
-        padding: 4px 10px;
-        border-radius: 20px;
+        letter-spacing: 0.05em;
     }
-    .badge-bogo          { background: rgba(234,179,8,0.12);  color: #b45309; }
-    .badge-percentage    { background: rgba(34,197,94,0.12);  color: #15803d; }
-    .badge-quantity      { background: rgba(59,130,246,0.12); color: #1d4ed8; }
-    .badge-free_shipping { background: rgba(168,85,247,0.12); color: #7e22ce; }
 
-    /* ── Card Body ── */
-    .offer-card-body { padding: 18px 24px 24px; flex: 1; display: flex; flex-direction: column; }
-
-    .offer-name {
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: var(--ink);
-        margin-bottom: 6px;
-        line-height: 1.3;
+    .offer-body { padding: 30px; flex: 1; display: flex; flex-direction: column; }
+    .offer-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--pd-ink);
+        margin-bottom: 12px;
     }
     .offer-desc {
-        font-size: 13px;
-        color: var(--mid);
-        margin-bottom: 18px;
+        color: var(--pd-mid);
+        font-size: 14px;
         line-height: 1.6;
+        margin-bottom: 25px;
         flex: 1;
     }
 
-    /* ── Offer Detail ── */
-    .offer-detail {
-        background: var(--soft);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 14px 16px;
-        margin-bottom: 16px;
+    .offer-info-row {
+        background: var(--pd-soft);
+        border-radius: 16px;
+        padding: 15px 20px;
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 15px;
+        margin-bottom: 20px;
     }
-    .offer-detail i {
-        font-size: 1.2rem;
-        flex-shrink: 0;
+    .info-icon {
+        font-size: 1.4rem;
+        color: var(--pd-gold);
     }
-    .offer-detail-text { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.5; }
-    .offer-detail-text small { display: block; font-weight: 400; color: var(--mid); font-size: 11px; margin-top: 2px; }
+    .info-text { font-size: 14px; font-weight: 700; color: var(--pd-ink); }
+    .info-sub { display: block; font-size: 11px; font-weight: 400; color: var(--pd-mid); margin-top: 2px; }
 
-    /* ── Eligible Products ── */
-    .eligible-wrap { margin-bottom: 16px; }
-    .eligible-label {
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: .07em;
-        text-transform: uppercase;
-        color: var(--mid);
-        margin-bottom: 8px;
-    }
-    .eligible-products {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-    .eligible-chip {
-        font-size: 11px;
-        font-weight: 600;
-        background: var(--soft);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        padding: 3px 10px;
-        color: var(--ink);
-        text-decoration: none;
-        transition: border-color .2s;
-    }
-    .eligible-chip:hover { border-color: var(--gold); color: var(--gold-dark); }
-    .eligible-chip.all-chip {
-        background: rgba(201,169,110,0.1);
-        border-color: rgba(201,169,110,0.3);
-        color: var(--gold-dark);
-    }
-
-    /* ── Validity ── */
-    .offer-validity {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11px;
-        color: var(--mid);
-        padding-top: 14px;
-        border-top: 1px solid var(--border);
-        margin-top: auto;
-    }
-    .offer-validity i { color: var(--gold); }
-    .validity-days {
-        margin-inline-start: auto;
-        font-size: 11px;
-        font-weight: 700;
-        background: rgba(201,169,110,0.1);
-        color: var(--gold-dark);
-        padding: 2px 8px;
-        border-radius: 10px;
-    }
-
-    /* ── CTA ── */
-    .btn-offer-cta {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        padding: 12px;
-        background: var(--ink);
-        color: var(--white);
+    .btn-claim {
+        background: var(--pd-ink);
+        color: #fff;
         border: none;
-        border-radius: 12px;
+        padding: 16px;
+        border-radius: 14px;
         font-weight: 700;
-        font-size: 14px;
+        text-align: center;
         text-decoration: none;
-        margin-bottom: 16px;
-        transition: background .2s, transform .2s;
-        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 15px;
     }
-    .btn-offer-cta:hover { background: var(--gold-dark); color: var(--white); transform: translateY(-1px); }
+    .btn-claim:hover { background: var(--pd-gold); color: #fff; }
 
-    /* ── Empty ── */
-    .empty-offers { text-align: center; padding: 100px 20px; }
-    .empty-offers i { font-size: 5rem; color: var(--gold); opacity: .3; }
-
-    /* ── Section Title ── */
-    .section-count {
-        font-size: 13px;
-        color: var(--mid);
-        font-weight: 600;
-        margin-bottom: 30px;
+    .valid-until {
         display: flex;
         align-items: center;
         gap: 8px;
+        font-size: 11px;
+        color: var(--pd-mid);
+        padding-top: 15px;
+        border-top: 1px solid var(--pd-border);
     }
-    .section-count strong { color: var(--ink); }
+    .valid-until i { color: var(--pd-gold); }
+
+    /* ── Empty State ── */
+    .empty-state { text-align: center; padding: 100px 0; }
+    .empty-state i { font-size: 4rem; color: var(--pd-border); margin-bottom: 20px; }
+
+    @media (max-width: 767px) {
+        .timer-flex { gap: 10px; flex-wrap: wrap; }
+        .timer-unit { min-width: 65px; padding: 5px 10px; }
+        .timer-label-main { width: 100%; text-align: center; margin-bottom: 5px; }
+        .offers-hero { padding: 80px 0 60px; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-
-<!-- Hero -->
 <section class="offers-hero">
     <div class="container position-relative">
-        <div class="floating-tag">
+        <div class="hero-tag">
             <i class="ti ti-flame"></i>
-            {% if LANGUAGE_CODE == 'en' %}Limited Time Offers{% else %}عروض لفترة محدودة{% endif %}
+            {% if LANGUAGE_CODE == 'en' %}Flash Sale{% else %}عروض لفترة محدودة{% endif %}
         </div>
-        <h1>
-            {% if LANGUAGE_CODE == 'en' %}Exclusive <span>Deals</span>{% else %}العروض <span>الحصرية</span>{% endif %}
-        </h1>
+        <h1>{% if LANGUAGE_CODE == 'en' %}Luxury <span>Offers</span>{% else %}عروضنا <span>الفاخرة</span>{% endif %}</h1>
         <p>
             {% if LANGUAGE_CODE == 'en' %}
-                {{ offers|length }} active offer{% if offers|length != 1 %}s{% endif %} — shop smarter today
+            Discover our curated deals on premium fragrances. Limited quantities available.
             {% else %}
-                {{ offers|length }} عرض نشط — تسوّق أذكى اليوم
+            اكتشف عروضنا المختارة بعناية على أفخم العطور. الكميات محدودة جداً.
             {% endif %}
         </p>
     </div>
 </section>
 
-<!-- Countdown -->
-<div class="countdown-bar">
-    <span>{% if LANGUAGE_CODE == 'en' %}Offers end in:{% else %}تنتهي العروض خلال:{% endif %}</span>
-    <div class="timer">
-        <div class="timer-unit"><span class="timer-value" id="cd-h">00</span><span class="timer-label">{% if LANGUAGE_CODE == 'en' %}HRS{% else %}س{% endif %}</span></div>
-        <span style="color:var(--gold);font-size:1.2rem">:</span>
-        <div class="timer-unit"><span class="timer-value" id="cd-m">00</span><span class="timer-label">{% if LANGUAGE_CODE == 'en' %}MIN{% else %}د{% endif %}</span></div>
-        <span style="color:var(--gold);font-size:1.2rem">:</span>
-        <div class="timer-unit"><span class="timer-value" id="cd-s">00</span><span class="timer-label">{% if LANGUAGE_CODE == 'en' %}SEC{% else %}ث{% endif %}</span></div>
+<div class="countdown-wrap">
+    <div class="container">
+        <div class="timer-flex">
+            <span class="timer-label-main">{% if LANGUAGE_CODE == 'en' %}Ends In{% else %}تنتهي خلال{% endif %}</span>
+            <div class="timer-unit">
+                <span class="timer-val" id="h">00</span>
+                <span class="timer-suffix">{% if LANGUAGE_CODE == 'en' %}HRS{% else %}ساعة{% endif %}</span>
+            </div>
+            <div class="timer-unit">
+                <span class="timer-val" id="m">00</span>
+                <span class="timer-suffix">{% if LANGUAGE_CODE == 'en' %}MIN{% else %}دقيقة{% endif %}</span>
+            </div>
+            <div class="timer-unit">
+                <span class="timer-val" id="s">00</span>
+                <span class="timer-suffix">{% if LANGUAGE_CODE == 'en' %}SEC{% else %}ثانية{% endif %}</span>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Offers Grid -->
-<section class="offers-section">
+<section class="offers-container">
     <div class="container">
-
         {% if offers %}
-        <div class="section-count">
-            <i class="ti ti-tags" style="color:var(--gold)"></i>
-            <strong>{{ offers|length }}</strong>
-            {% if LANGUAGE_CODE == 'en' %}active offers available{% else %}عرض نشط متاح{% endif %}
-        </div>
-
         <div class="row g-4">
             {% for offer in offers %}
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="offer-card">
-
-                    <!-- Header -->
-                    <div class="offer-card-header">
-                        <div class="offer-type-icon icon-{{ offer.offer_type }}">
+                    <div class="offer-header">
+                        <div class="offer-badge">{{ offer.get_offer_type_display }}</div>
+                        <div class="offer-icon-box">
                             {% if offer.offer_type == 'bogo' %}<i class="ti ti-gift"></i>
-                            {% elif offer.offer_type == 'percentage' %}<i class="ti ti-percent"></i>
-                            {% elif offer.offer_type == 'quantity' %}<i class="ti ti-stack-2"></i>
+                            {% elif offer.offer_type == 'percentage' %}<i class="ti ti-receipt-2"></i>
+                            {% elif offer.offer_type == 'quantity' %}<i class="ti ti-package"></i>
                             {% else %}<i class="ti ti-truck-delivery"></i>{% endif %}
                         </div>
-                        <span class="offer-type-badge badge-{{ offer.offer_type }}">
-                            {% if offer.offer_type == 'bogo' %}
-                                {% if LANGUAGE_CODE == 'en' %}Buy X Get Y{% else %}اشتري وخذ مجاناً{% endif %}
-                            {% elif offer.offer_type == 'percentage' %}
-                                {% if LANGUAGE_CODE == 'en' %}% Discount{% else %}خصم نسبة{% endif %}
-                            {% elif offer.offer_type == 'quantity' %}
-                                {% if LANGUAGE_CODE == 'en' %}Bulk Deal{% else %}خصم كمية{% endif %}
-                            {% else %}
-                                {% if LANGUAGE_CODE == 'en' %}Free Shipping{% else %}شحن مجاني{% endif %}
-                            {% endif %}
-                        </span>
                     </div>
+                    <div class="offer-body">
+                        <h3 class="offer-title">{% if LANGUAGE_CODE == 'en' %}{{ offer.name_en|default:offer.name_ar }}{% else %}{{ offer.name_ar }}{% endif %}</h3>
+                        <p class="offer-desc">
+                            {% if LANGUAGE_CODE == 'en' %}{{ offer.description_en|default:offer.description_ar|truncatechars:120 }}{% else %}{{ offer.description_ar|truncatechars:120 }}{% endif %}
+                        </p>
 
-                    <!-- Body -->
-                    <div class="offer-card-body">
-                        <h3 class="offer-name">{{ offer.name_ar }}</h3>
-                        {% if offer.description %}
-                        <p class="offer-desc">{{ offer.description|truncatechars:100 }}</p>
-                        {% else %}
-                        <p class="offer-desc"></p>
-                        {% endif %}
-
-                        <!-- تفاصيل العرض حسب النوع -->
-                        <div class="offer-detail">
-                            {% if offer.offer_type == 'bogo' %}
-                                <i class="ti ti-gift" style="color:#b45309"></i>
-                                <div class="offer-detail-text">
-                                    {% if LANGUAGE_CODE == 'en' %}
-                                        Buy <strong>{{ offer.buy_quantity }}</strong> get <strong>{{ offer.get_quantity }}</strong> free
-                                    {% else %}
-                                        اشتري <strong>{{ offer.buy_quantity }}</strong> واحصل على <strong>{{ offer.get_quantity }}</strong> مجاناً
-                                    {% endif %}
-                                    {% if offer.free_product %}
-                                    <small>
-                                        {% if LANGUAGE_CODE == 'en' %}Free product:{% else %}المنتج المجاني:{% endif %}
-                                        {{ offer.free_product.name_ar }}
-                                    </small>
-                                    {% else %}
-                                    <small>{% if LANGUAGE_CODE == 'en' %}Same product free{% else %}من نفس المنتج{% endif %}</small>
-                                    {% endif %}
-                                </div>
-
-                            {% elif offer.offer_type == 'percentage' %}
-                                <i class="ti ti-rosette-discount" style="color:#15803d"></i>
-                                <div class="offer-detail-text">
-                                    {% if LANGUAGE_CODE == 'en' %}
-                                        <strong>{{ offer.discount_percent }}%</strong> off eligible products
-                                    {% else %}
-                                        خصم <strong>{{ offer.discount_percent }}%</strong> على المنتجات المؤهلة
-                                    {% endif %}
-                                </div>
-
-                            {% elif offer.offer_type == 'quantity' %}
-                                <i class="ti ti-stack-2" style="color:#1d4ed8"></i>
-                                <div class="offer-detail-text">
-                                    {% if LANGUAGE_CODE == 'en' %}
-                                        Buy <strong>{{ offer.min_quantity }}+</strong> items → <strong>{{ offer.quantity_discount_percent }}%</strong> off
-                                    {% else %}
-                                        اشتري <strong>{{ offer.min_quantity }}</strong> قطع أو أكثر واحصل على <strong>{{ offer.quantity_discount_percent }}%</strong> خصم
-                                    {% endif %}
-                                </div>
-
-                            {% elif offer.offer_type == 'free_shipping' %}
-                                <i class="ti ti-truck-delivery" style="color:#7e22ce"></i>
-                                <div class="offer-detail-text">
-                                    {% if LANGUAGE_CODE == 'en' %}
-                                        Free shipping on orders over <strong>{{ offer.min_order_amount }} EGP</strong>
-                                    {% else %}
-                                        شحن مجاني عند الطلب فوق <strong>{{ offer.min_order_amount }} ج.م</strong>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- المنتجات المؤهلة -->
-                        <div class="eligible-wrap">
-                            <div class="eligible-label">
-                                {% if LANGUAGE_CODE == 'en' %}Applies to{% else %}ينطبق على{% endif %}
-                            </div>
-                            <div class="eligible-products">
-                                {% if offer.apply_to_all %}
-                                    <span class="eligible-chip all-chip">
-                                        <i class="ti ti-checks"></i>
-                                        {% if LANGUAGE_CODE == 'en' %}All Products{% else %}جميع المنتجات{% endif %}
-                                    </span>
+                        <div class="offer-info-row shadow-sm">
+                            <i class="ti ti-stars info-icon"></i>
+                            <div class="info-text">
+                                {% if offer.offer_type == 'bogo' %}
+                                    {% if LANGUAGE_CODE == 'en' %}Buy {{ offer.buy_quantity }} Get {{ offer.get_quantity }} Free{% else %}اشتري {{ offer.buy_quantity }} وخذ {{ offer.get_quantity }} مجاناً{% endif %}
+                                {% elif offer.offer_type == 'percentage' %}
+                                    {% if LANGUAGE_CODE == 'en' %}Discount {{ offer.discount_percent }}%{% else %}خصم مباشر {{ offer.discount_percent }}%{% endif %}
+                                {% elif offer.offer_type == 'quantity' %}
+                                    {% if LANGUAGE_CODE == 'en' %}Min {{ offer.min_quantity }} items for {{ offer.quantity_discount_percent }}% OFF{% else %}اشتري {{ offer.min_quantity }} قطع واحصل على {{ offer.quantity_discount_percent }}% خصم{% endif %}
                                 {% else %}
-                                    {% for product in offer.eligible_products.all|slice:":4" %}
-                                    <a href="{% url 'product_detail' product.slug %}" class="eligible-chip">
-                                        {{ product.name_ar|truncatechars:20 }}
-                                    </a>
-                                    {% endfor %}
-                                    {% if offer.eligible_products.count > 4 %}
-                                    <span class="eligible-chip">+{{ offer.eligible_products.count|add:"-4" }}</span>
-                                    {% endif %}
-                                    {% for cat in offer.eligible_categories.all %}
-                                    <span class="eligible-chip" style="border-style:dashed">
-                                        <i class="ti ti-folder"></i> {{ cat.name_ar }}
-                                    </span>
-                                    {% endfor %}
+                                    {% if LANGUAGE_CODE == 'en' %}Free Shipping Over {{ offer.min_order_amount }} EGP{% else %}شحن مجاني للطلبات فوق {{ offer.min_order_amount }} ج.م{% endif %}
                                 {% endif %}
+                                <span class="info-sub">{% if LANGUAGE_CODE == 'en' %}Limited time only{% else %}لفترة محدودة فقط{% endif %}</span>
                             </div>
                         </div>
 
-                        <!-- CTA -->
-                        <a href="{% url 'products' %}" class="btn-offer-cta">
-                            <i class="ti ti-shopping-bag"></i>
-                            {% if LANGUAGE_CODE == 'en' %}Shop & Get Offer{% else %}تسوّق واحصل على العرض{% endif %}
+                        <a href="{% url 'products' %}" class="btn-claim">
+                            {% if LANGUAGE_CODE == 'en' %}Shop Collection{% else %}تسوق المجموعة الآن{% endif %}
                         </a>
 
-                        <!-- Validity -->
-                        <div class="offer-validity">
-                            <i class="ti ti-calendar-time"></i>
-                            <span>
-                                {% if LANGUAGE_CODE == 'en' %}Ends{% else %}ينتهي{% endif %}
-                                {{ offer.valid_to|date:"d M Y" }}
-                            </span>
-                            <span class="validity-days" id="days-{{ offer.pk }}"
-                                  data-end="{{ offer.valid_to|date:'c' }}">
-                            </span>
+                        <div class="valid-until">
+                            <i class="ti ti-calendar-event"></i>
+                            {% if LANGUAGE_CODE == 'en' %}Ends on{% else %}ينتهي في{% endif %} {{ offer.valid_to|date:"d M Y" }}
                         </div>
-
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-
         {% else %}
-        <div class="empty-offers">
-            <i class="ti ti-mood-sad d-block mb-4"></i>
+        <div class="empty-state">
+            <i class="ti ti-discount-off"></i>
             <h3>{% if LANGUAGE_CODE == 'en' %}No Active Offers{% else %}لا توجد عروض نشطة حالياً{% endif %}</h3>
-            <p class="text-muted mb-4">
-                {% if LANGUAGE_CODE == 'en' %}Check back soon for exclusive deals!{% else %}تابعنا قريباً لعروض حصرية!{% endif %}
-            </p>
-            <a href="{% url 'products' %}" class="btn-offer-cta" style="width:auto;display:inline-flex;padding:12px 32px;">
-                {% if LANGUAGE_CODE == 'en' %}Browse All Products{% else %}تصفح جميع المنتجات{% endif %}
-            </a>
+            <p class="text-muted">{% if LANGUAGE_CODE == 'en' %}Stay tuned! Exclusive deals are coming soon.{% else %}انتظرونا! عروض حصرية قادمة قريباً.{% endif %}</p>
+            <a href="{% url 'products' %}" class="btn btn-dark px-4 py-2 rounded-pill mt-3">{% if LANGUAGE_CODE == 'en' %}Browse Products{% else %}تصفح المنتجات{% endif %}</a>
         </div>
         {% endif %}
-
     </div>
 </section>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // ── Countdown ────────────────────────────────────
-    function updateCountdown() {
-        const now      = new Date();
-        const midnight = new Date();
-        midnight.setHours(23, 59, 59, 999);
-        const diff = midnight - now;
+    function updateCD() {
+        const now = new Date();
+        const end = new Date();
+        end.setHours(23, 59, 59, 999);
+        const diff = end - now;
         const h = Math.floor(diff / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
-        document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
-        document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
-        document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+        document.getElementById('h').innerText = String(h).padStart(2, '0');
+        document.getElementById('m').innerText = String(m).padStart(2, '0');
+        document.getElementById('s').innerText = String(s).padStart(2, '0');
     }
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-
-    // ── Days Remaining per Offer ─────────────────────
-    document.querySelectorAll('.validity-days').forEach(el => {
-        const end  = new Date(el.dataset.end);
-        const now  = new Date();
-        const days = Math.ceil((end - now) / 86400000);
-        if (days > 0) {
-            el.textContent = '{% if LANGUAGE_CODE == "en" %}' + days + ' days left' + '{% else %}' + 'باقي ' + days + ' يوم' + '{% endif %}';
-        } else {
-            el.textContent = '{% if LANGUAGE_CODE == "en" %}Last day!{% else %}آخر يوم!{% endif %}';
-            el.style.background = 'rgba(231,76,60,0.1)';
-            el.style.color = '#e74c3c';
-        }
-    });
+    updateCD();
+    setInterval(updateCD, 1000);
 </script>
 {% endblock %}

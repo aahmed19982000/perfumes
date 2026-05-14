@@ -3,1289 +3,378 @@
 
 {% block title %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %} - Mava Perfumes{% endblock %}
 
-{% block meta_description %}
-{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:20 }}{% else %}{{ product.description_ar|striptags|truncatewords:20 }}{% endif %}
-{% endblock %}
-
-{% block og_title %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}{% endblock %}
-{% block og_description %}{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|truncatewords:20 }}{% else %}{{ product.description_ar|striptags|truncatewords:20 }}{% endif %}{% endblock %}
-{% if product.thumbnail %}
-{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}{% endblock %}
-{% endif %}
-
-{% block meta %}
-<!-- JSON-LD Product Schema -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org/",
-  "@type": "Product",
-  "name": "{% if LANGUAGE_CODE == 'en' %}{{ product.name_en|escapejs }}{% else %}{{ product.name_ar|escapejs }}{% endif %}",
-  "image": [
-    "{{ request.scheme }}://{{ request.get_host }}{{ product.thumbnail.url }}"
-  ],
-  "description": "{% if LANGUAGE_CODE == 'en' %}{{ product.description_en|striptags|escapejs }}{% else %}{{ product.description_ar|striptags|escapejs }}{% endif %}",
-  "sku": "{{ product.id }}"{% if product.size %},
-  "size": "{{ product.size|escapejs }}"{% endif %}{% if product.brand %},
-  "brand": {
-    "@type": "Brand",
-    "name": "{{ product.brand.name|escapejs }}"
-  }{% endif %},
-  "offers": {
-    "@type": "Offer",
-    "url": "{{ request.build_absolute_uri }}",
-    "priceCurrency": "EGP",
-    "price": "{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}",
-    "availability": "{% if product.is_out_of_stock %}https://schema.org/OutOfStock{% else %}https://schema.org/InStock{% endif %}"
-  }{% if product.review_count > 0 %},
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "{{ product.avg_rating }}",
-    "reviewCount": "{{ product.review_count }}"
-  },
-  "review": [
-    {% for review in product.reviews.all %}{% if review.is_approved %}
-    {
-      "@type": "Review",
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": "{{ review.rating }}"
-      },
-      "author": {
-        "@type": "Person",
-        "name": "{{ review.customer.get_full_name|escapejs|default:'Customer' }}"
-      },
-      "reviewBody": "{{ review.comment|escapejs|default:'' }}"
-    }{% if not forloop.last %},{% endif %}
-    {% endif %}{% endfor %}
-  ]
-  {% endif %}
-}
-</script>
-
-<!-- BreadcrumbList Schema -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [{
-    "@type": "ListItem",
-    "position": 1,
-    "name": "{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}",
-    "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'home' %}"
-  }{% if product.category %},{
-    "@type": "ListItem",
-    "position": 2,
-    "name": "{% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en|escapejs }}{% else %}{{ product.category.name_ar|escapejs }}{% endif %}",
-    "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'products' %}?category_id={{ product.category.id }}"
-  }{% endif %},{
-    "@type": "ListItem",
-    "position": {% if product.category %}3{% else %}2{% endif %},
-    "name": "{% if LANGUAGE_CODE == 'en' %}{{ product.name_en|escapejs }}{% else %}{{ product.name_ar|escapejs }}{% endif %}",
-    "item": "{{ request.build_absolute_uri }}"
-  }]
-}
-</script>
-{% endblock %}
-
 {% block extra_css %}
 <style>
-    /* ── Variables (inherit from base) ── */
     :root {
-        --gold: #c9a96e;
-        --gold-light: #f0e0c0;
-        --ink: #0f0f0f;
-        --soft: #f9f7f4;
-        --mid: #6b6560;
-        --border: #e8e3dc;
-    }
-
-    /* ── Breadcrumb ── */
-    .breadcrumb {
-        background: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .breadcrumb-item a {
-        color: var(--mid);
-        text-decoration: none;
-        font-size: 13px;
-    }
-
-    .breadcrumb-item a:hover {
-        color: var(--gold);
-    }
-
-    .breadcrumb-item.active {
-        color: var(--ink);
-        font-size: 13px;
-    }
-
-    .breadcrumb-item+.breadcrumb-item::before {
-        color: var(--border);
-    }
-
-    /* ── Image Gallery ── */
-    .main-image-wrap {
-        aspect-ratio: 1 / 1;
-        background: var(--soft);
-        border-radius: 20px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--border);
-        position: relative;
-    }
-
-    .main-image-wrap img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        padding: 20px;
-        transition: transform .4s cubic-bezier(.4, 0, .2, 1);
-    }
-
-    .main-image-wrap:hover img {
-        transform: scale(1.04);
-    }
-
-    .thumb-row {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 12px;
-    }
-
-    .thumb-item {
-        width: 68px;
-        height: 68px;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 2px solid var(--border);
-        cursor: pointer;
-        background: var(--soft);
-        flex-shrink: 0;
-        transition: border-color .2s, transform .2s;
-    }
-
-    .thumb-item img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        padding: 4px;
-    }
-
-    .thumb-item:hover {
-        border-color: var(--gold-light);
-        transform: translateY(-2px);
-    }
-
-    .thumb-item.active-thumb {
-        border-color: var(--gold);
-    }
-
-    /* ── Brand Tag ── */
-    .brand-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        background: var(--soft);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--mid);
-        text-decoration: none;
-        letter-spacing: .04em;
-        text-transform: uppercase;
-        margin-bottom: 10px;
-        transition: border-color .2s, color .2s;
-    }
-
-    .brand-tag:hover {
-        border-color: var(--gold);
-        color: var(--gold);
-    }
-
-    /* ── Product Title ── */
-    .product-title {
-        font-family: 'Playfair Display', serif;
-        font-size: clamp(1.4rem, 4vw, 2rem);
-        font-weight: 700;
-        line-height: 1.25;
-        color: var(--ink);
-        margin-bottom: 12px;
-    }
-
-    /* ── Stars ── */
-    .stars-wrap {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 16px;
-    }
-
-    .stars {
-        color: #e8b84b;
-        font-size: 1rem;
-        letter-spacing: 1px;
-    }
-
-    .stars-label {
-        font-size: 12px;
-        color: var(--mid);
-    }
-
-    /* ── Price ── */
-    .price-block {
-        margin-bottom: 16px;
-    }
-
-    .price-main {
-        font-family: 'Playfair Display', serif;
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--gold);
-        line-height: 1;
-    }
-
-    .price-original {
-        font-size: 1rem;
-        color: var(--mid);
-        text-decoration: line-through;
-        margin-inline-start: 8px;
-    }
-
-    .discount-badge {
-        display: inline-block;
-        background: #fee2e2;
-        color: #dc2626;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 3px 10px;
-        border-radius: 20px;
-        margin-inline-start: 8px;
-        letter-spacing: .02em;
-    }
-
-    /* ── Stock Badge ── */
-    .stock-in {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: #d1fae5;
-        color: #065f46;
-        font-size: 12px;
-        font-weight: 700;
-        padding: 4px 12px;
-        border-radius: 20px;
-    }
-
-    .stock-out {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: #fee2e2;
-        color: #991b1b;
-        font-size: 12px;
-        font-weight: 700;
-        padding: 4px 12px;
-        border-radius: 20px;
-    }
-
-    /* ── Divider ── */
-    .pd-divider {
-        border: none;
-        border-top: 1px solid var(--border);
-        margin: 20px 0;
-    }
-
-    /* ── Qty Control ── */
-    .qty-control {
-        display: inline-flex;
-        align-items: center;
-        border: 1.5px solid var(--border);
-        border-radius: 30px;
-        overflow: hidden;
-        background: var(--white, #fff);
-    }
-
-    .qty-btn {
-        width: 38px;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: none;
-        font-size: 1.1rem;
-        cursor: pointer;
-        color: var(--ink);
-        transition: background .15s;
-    }
-
-    .qty-btn:hover {
-        background: var(--soft);
-    }
-
-    .qty-input {
-        width: 46px;
-        text-align: center;
-        border: none;
-        border-inline: 1.5px solid var(--border);
-        font-size: 14px;
-        font-weight: 700;
-        font-family: 'Cairo', sans-serif;
-        outline: none;
-        height: 38px;
-        background: none;
-    }
-
-    /* ── CTA Buttons ── */
-    .btn-cart {
-        flex: 1;
-        padding: 13px 20px;
-        background: var(--gold);
-        color: #fff;
-        border: none;
-        border-radius: 30px;
-        font-size: 15px;
-        font-weight: 700;
-        font-family: 'Cairo', sans-serif;
-        cursor: pointer;
-        transition: background .2s, transform .15s, box-shadow .2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .btn-cart:hover {
-        background: #b8925a;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(201, 169, 110, .35);
-    }
-
-    .btn-buy {
-        flex: 1;
-        padding: 13px 20px;
-        background: var(--ink);
-        color: #fff;
-        border: none;
-        border-radius: 30px;
-        font-size: 15px;
-        font-weight: 700;
-        font-family: 'Cairo', sans-serif;
-        cursor: pointer;
-        transition: background .2s, transform .15s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .btn-buy:hover {
-        background: #2a2a2a;
-        transform: translateY(-1px);
-    }
-
-    .btn-wish {
-        width: 48px;
-        height: 48px;
-        border: 1.5px solid var(--border);
-        border-radius: 50%;
-        background: var(--soft);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 1.2rem;
-        color: var(--mid);
-        transition: border-color .2s, background .2s, color .2s;
-        flex-shrink: 0;
-        text-decoration: none;
-    }
-
-    .btn-wish:hover,
-    .btn-wish.in-wishlist,
-    .btn-wish.active {
-        border-color: #f43f5e;
-        background: #fff1f2;
-        color: #f43f5e;
-    }
-
-    /* ── Trust Badges ── */
-    .trust-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-top: 20px;
-    }
-
-    @media (max-width: 575px) {
-        .trust-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    .trust-item {
-        background: var(--soft);
-        border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 12px 8px;
-        text-align: center;
-    }
-
-    .trust-icon {
-        font-size: 1.5rem;
-        margin-bottom: 4px;
-        color: var(--gold);
-    }
-
-    .trust-label {
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--mid);
-    }
-
-    /* ── Category Pills ── */
-    .cat-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 10px;
-        background: var(--soft);
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        font-size: 12px;
-        color: var(--mid);
-        text-decoration: none;
-        transition: border-color .2s, color .2s;
-    }
-
-    .cat-pill:hover {
-        border-color: var(--gold);
-        color: var(--gold);
-    }
-
-    /* ── Tabs ── */
-    .pd-tabs {
-        border-bottom: 2px solid var(--border);
-        display: flex;
-        gap: 4px;
-        margin-bottom: 28px;
-    }
-
-    .pd-tab-btn {
-        padding: 12px 24px;
-        background: none;
-        border: none;
-        font-family: 'Cairo', sans-serif;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--mid);
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
-        transition: color .2s, border-color .2s;
-    }
-
-    .pd-tab-btn.active {
-        color: var(--gold);
-        border-bottom-color: var(--gold);
-    }
-
-    .pd-tab-btn:hover {
-        color: var(--ink);
-    }
-
-    /* ── Description ── */
-    .description-body {
-        font-size: 15px;
-        line-height: 2;
-        color: #444;
-        background: var(--soft);
-        border-radius: 16px;
-        padding: 28px;
-    }
-
-    /* ── Reviews ── */
-    .review-summary {
-        display: flex;
-        align-items: center;
-        gap: 28px;
-        padding: 24px;
-        background: var(--soft);
-        border-radius: 16px;
-        margin-bottom: 24px;
-    }
-
-    @media (max-width: 575px) {
-        .review-summary {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
-        }
-    }
-
-    .review-score {
-        text-align: center;
-        min-width: 90px;
-    }
-
-    .review-score-num {
-        font-family: 'Playfair Display', serif;
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: var(--ink);
-        line-height: 1;
-    }
-
-    .review-bars {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .review-bar-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .review-bar-label {
-        font-size: 12px;
-        color: var(--mid);
-        width: 24px;
-        text-align: center;
-    }
-
-    .review-bar-track {
-        flex: 1;
-        height: 6px;
-        background: var(--border);
-        border-radius: 3px;
-        overflow: hidden;
-    }
-
-    .review-bar-fill {
-        height: 100%;
-        background: #e8b84b;
-        border-radius: 3px;
-        transition: width .6s ease;
-    }
-
-    .review-bar-pct {
-        font-size: 11px;
-        color: var(--mid);
-        width: 30px;
-    }
-
-    .review-card {
-        padding: 20px 0;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .review-card:last-child {
-        border-bottom: none;
-    }
-
-    .reviewer-name {
-        font-weight: 700;
-        font-size: 14px;
-    }
-
-    .reviewer-date {
-        font-size: 12px;
-        color: var(--mid);
-    }
-
-    .review-title {
-        font-weight: 600;
-        margin: 6px 0 4px;
-        font-size: 14px;
-    }
-
-    .review-comment {
-        font-size: 13px;
-        color: #555;
-        line-height: 1.7;
-    }
-
-    /* ── Review Form ── */
-    .review-form-wrap {
-        background: var(--soft);
-        border-radius: 16px;
-        padding: 24px;
-        margin-top: 24px;
-    }
-
-    .review-form-wrap h5 {
-        font-weight: 700;
-        margin-bottom: 18px;
-    }
-
-    .star-rating-input {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 16px;
-    }
-
-    .star-rating-input input[type="radio"] {
-        display: none;
-    }
-
-    .star-rating-input label {
-        font-size: 2rem;
-        color: #d1d5db;
-        cursor: pointer;
-        transition: color .15s, transform .15s;
-        line-height: 1;
-    }
-
-    .star-rating-input label:hover,
-    .star-rating-input label.lit {
-        color: #e8b84b;
-        transform: scale(1.15);
-    }
-
-    .form-control-pd {
-        width: 100%;
-        padding: 11px 14px;
-        border: 1.5px solid var(--border);
-        border-radius: 12px;
-        font-family: 'Cairo', sans-serif;
-        font-size: 14px;
-        background: #fff;
-        outline: none;
-        transition: border-color .2s;
-        color: var(--ink);
-        margin-bottom: 12px;
-    }
-
-    .form-control-pd:focus {
-        border-color: var(--gold);
-    }
-
-    .btn-submit-review {
-        padding: 11px 28px;
-        background: var(--gold);
-        color: #fff;
-        border: none;
-        border-radius: 30px;
-        font-family: 'Cairo', sans-serif;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: background .2s;
-    }
-
-    .btn-submit-review:hover {
-        background: #b8925a;
-    }
-
-    /* ── Related Products ── */
-    .section-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--ink);
-    }
-
-    .product-card {
-        border: 1.5px solid var(--border);
-        border-radius: 16px;
-        overflow: hidden;
-        background: #fff;
-        transition: border-color .2s, box-shadow .2s, transform .2s;
-        height: 100%;
-    }
-
-    .product-card:hover {
-        border-color: var(--gold-light);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, .08);
-        transform: translateY(-3px);
-    }
-
-    .product-card-img {
-        width: 100%;
-        aspect-ratio: 1;
-        object-fit: contain;
-        padding: 16px;
-        background: var(--soft);
-    }
-
-    .product-card-body {
-        padding: 14px;
-        text-align: center;
-    }
-
-    .product-card-name {
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--ink);
-        text-decoration: none;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        line-height: 1.5;
-        margin-bottom: 6px;
-    }
-
-    .product-card-price {
-        font-weight: 700;
-        color: var(--gold);
-        font-size: 14px;
-    }
-
-    /* ── Out of stock alert ── */
-    .oos-alert {
-        background: #fff7ed;
-        border: 1.5px solid #fed7aa;
-        border-radius: 14px;
-        padding: 16px 20px;
-        font-size: 14px;
-        color: #9a3412;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
+        --pd-gold: #c9a96e;
+        --pd-ink: #0f0f0f;
+        --pd-soft: #f9f7f4;
+        --pd-border: #e8e3dc;
+        --pd-mid: #6b6560;
+    }
+
+    .main-image-wrap { background: #fff; border: 1px solid var(--pd-border); border-radius: 24px; overflow: hidden; position: relative; aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; padding: 30px; transition: all 0.4s ease; }
+    .main-image-wrap img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.6s ease, opacity 0.3s ease; }
+    
+    .thumb-row { display: flex; gap: 12px; margin-top: 16px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+    .thumb-row::-webkit-scrollbar { display: none; }
+    .thumb-item { width: 70px; height: 70px; flex-shrink: 0; border-radius: 12px; border: 1.5px solid var(--pd-border); overflow: hidden; cursor: pointer; transition: all 0.2s; padding: 6px; background: #fff; }
+    .thumb-item img { width: 100%; height: 100%; object-fit: contain; }
+    .thumb-item.active-thumb { border-color: var(--pd-gold); box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.1); transform: translateY(-2px); }
+
+    .brand-tag { display: inline-flex; align-items: center; gap: 6px; color: var(--pd-gold); text-transform: uppercase; font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-decoration: none; margin-bottom: 10px; }
+    .product-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--pd-ink); margin-bottom: 12px; line-height: 1.2; }
+    
+    .stars-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .stars { color: #ffc107; font-size: 13px; }
+    .stars-label { font-size: 13px; color: var(--pd-mid); }
+
+    .price-block { background: var(--pd-soft); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--pd-border); }
+    .price-main { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--pd-ink); }
+    .price-original { font-size: 1.1rem; color: #999; text-decoration: line-through; margin-inline-start: 10px; }
+    .discount-badge { background: #e74c3c; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin-inline-start: 10px; vertical-align: middle; }
+
+    .stock-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 20px; }
+    .stock-in { background: #d1fae5; color: #065f46; }
+    .stock-out { background: #fee2e2; color: #991b1b; }
+
+    .qty-control { display: inline-flex; align-items: center; border: 1.5px solid var(--pd-border); border-radius: 12px; padding: 2px; background: #fff; height: 48px; }
+    .qty-btn { width: 40px; height: 100%; border: none; background: none; color: var(--pd-ink); cursor: pointer; transition: background 0.2s; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .qty-btn:hover { background: var(--pd-soft); }
+    .qty-input { width: 40px; border: none; text-align: center; font-weight: 700; outline: none; background: transparent; }
+
+    .btn-cart { background: var(--pd-ink); color: #fff; border: none; padding: 0 25px; border-radius: 12px; font-weight: 700; font-size: 15px; height: 48px; display: flex; align-items: center; gap: 8px; transition: all 0.3s; flex: 1.5; }
+    .btn-buy { background: var(--pd-gold); color: #fff; border: none; padding: 0 25px; border-radius: 12px; font-weight: 700; font-size: 15px; height: 48px; display: flex; align-items: center; gap: 8px; transition: all 0.3s; flex: 1; justify-content: center; }
+    .btn-wish { width: 48px; height: 48px; border: 1.5px solid var(--pd-border); border-radius: 12px; background: #fff; color: #666; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .btn-wish.active { color: #e74c3c; border-color: #f8d7da; background: #fff5f5; }
+
+    .trust-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 30px; }
+    .trust-item { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--pd-border); background: #fff; }
+    .trust-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--pd-soft); display: flex; align-items: center; justify-content: center; color: var(--pd-gold); font-size: 1rem; }
+    .trust-label { font-size: 12px; font-weight: 700; color: var(--pd-ink); }
+
+    .pd-tabs { display: flex; gap: 25px; border-bottom: 2px solid var(--pd-border); margin-bottom: 25px; }
+    .pd-tab-btn { background: none; border: none; padding: 12px 0; font-size: 14px; font-weight: 700; color: var(--pd-mid); position: relative; cursor: pointer; }
+    .pd-tab-btn.active { color: var(--pd-ink); }
+    .pd-tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--pd-gold); }
+
+    .description-body { font-size: 15px; line-height: 1.8; color: #444; background: #fff; border: 1px solid var(--pd-border); border-radius: 16px; padding: 25px; }
+
+    .review-summary { background: #fff; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 20px; border: 1px solid var(--pd-border); margin-bottom: 20px; }
+    .review-score-num { font-size: 3rem; font-weight: 700; color: var(--pd-ink); line-height: 1; }
+    .review-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .review-bar-track { flex: 1; height: 6px; background: var(--pd-border); border-radius: 3px; overflow: hidden; }
+    .review-bar-fill { height: 100%; background: #ffc107; }
+
+    .mobile-cta-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; padding: 12px 16px; display: flex; gap: 10px; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); z-index: 1000; border-top: 1px solid var(--pd-border); }
 
-    /* ── Mobile sticky CTA ── */
     @media (max-width: 767px) {
-        .mobile-cta-bar {
-            position: fixed;
-            bottom: 62px;
-            /* above bottom nav */
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, .96);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border);
-            padding: 10px 16px;
-            z-index: 900;
-            display: flex;
-            gap: 10px;
-        }
-
-        .mobile-cta-bar .btn-cart,
-        .mobile-cta-bar .btn-buy {
-            padding: 12px 14px;
-            font-size: 13px;
-        }
-
-        .pd-cta-desktop {
-            display: none !important;
-        }
-
-        body {
-            padding-bottom: calc(62px + 72px);
-        }
-    }
-
-    @media (min-width: 768px) {
-        .mobile-cta-bar {
-            display: none !important;
-        }
+        .product-info-panel { margin-top: 20px; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 20px; padding-bottom: 40px;" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
+<div class="container py-4 mb-5" dir="{% if LANGUAGE_CODE == 'en' %}ltr{% else %}rtl{% endif %}">
 
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}">{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</a></li>
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-muted">{% if LANGUAGE_CODE == 'en' %}Home{% else %}الرئيسية{% endif %}</a></li>
             {% if product.category %}
-            <li class="breadcrumb-item">
-                <a href="{% url 'products' %}?category_id={{ product.category.id }}">{% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}</a>
-            </li>
+            <li class="breadcrumb-item"><a href="{% url 'products' %}?category_id={{ product.category.id }}" class="text-decoration-none text-muted">{% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}</a></li>
             {% endif %}
-            <li class="breadcrumb-item active">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</li>
+            <li class="breadcrumb-item active fw-bold" style="color:var(--pd-ink)">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</li>
         </ol>
     </nav>
 
-    <!-- ══ Main Grid ══ -->
     <div class="row g-4 g-lg-5">
-
-        <!-- ── Images ── -->
+        <!-- Gallery -->
         <div class="col-12 col-md-5">
-            <div class="sticky-top" style="top:calc(var(--nav-h) + var(--nav-menu-h) + 16px);z-index:1">
-
-                <div class="main-image-wrap">
-                    <img id="mainImage" src="{{ product.thumbnail.url }}" alt="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}">
+            <div class="sticky-top" style="top: 100px; z-index: 10;">
+                <div class="main-image-wrap shadow-sm">
+                    <img id="mainImage" src="{{ product.thumbnail.url }}" alt="Product">
                 </div>
-
                 {% if product.images.exists %}
                 <div class="thumb-row">
                     <div class="thumb-item active-thumb" onclick="changeImage('{{ product.thumbnail.url }}', this)">
-                        <img src="{{ product.thumbnail.url }}" alt="{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}">
+                        <img src="{{ product.thumbnail.url }}" alt="Thumb">
                     </div>
                     {% for img in product.images.all %}
                     <div class="thumb-item" onclick="changeImage('{{ img.image.url }}', this)">
-                        <img src="{{ img.image.url }}" alt="{% if img.alt_text %}{{ img.alt_text }}{% else %}{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}{% endif %}">
+                        <img src="{{ img.image.url }}" alt="Thumb">
                     </div>
                     {% endfor %}
                 </div>
                 {% endif %}
-
             </div>
         </div>
 
-        <!-- ── Info ── -->
+        <!-- Info -->
         <div class="col-12 col-md-7">
-
-            {% if product.brand %}
-            <a href="{% url 'products' %}?brand_id={{ product.brand.id }}" class="brand-tag">
-                <i class="ti ti-building-store" style="font-size:12px"></i>
-                {{ product.brand.name }}
-            </a>
-            {% endif %}
-
-            <h1 class="product-title">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</h1>
-
-            <!-- Stars -->
-            <div class="stars-wrap">
-                <span class="stars">
-                    {% for i in "12345" %}
-                    {% if forloop.counter <= product.avg_rating %}★{% else %}☆{% endif %} {% endfor %} </span>
-                        <span class="stars-label">({{ product.review_count }} {% if LANGUAGE_CODE == 'en' %}Reviews{% else %}تقييم{% endif %})</span>
-                        <span class="stars-label" style="color:var(--border)">·</span>
-                        <span class="stars-label">{{ product.order_items.count }} {% if LANGUAGE_CODE == 'en' %}Orders{% else %}طلب{% endif %}</span>
-            </div>
-
-            <!-- Price -->
-            <div class="price-block">
-                {% if product.discount_price %}
-                <span class="price-main">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.discount_price }}</span>
-                <span class="price-original">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.price }}</span>
-                <span class="discount-badge">{% if LANGUAGE_CODE == 'en' %}OFF{% else %}خصم{% endif %} {{ product.discount_percent }}%</span>
-                {% else %}
-                <span class="price-main">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.price }}</span>
-                {% endif %}
-            </div>
-
-            <!-- Stock -->
-            <div class="mb-3">
-                {% if product.is_out_of_stock %}
-                <span class="stock-out"><i class="ti ti-x" style="font-size:12px"></i> {% if LANGUAGE_CODE == 'en' %}Out of Stock{% else %}نفد المخزون{% endif %}</span>
-                {% else %}
-                <span class="stock-in"><i class="ti ti-check" style="font-size:12px"></i> {% if LANGUAGE_CODE == 'en' %}In Stock{% else %}متوفر في المخزون{% endif %}</span>
-                {% endif %}
-            </div>
-
-            <!-- Category -->
-            {% if product.category %}
-            <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-                <span style="font-size:12px;color:var(--mid)">{% if LANGUAGE_CODE == 'en' %}Category:{% else %}الفئة:{% endif %}</span>
-                <a href="{% url 'products' %}?category_id={{ product.category.id }}" class="cat-pill">
-                    {% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}
-                </a>
-                {% if product.sub_category %}
-                <i class="ti ti-chevron-left" style="font-size:12px;color:var(--border)"></i>
-                <a href="{% url 'products' %}?sub_category_id={{ product.sub_category.id }}" class="cat-pill">
-                    {% if LANGUAGE_CODE == 'en' %}{{ product.sub_category.name_en }}{% else %}{{ product.sub_category.name_ar }}{% endif %}
+            <div class="product-info-panel">
+                {% if product.brand %}
+                <a href="{% url 'products' %}?brand_id={{ product.brand.id }}" class="brand-tag text-decoration-none">
+                    <i class="ti ti-building-store"></i> {{ product.brand.name }}
                 </a>
                 {% endif %}
-            </div>
-            {% endif %}
 
-            <!-- Size -->
-            {% if product.size %}
-            <div class="mb-4">
-                <span style="font-size:12px;color:var(--mid);display:block;margin-bottom:6px">
-                    {% if LANGUAGE_CODE == 'en' %}Size:{% else %}الحجم:{% endif %}
-                </span>
-                <div class="d-inline-flex align-items-center gap-2 px-3 py-2" style="background:var(--soft); border:1.5px solid var(--gold); border-radius:10px; font-weight:700; color:var(--ink)">
-                    <i class="ti ti-bottle" style="color:var(--gold)"></i>
-                    {{ product.size }}
-                </div>
-            </div>
-            {% endif %}
+                <h1 class="product-title">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</h1>
 
-            <hr class="pd-divider">
-
-            <!-- ── CTA (Desktop) ── -->
-            <div class="pd-cta-desktop">
-                {% if not product.is_out_of_stock %}
-                <form id="addToCartForm" method="post" action="{% url 'add_to_cart' product.id %}">
-                    {% csrf_token %}
-
-                    <!-- Qty -->
-                    <div class="d-flex align-items-center gap-3 mb-4">
-                        <span style="font-size:13px;font-weight:600;color:var(--mid)">{% if LANGUAGE_CODE == 'en' %}Quantity{% else %}الكمية{% endif %}</span>
-                        <div class="qty-control">
-                            <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
-                            <input type="number" id="qtyInput" name="quantity" value="1" min="1"
-                                max="{{ product.stock }}" class="qty-input">
-                            <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
-                        </div>
-                        <span style="font-size:12px;color:var(--mid)">{% if LANGUAGE_CODE == 'en' %}Available:{% else %}المتاح:{% endif %} {{ product.stock }}</span>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="d-flex gap-3 align-items-center mb-4">
-                        <button type="submit" class="btn-cart">
-                            <i class="ti ti-shopping-bag"></i> {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
-                        </button>
-                        <button type="button" onclick="buyNow()" class="btn-buy">
-                            <i class="ti ti-bolt"></i> {% if LANGUAGE_CODE == 'en' %}Buy Now{% else %}اشترِ الآن{% endif %}
-                        </button>
-                        <button type="button" class="btn-wish {% if is_in_wishlist %}active{% endif %}" 
-                            onclick="toggleWishlist(this, {{ product.id }})"
-                            title="{% if LANGUAGE_CODE == 'en' %}Wishlist{% else %}المفضلة{% endif %}">
-                            <i class="ti ti-heart{% if is_in_wishlist %}-filled{% endif %}"></i>
-                        </button>
-                    </div>
-                </form>
-                {% else %}
-                <div class="oos-alert mb-4">
-                    <i class="ti ti-alert-circle" style="font-size:1.3rem;flex-shrink:0"></i>
-                    {% if LANGUAGE_CODE == 'en' %}This product is currently out of stock. Add it to your wishlist to be notified when it's back.{% else %}هذا المنتج غير متوفر حالياً. أضفه للمفضلة لتُنبَّه عند توفره.{% endif %}
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Trust Badges -->
-            <div class="trust-grid">
-                <div class="trust-item">
-                    <div class="trust-icon"><i class="ti ti-truck"></i></div>
-                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}Fast Delivery{% else %}توصيل سريع{% endif %}</div>
-                </div>
-                <div class="trust-item">
-                    <div class="trust-icon"><i class="ti ti-shield-check"></i></div>
-                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}Secure Payment{% else %}دفع آمن{% endif %}</div>
-                </div>
-                <div class="trust-item">
-                    <div class="trust-icon"><i class="ti ti-refresh"></i></div>
-                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}7 Days Return{% else %}إرجاع 7 أيام{% endif %}</div>
-                </div>
-                <div class="trust-item">
-                    <div class="trust-icon"><i class="ti ti-rosette"></i></div>
-                    <div class="trust-label">{% if LANGUAGE_CODE == 'en' %}Original Products{% else %}منتجات أصلية{% endif %}</div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- ══ Tabs ══ -->
-    <div class="mt-5">
-        <div class="pd-tabs">
-            <button class="pd-tab-btn active" data-tab="overview">{% if LANGUAGE_CODE == 'en' %}Overview{% else %}الوصف{% endif %}</button>
-            <button class="pd-tab-btn" data-tab="reviews">{% if LANGUAGE_CODE == 'en' %}Reviews{% else %}التقييمات{% endif %} ({{ product.review_count }})</button>
-        </div>
-
-        <!-- Overview -->
-        <div id="tab-overview" class="tab-panel">
-            <div class="description-body">
-                {% if LANGUAGE_CODE == 'en' and product.description_en %}
-                {{ product.description_en|linebreaks }}
-                {% elif LANGUAGE_CODE == 'ar' and product.description_ar %}
-                {{ product.description_ar|linebreaks }}
-                {% else %}
-                <p style="color:var(--mid);text-align:center;padding:20px 0">{% if LANGUAGE_CODE == 'en' %}No description available.{% else %}لا يوجد وصف متاح.{% endif %}</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Reviews -->
-        <div id="tab-reviews" class="tab-panel" style="display:none">
-
-            {% if product.reviews.exists %}
-
-            {% with summary=product.review_summary %}
-            {% if summary %}
-            <div class="review-summary">
-                <div class="review-score">
-                    <div class="review-score-num">{{ summary.avg_rating }}</div>
-                    <div class="stars" style="font-size:1.1rem;margin:4px 0">
+                <div class="stars-wrap">
+                    <div class="stars">
                         {% for i in "12345" %}
-                        {% if forloop.counter <= summary.avg_rating %}★{% else %}☆{% endif %} {% endfor %} </div>
-                            <div style="font-size:12px;color:var(--mid)">{{ summary.total_reviews }} {% if LANGUAGE_CODE == 'en' %}Reviews{% else %}تقييم{% endif %}</div>
-                    </div>
-                    <div class="review-bars">
-                        {% for star in "54321" %}
-                        <div class="review-bar-row">
-                            <span class="review-bar-label">{{ star }}★</span>
-                            <div class="review-bar-track">
-                                <div class="review-bar-fill" style="width:{{ summary.rating_percent|get_item:star }}%">
-                                </div>
-                            </div>
-                            <span class="review-bar-pct">{{ summary.rating_percent|get_item:star }}%</span>
-                        </div>
+                        {% if forloop.counter <= product.avg_rating %}★{% else %}☆{% endif %}
                         {% endfor %}
                     </div>
+                    <span class="stars-label">({{ product.review_count }} {% if LANGUAGE_CODE == 'en' %}Reviews{% else %}تقييم{% endif %})</span>
                 </div>
-                {% endif %}
-                {% endwith %}
 
-                <!-- Review List -->
-                {% for review in product.reviews.all %}
-                {% if review.is_approved %}
-                <div class="review-card">
-                    <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="d-flex align-items-center gap-10 gap-2 mb-1">
-                                <span class="reviewer-name">{{ review.customer.get_full_name }}</span>
-                                <span class="stars" style="font-size:.85rem">
-                                    {% for i in "12345" %}
-                                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %} {% endfor %}
-                                        </span>
-                            </div>
-                            {% if review.title %}<div class="review-title">{{ review.title }}</div>{% endif %}
-                            {% if review.comment %}<div class="review-comment">{{ review.comment }}</div>{% endif %}
-                            <div class="reviewer-date mt-2">{{ review.created_at|date:"d M Y" }}</div>
-                        </div>
-                        {% if request.user == review.customer %}
-                        <div class="d-flex gap-2 flex-shrink-0">
-                            {% if review.can_edit %}
-                            <button class="btn btn-sm btn-outline-secondary"
-                                style="font-size:12px;border-radius:20px">{% if LANGUAGE_CODE == 'en' %}Edit{% else %}تعديل{% endif %}</button>
-                            {% endif %}
-                            <form method="post" action="{% url 'delete_review' review.id %}">
-                                {% csrf_token %}
-                                <button class="btn btn-sm btn-outline-danger"
-                                    style="font-size:12px;border-radius:20px">{% if LANGUAGE_CODE == 'en' %}Delete{% else %}حذف{% endif %}</button>
-                            </form>
-                        </div>
+                <div class="price-block">
+                    <div class="d-flex align-items-baseline">
+                        {% if product.discount_price %}
+                        <span class="price-main">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.discount_price }}</span>
+                        <span class="price-original">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.price }}</span>
+                        <span class="discount-badge">{% if LANGUAGE_CODE == 'en' %}OFF{% else %}خصم{% endif %} {{ product.discount_percent }}%</span>
+                        {% else %}
+                        <span class="price-main">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ product.price }}</span>
                         {% endif %}
                     </div>
                 </div>
-                {% endif %}
-                {% endfor %}
 
-                {% else %}
-                <div style="text-align:center;padding:40px 0;color:var(--mid)">
-                    <i class="ti ti-star" style="font-size:2.5rem;opacity:.3;display:block;margin-bottom:10px"></i>
-                    {% if LANGUAGE_CODE == 'en' %}No reviews yet. Be the first to review this product!{% else %}لا توجد تقييمات بعد. كن أول من يقيّم هذا المنتج!{% endif %}
+                <div class="mb-4">
+                    {% if product.is_out_of_stock %}
+                    <div class="stock-badge stock-out"><i class="ti ti-x"></i> {% if LANGUAGE_CODE == 'en' %}Out of Stock{% else %}نفد المخزون{% endif %}</div>
+                    {% else %}
+                    <div class="stock-badge stock-in"><i class="ti ti-check"></i> {% if LANGUAGE_CODE == 'en' %}In Stock{% else %}متوفر{% endif %}</div>
+                    {% endif %}
                 </div>
-                {% endif %}
 
-                <!-- Review Form -->
-                {% if request.user.is_authenticated %}
-                {% if not user_reviewed %}
-                <div class="review-form-wrap">
-                    <h5>{% if LANGUAGE_CODE == 'en' %}Share your thoughts{% else %}شاركنا رأيك{% endif %}</h5>
-                    <form method="post" action="{% url 'add_review' product.id %}">
+                {% if not product.is_out_of_stock %}
+                <div class="d-none d-md-flex align-items-center gap-3 mb-4">
+                    <div class="qty-control">
+                        <button type="button" class="qty-btn" onclick="changeQty(-1)"><i class="ti ti-minus"></i></button>
+                        <input type="number" id="qtyInput" value="1" min="1" max="{{ product.stock }}" class="qty-input" readonly>
+                        <button type="button" class="qty-btn" onclick="changeQty(1)"><i class="ti ti-plus"></i></button>
+                    </div>
+                    <form id="addToCartForm" method="post" action="{% url 'add_to_cart' product.id %}" style="display:contents">
                         {% csrf_token %}
-                        <div class="star-rating-input" id="starInput">
-                            {% for val in "12345" %}
-                            <input type="radio" name="rating" id="star{{ val }}" value="{{ val }}">
-                            <label for="star{{ val }}" data-val="{{ val }}">★</label>
-                            {% endfor %}
-                        </div>
-                        <input type="text" name="title" class="form-control-pd" placeholder="{% if LANGUAGE_CODE == 'en' %}Short title (optional){% else %}عنوان مختصر (اختياري){% endif %}">
-                        <textarea name="comment" rows="4" class="form-control-pd"
-                            placeholder="{% if LANGUAGE_CODE == 'en' %}Share your experience with this perfume...{% else %}شاركنا تجربتك مع هذا العطر...{% endif %}"></textarea>
-                        <button type="submit" class="btn-submit-review">{% if LANGUAGE_CODE == 'en' %}Submit Review{% else %}إرسال التقييم{% endif %}</button>
+                        <input type="hidden" name="quantity" id="hiddenQty" value="1">
+                        <button type="submit" class="btn-cart">
+                            <i class="ti ti-shopping-bag"></i> {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
+                        </button>
                     </form>
+                    <button type="button" class="btn-buy" onclick="buyNow()">
+                        {% if LANGUAGE_CODE == 'en' %}Buy Now{% else %}شراء الآن{% endif %}
+                    </button>
+                    <button type="button" class="btn-wish {% if is_in_wishlist %}active{% endif %}" onclick="toggleWishlist(this, {{ product.id }})">
+                        <i class="ti ti-heart{% if is_in_wishlist %}-filled{% endif %}"></i>
+                    </button>
                 </div>
-                {% endif %}
                 {% else %}
-                <div class="review-form-wrap" style="text-align:center">
-                    <i class="ti ti-lock" style="font-size:1.5rem;color:var(--mid);margin-bottom:8px;display:block"></i>
-                    <a href="{% url 'login' %}" style="color:var(--gold);font-weight:600">{% if LANGUAGE_CODE == 'en' %}Login{% else %}سجّل دخولك{% endif %}</a> {% if LANGUAGE_CODE == 'en' %}to add a review{% else %}لإضافة تقييم{% endif %}
+                <div class="oos-alert mb-4">
+                    <i class="ti ti-alert-circle fs-4"></i>
+                    <div>
+                        <div class="fw-bold">{% if LANGUAGE_CODE == 'en' %}Currently Unavailable{% else %}غير متوفر حالياً{% endif %}</div>
+                        <div class="small opacity-75">{% if LANGUAGE_CODE == 'en' %}We'll notify you when it's back.{% else %}سنخبرك فور توفره مرة أخرى.{% endif %}</div>
+                    </div>
                 </div>
                 {% endif %}
 
+                <div class="trust-grid">
+                    <div class="trust-item shadow-sm">
+                        <div class="trust-icon"><i class="ti ti-truck"></i></div>
+                        <span class="trust-label">{% if LANGUAGE_CODE == 'en' %}Fast Shipping{% else %}شحن سريع{% endif %}</span>
+                    </div>
+                    <div class="trust-item shadow-sm">
+                        <div class="trust-icon"><i class="ti ti-shield-check"></i></div>
+                        <span class="trust-label">{% if LANGUAGE_CODE == 'en' %}100% Original{% else %}أصلي 100%{% endif %}</span>
+                    </div>
+                    <div class="trust-item shadow-sm">
+                        <div class="trust-icon"><i class="ti ti-lock-check"></i></div>
+                        <span class="trust-label">{% if LANGUAGE_CODE == 'en' %}Secure Payment{% else %}دفع آمن{% endif %}</span>
+                    </div>
+                    <div class="trust-item shadow-sm">
+                        <div class="trust-icon"><i class="ti ti-refresh"></i></div>
+                        <span class="trust-label">{% if LANGUAGE_CODE == 'en' %}Easy Return{% else %}إرجاع سهل{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mt-5 pt-lg-4">
+        <div class="pd-tabs">
+            <button class="pd-tab-btn active" data-tab="overview">{% if LANGUAGE_CODE == 'en' %}Description{% else %}الوصف{% endif %}</button>
+            <button class="pd-tab-btn" data-tab="reviews">{% if LANGUAGE_CODE == 'en' %}Reviews{% else %}التقييمات{% endif %} ({{ product.review_count }})</button>
+        </div>
+
+        <div id="tab-overview" class="tab-panel">
+            <div class="description-body shadow-sm">
+                {% if LANGUAGE_CODE == 'en' %}{{ product.description_en|linebreaks }}{% else %}{{ product.description_ar|linebreaks }}{% endif %}
             </div>
         </div>
 
-        <!-- ══ Related Products ══ -->
-        {% if related_products %}
-        <section class="mt-5 pt-3">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="section-title mb-0">{% if LANGUAGE_CODE == 'en' %}Related Products{% else %}منتجات مشابهة{% endif %}</h2>
-                {% if product.category %}
-                <a href="{% url 'products' %}?category_id={{ product.category.id }}"
-                    style="font-size:13px;color:var(--gold);text-decoration:none;font-weight:600">
-                    {% if LANGUAGE_CODE == 'en' %}View All{% else %}عرض الكل{% endif %} <i class="ti ti-arrow-{% if LANGUAGE_CODE == 'en' %}right{% else %}left{% endif %}"></i>
-                </a>
-                {% endif %}
-            </div>
-            <div class="row g-3">
-                {% for p in related_products %}
-                <div class="col-6 col-md-4 col-lg-3">
-                    <div class="product-card">
-                        <a href="{% url 'product_detail' p.slug %}">
-                            <img src="{{ p.thumbnail.url }}" class="product-card-img" alt="{% if LANGUAGE_CODE == 'en' %}{{ p.name_en }}{% else %}{{ p.name_ar }}{% endif %}">
-                        </a>
-                        <div class="product-card-body">
-                            <a href="{% url 'product_detail' p.slug %}" class="product-card-name">{% if LANGUAGE_CODE == 'en' %}{{ p.name_en }}{% else %}{{ p.name_ar }}{% endif %}</a>
-                             <div class="product-card-price">{% if LANGUAGE_CODE == 'en' %}EGP{% else %}ج.م{% endif %} {{ p.final_price }}</div>
+        <div id="tab-reviews" class="tab-panel" style="display:none">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    {% with summary=product.review_summary %}
+                    {% if summary %}
+                    <div class="review-summary">
+                        <div class="review-score text-center pe-3 border-end">
+                            <div class="review-score-num">{{ summary.avg_rating }}</div>
+                            <div class="stars">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= summary.avg_rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ps-3">
+                            {% for star in "54321" %}
+                            <div class="review-bar-row">
+                                <span class="small text-muted" style="width:20px">{{ star }}</span>
+                                <div class="review-bar-track">
+                                    <div class="review-bar-fill" style="width:{{ summary.rating_percent|get_item:star }}%"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    {% if request.user.is_authenticated and not user_reviewed %}
+                    <div class="bg-light p-4 rounded-4">
+                        <h6 class="fw-bold mb-3">{% if LANGUAGE_CODE == 'en' %}Add Review{% else %}أضف تقييمك{% endif %}</h6>
+                        <form method="post" action="{% url 'add_review' product.id %}">
+                            {% csrf_token %}
+                            <div class="star-rating-input mb-3" id="starInput">
+                                {% for val in "12345" %}
+                                <input type="radio" name="rating" id="star{{ val }}" value="{{ val }}" required>
+                                <label for="star{{ val }}" style="font-size:1.5rem; cursor:pointer; color:#ccc">★</label>
+                                {% endfor %}
+                            </div>
+                            <textarea name="comment" rows="3" class="form-control mb-3" placeholder="{% if LANGUAGE_CODE == 'en' %}Your comment...{% else %}تعليقك...{% endif %}" required></textarea>
+                            <button type="submit" class="btn btn-dark w-100">{% if LANGUAGE_CODE == 'en' %}Submit{% else %}إرسال{% endif %}</button>
+                        </form>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
+                <div class="col-lg-8">
+                    {% for review in product.reviews.all %}
+                    {% if review.is_approved %}
+                    <div class="mb-4 pb-4 border-bottom">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">{{ review.customer.get_full_name }}</span>
+                            <span class="stars" style="font-size:12px">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                        <p class="text-muted small mt-2 mb-1">{{ review.comment }}</p>
+                        <span class="text-muted" style="font-size:11px">{{ review.created_at|date:"d M Y" }}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
             </div>
-        </section>
-        {% endif %}
-
+        </div>
     </div>
 
-    <!-- ══ Mobile Sticky CTA Bar ══ -->
-    {% if not product.is_out_of_stock %}
-    <div class="mobile-cta-bar">
-        <button class="btn-cart" onclick="document.getElementById('addToCartForm').submit()">
-            <i class="ti ti-shopping-bag"></i> {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
-        </button>
-        <button class="btn-buy" onclick="buyNow()">
-            <i class="ti ti-bolt"></i> {% if LANGUAGE_CODE == 'en' %}Buy Now{% else %}اشترِ الآن{% endif %}
-        </button>
-    </div>
+    <!-- Related -->
+    {% if related_products %}
+    <section class="mt-5">
+        <h2 class="product-title" style="font-size: 1.8rem;">{% if LANGUAGE_CODE == 'en' %}Related Products{% else %}منتجات مشابهة{% endif %}</h2>
+        <div class="row g-3 g-md-4 mt-2">
+            {% for p in related_products %}
+            <div class="col-6 col-md-4 col-lg-3">
+                {% include "products/partials/product_card.html" with product=p %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
     {% endif %}
-    {% endblock %}
 
+</div>
 
-    {% block extra_js %}
-    <script>
-        // ── Image Gallery ──
-        function changeImage(url, el) {
-            document.getElementById('mainImage').src = url;
-            document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active-thumb'));
-            el.classList.add('active-thumb');
-        }
+<!-- Mobile Bar -->
+{% if not product.is_out_of_stock %}
+<div class="mobile-cta-bar d-md-none">
+    <button class="btn-cart" onclick="document.getElementById('addToCartForm').submit()">
+        <i class="ti ti-shopping-bag"></i> {% if LANGUAGE_CODE == 'en' %}Add to Cart{% else %}أضف للسلة{% endif %}
+    </button>
+    <button class="btn-buy" onclick="buyNow()">
+        {% if LANGUAGE_CODE == 'en' %}Buy Now{% else %}شراء الآن{% endif %}
+    </button>
+</div>
+{% endif %}
 
-        // ── Quantity ──
-        function changeQty(delta) {
-            const input = document.getElementById('qtyInput');
-            if (!input) return;
-            const max = parseInt(input.max) || 99;
-            let val = parseInt(input.value) + delta;
-            if (val < 1) val = 1;
-            if (val > max) val = max;
-            input.value = val;
-        }
+<script>
+    function changeImage(url, el) {
+        const main = document.getElementById('mainImage');
+        main.style.opacity = '0';
+        setTimeout(() => { main.src = url; main.style.opacity = '1'; }, 200);
+        document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active-thumb'));
+        el.classList.add('active-thumb');
+    }
 
-        // ── Wishlist Toggle (AJAX) ──
-        async function toggleWishlist(btn, productId) {
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    function changeQty(delta) {
+        const input = document.getElementById('qtyInput');
+        const hidden = document.getElementById('hiddenQty');
+        let val = parseInt(input.value) + delta;
+        if (val < 1) val = 1;
+        if (val > parseInt(input.max)) val = parseInt(input.max);
+        input.value = val;
+        if (hidden) hidden.value = val;
+    }
 
-            try {
-                const res = await fetch(`/wishlist/toggle/${productId}/`, {
-                    method: 'POST',
-                    body: formData,
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const data = await res.json();
-                
-                if (data.status === 'added') {
-                    btn.classList.add('active');
-                    btn.querySelector('i').classList.replace('ti-heart', 'ti-heart-filled');
-                    showToast(data.message);
-                } else if (data.status === 'removed') {
-                    btn.classList.remove('active');
-                    btn.querySelector('i').classList.replace('ti-heart-filled', 'ti-heart');
-                    showToast(data.message);
-                }
-                
-                if (typeof updateGlobalBadgeCount === 'function') {
-                    updateGlobalBadgeCount('wishlist', data.wishlist_count);
-                } else {
-                    // Fallback badge update
-                    document.querySelectorAll('.nav-action i.ti-heart, .mob-bar-item i.ti-heart').forEach(icon => {
-                        const badge = icon.parentElement.querySelector('.badge-count, .mob-bar-badge');
-                        if (badge) badge.textContent = data.wishlist_count;
-                    });
-                }
-            } catch (e) {
-                showToast('{% if LANGUAGE_CODE == "en" %}Please login to add to wishlist{% else %}يرجى تسجيل الدخول للإضافة للمفضلة{% endif %}', 'error');
-            }
-        }
-        const cartForm = document.getElementById('addToCartForm');
-        if (cartForm) {
-            cartForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const formData = new FormData(cartForm);
-                try {
-                    const res = await fetch(cartForm.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const data = await res.json();
-                    if (data.status === 'success') {
-                        showToast(data.message);
-                        if (typeof updateGlobalCartCount === 'function') {
-                            updateGlobalCartCount(data.cart_count);
-                        }
-                    } else {
-                        showToast(data.message, 'error');
-                    }
-                } catch (e) {
-                    showToast('{% if LANGUAGE_CODE == "en" %}Error adding to cart{% else %}حدث خطأ أثناء الإضافة{% endif %}', 'error');
-                }
-            });
-        }
-
-        // ── Buy Now ──
-        function buyNow() {
-            const form = document.getElementById('addToCartForm');
-            if (!form) return;
+    function buyNow() {
+        const form = document.getElementById('addToCartForm');
+        if (form) {
             form.action = "{% url 'add_to_cart' product.id %}?next=checkout";
-            // For Buy Now, we can still do a normal submit to go to checkout immediately
             form.submit();
         }
+    }
 
-        // ── Custom Tabs ──
-        document.querySelectorAll('.pd-tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.pd-tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.pd-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.pd-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
+        });
+    });
+
+    async function toggleWishlist(btn, productId) {
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        try {
+            const res = await fetch(`/wishlist/toggle/${productId}/`, {
+                method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            const icon = btn.querySelector('i');
+            if (data.status === 'added') {
                 btn.classList.add('active');
-                document.getElementById('tab-' + btn.dataset.tab).style.display = 'block';
-            });
-        });
-
-        // ── Star Rating Input ──
-        const starLabels = document.querySelectorAll('#starInput label');
-        starLabels.forEach((label, index) => {
-            label.addEventListener('mouseover', () => {
-                starLabels.forEach((l, i) => l.classList.toggle('lit', i <= index));
-            });
-            label.addEventListener('mouseout', () => {
-                const checked = document.querySelector('#starInput input[type="radio"]:checked');
-                const val = checked ? parseInt(checked.value) - 1 : -1;
-                starLabels.forEach((l, i) => l.classList.toggle('lit', i <= val));
-            });
-            label.addEventListener('click', () => {
-                starLabels.forEach((l, i) => l.classList.toggle('lit', i <= index));
-            });
-        });
-
-        // ── Wishlist Toggle ──
-        const wishlistBtn = document.getElementById('wishlistBtn');
-        if (wishlistBtn) {
-            wishlistBtn.addEventListener('click', async () => {
-                const productId = wishlistBtn.dataset.productId;
-                try {
-                    const res = await fetch(`/wishlist/toggle/${productId}/`, {
-                        method: 'POST',
-                        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                    });
-                    const data = await res.json();
-                    const icon = wishlistBtn.querySelector('i');
-                    if (data.status === 'added') {
-                        wishlistBtn.classList.add('in-wishlist');
-                        icon.className = 'ti ti-heart-filled';
-                    } else {
-                        wishlistBtn.classList.remove('in-wishlist');
-                        icon.className = 'ti ti-heart';
-                    }
-                    const counter = document.querySelector('#wishlist-count');
-                    if (counter) counter.textContent = data.wishlist_count;
-                } catch (e) {
-                    console.error('Wishlist error', e);
-                }
-            });
+                icon.className = 'ti ti-heart-filled';
+            } else {
+                btn.classList.remove('active');
+                icon.className = 'ti ti-heart';
+            }
+            if (typeof showToast === 'function') showToast(data.message);
+        } catch (e) {
+            console.error(e);
         }
-    </script>
-    {% endblock %}
+    }
+
+    // Star rating hover
+    const stars = document.querySelectorAll('#starInput label');
+    stars.forEach((s, idx) => {
+        s.addEventListener('click', () => {
+            stars.forEach((s2, idx2) => s2.style.color = idx2 <= idx ? '#ffc107' : '#ccc');
+        });
+    });
+</script>
+{% endblock %}

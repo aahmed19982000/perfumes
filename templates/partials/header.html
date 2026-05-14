@@ -191,17 +191,17 @@
 <!-- ══ Mobile Offcanvas ══ -->
 <div class="offcanvas offcanvas-start" id="mobileMenu" tabindex="-1">
     <div class="offcanvas-header">
-        <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'home' %}" class="d-flex align-items-center gap-2 text-decoration-none">
             {% if header_settings and header_settings.logo_image %}
-                <img src="{{ header_settings.logo_image.url }}" alt="{{ header_settings.logo_text }}" style="max-height: 35px;">
+                <img src="{{ header_settings.logo_image.url }}" alt="{{ header_settings.logo_text }}" style="max-height: 32px; filter: brightness(0) invert(1);">
             {% else %}
-                <div class="logo-dot" style="background:#c9a96e"></div>
-                <span style="font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;letter-spacing:.08em">{% if header_settings %}{{ header_settings.logo_text }}<span
-                        style="color:#c9a96e">{{ header_settings.logo_accent }}</span>{% else %}MAV<span
-                        style="color:#c9a96e">A</span>{% endif %}</span>
+                <div class="logo-dot" style="background:var(--gold); width: 8px; height: 8px; border-radius: 50%;"></div>
+                <span style="font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--white); letter-spacing:.05em; font-weight:700;">
+                    {% if header_settings %}{{ header_settings.logo_text }}<span style="color:var(--gold)">{{ header_settings.logo_accent }}</span>{% else %}MAV<span style="color:var(--gold)">A</span>{% endif %}
+                </span>
             {% endif %}
-        </div>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </a>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
         {% if not header_settings or header_settings.show_search %}
@@ -315,7 +315,7 @@
 
 <!-- ══ Floating Contact Icons ══ -->
 <div class="floating-contacts">
-    <a href="{{ footer_settings.messenger_link|default:'#' }}" class="messenger-float" target="_blank" aria-label="Messenger">
+    <a href="https://www.messenger.com/t/fashionwfan" class="messenger-float" target="_blank" aria-label="Messenger">
         <i class="ti ti-brand-messenger"></i>
     </a>
     
