@@ -5,7 +5,7 @@
 {% block content %}
 <div class="header">
     <h1>إدارة المنتجات</h1>
-    {% if user.can_manage_products %}
+    {% if user.can_add_products %}
     <a href="{% url 'backend:product_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> إضافة منتج جديد</a>
     {% endif %}
 </div>

@@ -6,9 +6,11 @@
     <div class="header-main">
         <h1 class="header-title">إدارة العلامات التجارية</h1>
         <div class="header-actions">
+            {% if user.can_manage_products %}
             <a href="{% url 'backend:brand_create' %}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> إضافة علامة تجارية
             </a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -47,7 +49,9 @@
                 </td>
                 <td>
                     <div class="action-buttons">
+                        {% if user.can_manage_products %}
                         <a href="{% url 'backend:brand_edit' brand.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

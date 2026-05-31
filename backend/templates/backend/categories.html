@@ -6,9 +6,11 @@
     <div class="header-main">
         <h1 class="header-title">إدارة الفئات</h1>
         <div class="header-actions">
+            {% if user.can_manage_products %}
             <a href="{% url 'backend:category_create' %}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> إضافة فئة جديدة
             </a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -47,8 +49,12 @@
                 </td>
                 <td>
                     <div class="action-buttons">
+                        {% if user.can_manage_products %}
                         <a href="{% url 'backend:category_edit' category.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                        {% endif %}
+                        {% if user.can_delete_data %}
                         <a href="{% url 'backend:category_delete' category.pk %}" class="btn-icon text-danger" title="حذف" onclick="return confirm('هل أنت متأكد من الحذف؟')"><i class="fas fa-trash"></i></a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

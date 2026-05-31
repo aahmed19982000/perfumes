@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.core.exceptions import PermissionDenied
+from django.contrib import messages
 from products.models import Product, Category, Brand, SubCategory
 from banners.models import Banner
 from .models import HeaderSettings, FooterSettings
@@ -27,7 +28,7 @@ def dashboard_access_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('backend:login')
-        if request.user.role in ['admin', 'manager', 'supervisor', 'employee']:
+        if request.user.role in ['admin', 'manager', 'supervisor', 'employee', 'accountant']:
             return view_func(request, *args, **kwargs)
         raise PermissionDenied
     return _wrapped_view
@@ -36,12 +37,13 @@ def dashboard_access_required(view_func):
 
 @dashboard_access_required
 def coupon_list(request):
+    if not request.user.can_manage_coupons: raise PermissionDenied
     coupons = Coupon.objects.all().order_by('-created_at')
     return render(request, 'backend/coupons.html', {'coupons': coupons})
 
 @dashboard_access_required
 def coupon_upsert(request, pk=None):
-    if not request.user.can_manage_products: raise PermissionDenied
+    if not request.user.can_manage_coupons: raise PermissionDenied
     instance = get_object_or_404(Coupon, pk=pk) if pk else None
     if request.method == 'POST':
         form = CouponForm(request.POST, instance=instance)
@@ -57,7 +59,7 @@ def coupon_upsert(request, pk=None):
 
 @dashboard_access_required
 def header_settings(request):
-    if not request.user.can_manage_products:
+    if not request.user.can_manage_settings:
         raise PermissionDenied
     settings = HeaderSettings.load()
     if request.method == 'POST':
@@ -76,7 +78,7 @@ def header_settings(request):
 
 @dashboard_access_required
 def footer_settings(request):
-    if not request.user.can_manage_products:
+    if not request.user.can_manage_settings:
         raise PermissionDenied
     settings = FooterSettings.load()
     if request.method == 'POST':
@@ -96,11 +98,13 @@ def footer_settings(request):
 
 @dashboard_access_required
 def message_list(request):
+    if not request.user.can_manage_messages: raise PermissionDenied
     messages = ContactMessage.objects.all()
     return render(request, 'backend/messages.html', {'messages': messages})
 
 @dashboard_access_required
 def message_detail(request, pk):
+    if not request.user.can_manage_messages: raise PermissionDenied
     msg = get_object_or_404(ContactMessage, pk=pk)
     if not msg.is_read:
         msg.is_read = True
@@ -111,11 +115,13 @@ def message_detail(request, pk):
 
 @dashboard_access_required
 def wishlist_list(request):
+    if not request.user.can_manage_customers: raise PermissionDenied
     wishlists = Wishlist.objects.all().order_by('-created_at')
     return render(request, 'backend/wishlists.html', {'wishlists': wishlists})
 
 @dashboard_access_required
 def wishlist_detail(request, pk):
+    if not request.user.can_manage_customers: raise PermissionDenied
     wishlist = get_object_or_404(Wishlist, pk=pk)
     return render(request, 'backend/wishlist_detail.html', {'wishlist': wishlist})
 
@@ -123,12 +129,13 @@ def wishlist_detail(request, pk):
 
 @dashboard_access_required
 def governorate_list(request):
+    if not request.user.can_manage_settings: raise PermissionDenied
     governorates = Governorate.objects.all().order_by('name_ar')
     return render(request, 'backend/governorates.html', {'governorates': governorates})
 
 @dashboard_access_required
 def governorate_upsert(request, pk=None):
-    if not request.user.can_manage_products: raise PermissionDenied
+    if not request.user.can_manage_settings: raise PermissionDenied
     instance = get_object_or_404(Governorate, pk=pk) if pk else None
     if request.method == 'POST':
         form = GovernorateForm(request.POST, instance=instance)
@@ -141,12 +148,13 @@ def governorate_upsert(request, pk=None):
 
 @dashboard_access_required
 def city_list(request):
+    if not request.user.can_manage_settings: raise PermissionDenied
     cities = City.objects.all().order_by('governorate', 'name_ar')
     return render(request, 'backend/cities.html', {'cities': cities})
 
 @dashboard_access_required
 def city_upsert(request, pk=None):
-    if not request.user.can_manage_products: raise PermissionDenied
+    if not request.user.can_manage_settings: raise PermissionDenied
     instance = get_object_or_404(City, pk=pk) if pk else None
     if request.method == 'POST':
         form = CityForm(request.POST, instance=instance)
@@ -161,12 +169,13 @@ def city_upsert(request, pk=None):
 
 @dashboard_access_required
 def banner_list(request):
+    if not request.user.can_manage_banners: raise PermissionDenied
     banners = Banner.objects.all().order_by('position', 'order')
     return render(request, 'backend/banners.html', {'banners': banners})
 
 @dashboard_access_required
 def banner_upsert(request, pk=None):
-    if not request.user.can_manage_products: raise PermissionDenied
+    if not request.user.can_manage_banners: raise PermissionDenied
     instance = get_object_or_404(Banner, pk=pk) if pk else None
     if request.method == 'POST':
         form = BannerForm(request.POST, request.FILES, instance=instance)
@@ -181,6 +190,7 @@ def banner_upsert(request, pk=None):
 
 @dashboard_access_required
 def category_list(request):
+    if not request.user.can_view_products: raise PermissionDenied
     categories = Category.objects.all().order_by('name_ar')
     return render(request, 'backend/categories.html', {'categories': categories})
 
@@ -207,6 +217,7 @@ def category_delete(request, pk):
 
 @dashboard_access_required
 def subcategory_list(request):
+    if not request.user.can_view_products: raise PermissionDenied
     subcategories = SubCategory.objects.all().order_by('category', 'name_ar')
     return render(request, 'backend/subcategories.html', {'subcategories': subcategories})
 
@@ -227,6 +238,7 @@ def subcategory_upsert(request, pk=None):
 
 @dashboard_access_required
 def brand_list(request):
+    if not request.user.can_view_products: raise PermissionDenied
     brands = Brand.objects.all().order_by('name')
     return render(request, 'backend/brands.html', {'brands': brands})
 
@@ -245,25 +257,34 @@ def brand_upsert(request, pk=None):
 
 @dashboard_access_required
 def index(request):
-    # إحصائيات للمدراء والمشرفين
-    is_admin = request.user.role.lower() in ['admin', 'manager', 'supervisor']
+    user = request.user
+    
+    show_stats = user.role in ['admin', 'manager', 'supervisor', 'accountant']
+    show_sales_and_customers = user.role in ['admin', 'manager']
     
     total_sales = 0
     total_orders = 0
     total_customers = 0
     top_products_count = 0
     
-    if is_admin:
-        total_sales = Order.objects.filter(status='delivered').aggregate(Sum('total'))['total__sum'] or 0
+    if show_stats:
         total_orders = Order.objects.count()
-        total_customers = Customer.objects.filter(role__iexact='customer').count()
-        # حساب المنتجات الأكثر مبيعاً (منتجات فريدة تم طلبها في طلبات ناجحة)
-        top_products_count = Product.objects.filter(order_items__order__status='delivered').distinct().count()
+        if show_sales_and_customers:
+            total_sales = Order.objects.filter(status='delivered').aggregate(Sum('total'))['total__sum'] or 0
+            total_customers = Customer.objects.filter(role='customer').count()
+            top_products_count = Product.objects.filter(order_items__order__status='delivered').distinct().count()
+        elif user.role == 'accountant':
+            total_sales = Order.objects.filter(status='delivered').aggregate(Sum('total'))['total__sum'] or 0
     
     # الطلبات التي تحتاج إجراء (pending or processing)
-    pending_orders = Order.objects.filter(status__in=['pending', 'processing']).order_by('-created_at')[:10]
+    pending_orders = []
+    if user.can_manage_orders:
+        pending_orders = Order.objects.filter(status__in=['pending', 'processing']).order_by('-created_at')[:10]
+        
     # آخر 10 رسائل
-    latest_messages = ContactMessage.objects.all().order_by('-created_at')[:10]
+    latest_messages = []
+    if user.can_manage_messages:
+        latest_messages = ContactMessage.objects.all().order_by('-created_at')[:10]
     
     context = {
         'total_sales': total_sales,
@@ -272,18 +293,22 @@ def index(request):
         'top_products_count': top_products_count,
         'pending_orders': pending_orders,
         'latest_messages': latest_messages,
-        'is_admin': is_admin,
+        'is_admin': show_stats,
+        'show_sales_and_customers': show_sales_and_customers,
+        'show_orders_stats': user.role in ['admin', 'manager', 'accountant', 'supervisor'],
     }
     return render(request, 'backend/index.html', context)
 
 @dashboard_access_required
 def product_list(request):
+    if not request.user.can_view_products: raise PermissionDenied
     products = Product.objects.all()
     context = {'products': products}
     return render(request, 'backend/products.html', context)
 
 @dashboard_access_required
 def order_list(request):
+    if not request.user.can_manage_orders: raise PermissionDenied
     orders = Order.objects.all().order_by('-created_at')
     
     # الفلاتر
@@ -329,6 +354,7 @@ def order_list(request):
 
 @dashboard_access_required
 def customer_list(request):
+    if not request.user.can_manage_customers: raise PermissionDenied
     customers = Customer.objects.filter(role='customer').order_by('-created_at')
     
     # البحث
@@ -364,7 +390,7 @@ def customer_list(request):
 
 @dashboard_access_required
 def staff_list(request):
-    if request.user.role != 'admin':
+    if not request.user.can_manage_staff:
         raise PermissionDenied
 
     if request.method == 'POST':
@@ -378,7 +404,6 @@ def staff_list(request):
             messages.error(request, 'البريد الإلكتروني مستخدم بالفعل.')
         else:
             Customer.objects.create_user(
-                username=email,
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
@@ -386,7 +411,7 @@ def staff_list(request):
                 role=role
             )
             messages.success(request, f'تم إضافة الموظف {first_name} {last_name} بنجاح.')
-            return redirect('staff_list')
+            return redirect('backend:staff_list')
 
     staff = Customer.objects.exclude(role='customer').order_by('role')
     context = {
@@ -398,7 +423,7 @@ def staff_list(request):
 
 @dashboard_access_required
 def edit_staff(request, pk):
-    if request.user.role != 'admin':
+    if not request.user.can_manage_staff:
         raise PermissionDenied
     member = Customer.objects.get(pk=pk)
     if request.method == 'POST':
@@ -413,7 +438,7 @@ def edit_staff(request, pk):
 
 @dashboard_access_required
 def product_create(request):
-    if not request.user.can_manage_products:
+    if not request.user.can_add_products:
         raise PermissionDenied
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
@@ -471,6 +496,7 @@ import urllib.parse
 
 @dashboard_access_required
 def order_detail(request, pk):
+    if not request.user.can_manage_orders: raise PermissionDenied
     order = get_object_or_404(Order, pk=pk)
     whatsapp_url = None
     
@@ -502,7 +528,7 @@ def order_detail(request, pk):
 
 @dashboard_access_required
 def customer_edit(request, pk):
-    if not request.user.is_manager:
+    if not request.user.can_manage_customers:
         raise PermissionDenied
     customer = get_object_or_404(Customer, pk=pk)
     if request.method == 'POST':
@@ -519,13 +545,14 @@ def customer_edit(request, pk):
 
 @dashboard_access_required
 def offer_list(request):
+    if not request.user.can_manage_offers: raise PermissionDenied
     offers = Offer.objects.all().order_by('-created_at')
     return render(request, 'backend/offers.html', {'offers': offers})
 
 
 @dashboard_access_required
 def offer_upsert(request, pk=None):
-    if not request.user.can_manage_products:
+    if not request.user.can_manage_offers:
         raise PermissionDenied
     from .forms import OfferForm
     instance = get_object_or_404(Offer, pk=pk) if pk else None

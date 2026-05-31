@@ -97,11 +97,13 @@
                            title="تعديل">
                             <i class="fas fa-edit"></i>
                         </a>
+                        {% if user.can_delete_data %}
                         <button class="btn" style="background: rgba(239,68,68,0.1); color: var(--danger); padding: 8px;"
                                 title="حذف"
                                 onclick="confirmDelete('{{ offer.pk }}', '{{ offer.name_ar }}')">
                             <i class="fas fa-trash"></i>
                         </button>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

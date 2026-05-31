@@ -6,9 +6,11 @@
     <div class="header-main">
         <h1 class="header-title">إدارة الفئات الفرعية</h1>
         <div class="header-actions">
+            {% if user.can_manage_products %}
             <a href="{% url 'backend:subcategory_create' %}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> إضافة فئة فرعية
             </a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -49,7 +51,9 @@
                 </td>
                 <td>
                     <div class="action-buttons">
+                        {% if user.can_manage_products %}
                         <a href="{% url 'backend:subcategory_edit' sub.pk %}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
+                        {% endif %}
                     </div>
                 </td>
             </tr>

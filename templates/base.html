@@ -231,8 +231,8 @@
         .product-card:hover .product-actions { transform: translateY(0); }
         
         @media (max-width: 991.98px) {
-            .product-actions { transform: translateY(0); position: relative; bottom: 0; left: 0; right: 0; padding: 0 12px 12px; opacity: 1; }
-            .action-btn { height: 36px; font-size: 14px; border-radius: 10px; }
+            .product-actions { position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; gap: 6px; transform: translateY(0); opacity: 1; z-index: 5; }
+            .action-btn { height: 32px; font-size: 13px; border-radius: 8px; }
             .cart-btn { background: var(--gold); color: var(--ink); }
             .product-card-body { padding-bottom: 8px !important; }
         }

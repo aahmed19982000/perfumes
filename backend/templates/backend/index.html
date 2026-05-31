@@ -6,6 +6,7 @@
 {% block content %}
 {% if is_admin %}
 <div class="stats-grid">
+    {% if show_sales_and_customers %}
     <div class="stat-card">
         <div class="stat-info">
             <h3>إجمالي المبيعات</h3>
@@ -15,6 +16,8 @@
             <i class="fas fa-wallet"></i>
         </div>
     </div>
+    {% endif %}
+    {% if show_orders_stats %}
     <div class="stat-card">
         <div class="stat-info">
             <h3>إجمالي الطلبات</h3>
@@ -24,6 +27,8 @@
             <i class="fas fa-shopping-bag"></i>
         </div>
     </div>
+    {% endif %}
+    {% if show_sales_and_customers %}
     <div class="stat-card">
         <div class="stat-info">
             <h3>إجمالي العملاء</h3>
@@ -42,11 +47,13 @@
             <i class="fas fa-star"></i>
         </div>
     </div>
+    {% endif %}
 </div>
 {% endif %}
 
 <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin-top: 30px;">
     <!-- الطلبات التي تحتاج إجراء -->
+    {% if request.user.can_manage_orders %}
     <div class="table-container">
         <div class="table-header">
             <h2>طلبات تحتاج إجراء (آخر 10)</h2>
@@ -87,8 +94,10 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
 
     <!-- آخر الرسائل -->
+    {% if request.user.can_manage_messages %}
     <div class="table-container">
         <div class="table-header">
             <h2>آخر الرسائل (آخر 10)</h2>
@@ -129,5 +138,6 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
 </div>
 {% endblock %}

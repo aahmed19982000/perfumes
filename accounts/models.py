@@ -24,9 +24,10 @@ class CustomerManager(BaseUserManager):
 class Customer(AbstractBaseUser, PermissionsMixin):
     ROLE_CHOICES = [
         ('admin', 'مدير النظام'),
-        ('manager', 'مدير'),
-        ('supervisor', 'مشرف'),
-        ('employee', 'موظف'),
+        ('manager', 'المدير'),
+        ('supervisor', 'المشرف'),
+        ('employee', 'الموظف'),
+        ('accountant', 'المحاسب'),
         ('customer', 'عميل'),
     ]
 
@@ -55,8 +56,12 @@ class Customer(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name} ({self.role})"
 
     @property
+    def is_admin(self):
+        return self.role == 'admin'
+
+    @property
     def is_manager(self):
-        return self.role in ['admin', 'manager']
+        return self.role == 'manager'
 
     @property
     def is_supervisor(self):
@@ -67,11 +72,55 @@ class Customer(AbstractBaseUser, PermissionsMixin):
         return self.role == 'employee'
 
     @property
+    def is_accountant(self):
+        return self.role == 'accountant'
+
+    @property
+    def can_manage_staff(self):
+        return self.role == 'admin'
+
+    @property
+    def can_delete_data(self):
+        return self.role in ['admin', 'manager']
+
+    @property
     def can_manage_products(self):
         return self.role in ['admin', 'manager', 'supervisor']
 
     @property
-    def can_delete_data(self):
+    def can_add_products(self):
+        return self.role in ['admin', 'manager', 'supervisor', 'employee']
+
+    @property
+    def can_view_products(self):
+        return self.role in ['admin', 'manager', 'supervisor', 'employee']
+
+    @property
+    def can_manage_orders(self):
+        return self.role in ['admin', 'manager', 'supervisor', 'accountant']
+
+    @property
+    def can_manage_customers(self):
+        return self.role in ['admin', 'manager']
+
+    @property
+    def can_manage_coupons(self):
+        return self.role in ['admin', 'manager', 'supervisor']
+
+    @property
+    def can_manage_offers(self):
+        return self.role in ['admin', 'manager', 'supervisor']
+
+    @property
+    def can_manage_messages(self):
+        return self.role in ['admin', 'manager']
+
+    @property
+    def can_manage_banners(self):
+        return self.role in ['admin', 'manager']
+
+    @property
+    def can_manage_settings(self):
         return self.role in ['admin', 'manager']
 
     def get_full_name(self):
