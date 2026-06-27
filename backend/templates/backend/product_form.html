@@ -81,24 +81,39 @@
 
         <div class="form-section-header"><i class="fas fa-image"></i> الصورة الرئيسية</div>
         <div class="form-group">
-            <div class="file-upload-preview">
+            <div class="file-upload-preview" id="thumbnail-upload-area">
                 {% if product.thumbnail %}
-                    <div class="current-file">
+                    <div class="current-file" id="thumbnail-current">
                         <div class="image-preview-container">
-                            <img src="{{ product.thumbnail.url }}" alt="Current">
+                            <img id="thumbnail-preview-img" src="{{ product.thumbnail.url }}" alt="Current">
                         </div>
                         <div class="file-info">
                             <span class="file-label">الصورة الحالية</span>
                         </div>
                     </div>
+                {% else %}
+                    <div class="new-image-preview" id="thumbnail-new-preview" style="display:none;">
+                        <div class="image-preview-container preview-glow">
+                            <img id="thumbnail-preview-img" src="" alt="معاينة">
+                            <div class="preview-badge"><i class="fas fa-eye"></i> معاينة قبل الحفظ</div>
+                        </div>
+                    </div>
                 {% endif %}
-                <div class="file-input-custom">
+                <div class="file-input-custom" id="thumbnail-input-wrapper">
                     {{ form.thumbnail }}
-                    <div class="file-custom-ui">
+                    <div class="file-custom-ui" id="thumbnail-ui">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <span>ارفع الصورة الرئيسية للمنتج</span>
                     </div>
                 </div>
+                {% if product.thumbnail %}
+                    <div class="new-image-preview" id="thumbnail-new-preview" style="display:none;">
+                        <div class="image-preview-container preview-glow" style="margin-top:10px;">
+                            <img id="thumbnail-preview-new-img" src="" alt="معاينة جديدة">
+                            <div class="preview-badge"><i class="fas fa-eye"></i> صورة جديدة - معاينة قبل الحفظ</div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
@@ -136,8 +151,13 @@
                     <div class="formset-grid">
                         <div class="gallery-img-col">
                             {% if image_form.instance.image %}
-                                <div class="mini-preview">
+                                <div class="mini-preview" data-existing-preview>
                                     <img src="{{ image_form.instance.image.url }}" alt="Preview">
+                                </div>
+                            {% else %}
+                                <div class="mini-preview gallery-new-preview" style="display:none;">
+                                    <img src="" alt="معاينة">
+                                    <div class="preview-mini-badge"><i class="fas fa-eye"></i></div>
                                 </div>
                             {% endif %}
                             <div class="file-input-custom mini">
@@ -146,6 +166,12 @@
                                     <i class="fas fa-camera"></i>
                                 </div>
                             </div>
+                            {% if image_form.instance.image %}
+                                <div class="mini-preview gallery-new-preview" style="display:none; margin-top:4px;">
+                                    <img src="" alt="معاينة جديدة">
+                                    <div class="preview-mini-badge"><i class="fas fa-eye"></i> جديد</div>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="gallery-info-col">
                             <label>وصف الصورة</label>
@@ -245,6 +271,150 @@
         margin-top: 50px;
         z-index: 10;
     }
+
+    /* ─── Image Live Preview Styles ─────────────────────────────── */
+    .preview-glow {
+        position: relative;
+        animation: previewPulse 2s ease-in-out infinite;
+    }
+    @keyframes previewPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(99, 179, 237, 0.4); }
+        50%       { box-shadow: 0 0 0 8px rgba(99, 179, 237, 0); }
+    }
+    .preview-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: #fff;
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 8px rgba(99,102,241,0.5);
+        animation: badgeFadeIn 0.3s ease;
+    }
+    @keyframes badgeFadeIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+    .new-image-preview {
+        animation: slideInPreview 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes slideInPreview {
+        from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .new-image-preview .image-preview-container {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #3b82f6;
+    }
+    .new-image-preview .image-preview-container img {
+        width: 100%;
+        max-height: 220px;
+        object-fit: cover;
+        display: block;
+    }
+    .image-preview-container {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .preview-mini-badge {
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(59,130,246,0.9);
+        color: #fff;
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+    .mini-preview.gallery-new-preview img {
+        border: 2px solid #3b82f6;
+        animation: miniPulse 2s ease-in-out infinite;
+    }
+    @keyframes miniPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+        50%       { box-shadow: 0 0 0 4px rgba(59,130,246,0); }
+    }
 </style>
+
+<script>
+(function() {
+    // ── Thumbnail (الصورة الرئيسية) ──────────────────────────────
+    var thumbnailInput = document.getElementById('id_thumbnail');
+    if (thumbnailInput) {
+        thumbnailInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                // Show new preview area
+                var newPreview = document.getElementById('thumbnail-new-preview');
+                if (newPreview) {
+                    // Update the img inside it
+                    var previewImg = newPreview.querySelector('img');
+                    if (!previewImg) {
+                        previewImg = document.getElementById('thumbnail-preview-new-img');
+                    }
+                    if (previewImg) previewImg.src = e.target.result;
+                    newPreview.style.display = 'block';
+                } else {
+                    // Fallback: update existing preview img
+                    var existingImg = document.getElementById('thumbnail-preview-img');
+                    if (existingImg) existingImg.src = e.target.result;
+                }
+
+                // Update file upload UI label
+                var uiLabel = document.querySelector('#thumbnail-input-wrapper .file-custom-ui span');
+                if (uiLabel) uiLabel.textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // ── Gallery Images (صور المعرض) ──────────────────────────────
+    document.addEventListener('change', function(e) {
+        var input = e.target;
+        // Match gallery image inputs (e.g., id_images-0-image)
+        if (!input.matches('input[type="file"]')) return;
+        if (input.id === 'id_thumbnail') return; // already handled above
+
+        var file = input.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            // Find the closest gallery-new-preview sibling
+            var col = input.closest('.gallery-img-col');
+            if (!col) return;
+
+            var newPreview = col.querySelector('.gallery-new-preview');
+            if (newPreview) {
+                var img = newPreview.querySelector('img');
+                if (img) img.src = e.target.result;
+                newPreview.style.display = 'block';
+            }
+
+            // Update file-custom-ui icon label
+            var uiIcon = col.querySelector('.file-custom-ui.mini i');
+            if (uiIcon) {
+                uiIcon.className = 'fas fa-check-circle';
+                uiIcon.style.color = '#22c55e';
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+})();
+</script>
 {% endblock %}
 
