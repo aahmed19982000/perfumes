@@ -348,13 +348,15 @@
 </style>
 
 <script>
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // ── Thumbnail (الصورة الرئيسية) ──────────────────────────────
     var thumbnailInput = document.getElementById('id_thumbnail');
     if (thumbnailInput) {
         thumbnailInput.addEventListener('change', function() {
             var file = this.files[0];
-            if (!file || !file.type.startsWith('image/')) return;
+            if (!file) return;
+            var isImage = file.type.startsWith('image/') || file.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+            if (!isImage) return;
 
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -383,17 +385,19 @@
     }
 
     // ── Gallery Images (صور المعرض) ──────────────────────────────
-    document.addEventListener('change', function(e) {
+    document.body.addEventListener('change', function(e) {
         var input = e.target;
         // Match gallery image inputs (e.g., id_images-0-image)
         if (!input.matches('input[type="file"]')) return;
         if (input.id === 'id_thumbnail') return; // already handled above
 
         var file = input.files[0];
-        if (!file || !file.type.startsWith('image/')) return;
+        if (!file) return;
+        var isImage = file.type.startsWith('image/') || file.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+        if (!isImage) return;
 
         var reader = new FileReader();
-        reader.onload = function(e) {
+        reader.onload = function(event) {
             // Find the closest gallery-new-preview sibling
             var col = input.closest('.gallery-img-col');
             if (!col) return;
@@ -401,7 +405,7 @@
             var newPreview = col.querySelector('.gallery-new-preview');
             if (newPreview) {
                 var img = newPreview.querySelector('img');
-                if (img) img.src = e.target.result;
+                if (img) img.src = event.target.result;
                 newPreview.style.display = 'block';
             }
 
@@ -414,7 +418,7 @@
         };
         reader.readAsDataURL(file);
     });
-})();
+});
 </script>
 {% endblock %}
 

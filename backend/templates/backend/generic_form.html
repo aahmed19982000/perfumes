@@ -187,34 +187,38 @@
 </style>
 
 <script>
-(function() {
-    // استمع على كل حقل رفع ملف في النموذج
-    document.querySelectorAll('input[type="file"]').forEach(function(input) {
-        input.addEventListener('change', function() {
-            var file = this.files[0];
-            if (!file || !file.type.startsWith('image/')) return;
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.addEventListener('change', function(e) {
+        if (e.target && e.target.matches('input[type="file"]')) {
+            var input = e.target;
+            if (!input.files || !input.files[0]) return;
+            var file = input.files[0];
+            
+            // تحقق مبدئي من نوع الملف (صورة)
+            var isImage = file.type.startsWith('image/') || 
+                          file.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+            
+            if (!isImage) return;
 
-            // ابحث عن ID المعاينة من data-preview-id المجاور
-            var wrapper = this.closest('.file-input-custom');
+            var wrapper = input.closest('.file-input-custom');
             var previewId = wrapper ? wrapper.getAttribute('data-preview-id') : null;
             var previewBox = previewId ? document.getElementById(previewId) : null;
 
             if (!previewBox) return;
 
             var reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function(event) {
                 var img = previewBox.querySelector('img');
-                if (img) img.src = e.target.result;
+                if (img) img.src = event.target.result;
                 previewBox.style.display = 'block';
 
-                // تحديث نص زر الرفع
                 var uiLabel = wrapper.querySelector('.file-custom-ui span');
                 if (uiLabel) uiLabel.textContent = file.name;
             };
             reader.readAsDataURL(file);
-        });
+        }
     });
-})();
+});
 </script>
 {% endblock %}
 
