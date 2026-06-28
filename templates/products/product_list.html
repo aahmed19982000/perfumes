@@ -102,28 +102,29 @@
                                         {% if LANGUAGE_CODE == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ar }}{% endif %}
                                     </label>
                                 </div>
-                                {% if category.sub_categories.all %}
-                                <ul class="mt-2 mb-1" style="list-style: none; padding-inline-start: 22px; border-inline-start: 2px solid var(--border); margin-inline-start: 10px;">
-                                    {% for sub in category.sub_categories.all %}
-                                    {% if sub.is_active %}
-                                    <li class="filter-item" style="margin-bottom: 6px;">
-                                        <div class="form-check">
-                                            <input class="form-check-input" style="transform: scale(0.9);" type="checkbox" name="sub_category" value="{{ sub.id }}" id="subcat{{ sub.id }}"
-                                                   {% if sub.id in selected_sub_cats %}checked{% endif %} onchange="this.form.submit()">
-                                            <label class="form-check-label" style="font-size: 0.85rem;" for="subcat{{ sub.id }}">
-                                                {% if LANGUAGE_CODE == 'en' %}{{ sub.name_en }}{% else %}{{ sub.name_ar }}{% endif %}
-                                            </label>
-                                        </div>
-                                    </li>
-                                    {% endif %}
-                                    {% endfor %}
-                                </ul>
-                                {% endif %}
+                                
                             </li>
                             {% endfor %}
                         </ul>
                     </div>
 
+
+                    <div class="filter-section">
+                        <div class="filter-title"><i class="ti ti-layers-linked"></i> {% if LANGUAGE_CODE == 'en' %}Subcategories{% else %}الفئات الفرعية{% endif %}</div>
+                        <ul class="filter-list">
+                            {% for sub in subcategories %}
+                            <li class="filter-item">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="sub_category" value="{{ sub.id }}" id="subcat{{ sub.id }}"
+                                           {% if sub.id in selected_sub_cats %}checked{% endif %} onchange="this.form.submit()">
+                                    <label class="form-check-label" for="subcat{{ sub.id }}">
+                                        {% if LANGUAGE_CODE == 'en' %}{{ sub.name_en }}{% else %}{{ sub.name_ar }}{% endif %}
+                                    </label>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                     <div class="filter-section">
                         <div class="filter-title"><i class="ti ti-award"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}الماركات{% endif %}</div>
                         <ul class="filter-list">
@@ -265,28 +266,29 @@
                                 {% if LANGUAGE_CODE == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ar }}{% endif %}
                             </label>
                         </div>
-                        {% if category.sub_categories.all %}
-                        <ul class="mt-2 mb-1" style="list-style: none; padding-inline-start: 22px; border-inline-start: 2px solid var(--border); margin-inline-start: 10px;">
-                            {% for sub in category.sub_categories.all %}
-                            {% if sub.is_active %}
-                            <li class="filter-item" style="margin-bottom: 6px;">
-                                <div class="form-check">
-                                    <input class="form-check-input" style="transform: scale(0.9);" type="checkbox" name="sub_category" value="{{ sub.id }}" id="msubcat{{ sub.id }}"
-                                           {% if sub.id in selected_sub_cats %}checked{% endif %}>
-                                    <label class="form-check-label" style="font-size: 0.85rem;" for="msubcat{{ sub.id }}">
-                                        {% if LANGUAGE_CODE == 'en' %}{{ sub.name_en }}{% else %}{{ sub.name_ar }}{% endif %}
-                                    </label>
-                                </div>
-                            </li>
-                            {% endif %}
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
+                        
                     </li>
                     {% endfor %}
                 </ul>
             </div>
 
+
+            <div class="filter-section">
+                <div class="filter-title"><i class="ti ti-layers-linked"></i> {% if LANGUAGE_CODE == 'en' %}Subcategories{% else %}الفئات الفرعية{% endif %}</div>
+                <ul class="filter-list">
+                    {% for sub in subcategories %}
+                    <li class="filter-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="sub_category" value="{{ sub.id }}" id="msubcat{{ sub.id }}"
+                                   {% if sub.id in selected_sub_cats %}checked{% endif %}>
+                            <label class="form-check-label" for="msubcat{{ sub.id }}">
+                                {% if LANGUAGE_CODE == 'en' %}{{ sub.name_en }}{% else %}{{ sub.name_ar }}{% endif %}
+                            </label>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
             <div class="filter-section">
                 <div class="filter-title"><i class="ti ti-award"></i> {% if LANGUAGE_CODE == 'en' %}Brands{% else %}العلامات التجارية{% endif %}</div>
                 <ul class="filter-list">

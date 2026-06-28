@@ -71,6 +71,7 @@ def product_list(request):
 
     # بيانات الفلاتر (للـ UI)
     all_categories = Category.objects.filter(is_active=True).prefetch_related('sub_categories')
+    all_subcategories = SubCategory.objects.filter(is_active=True)
     all_brands     = Brand.objects.filter(is_active=True)
     
     # حساب نطاق الأسعار للمنزلق (Slider)
@@ -79,6 +80,7 @@ def product_list(request):
     return render(request, "products/product_list.html", {
         "products":       page_obj,
         "categories":     all_categories,
+        "subcategories":  all_subcategories,
         "brands":         all_brands,
         "price_stats":    price_stats,
         "selected_cats":  [int(i) for i in category_ids if i.isdigit()],
