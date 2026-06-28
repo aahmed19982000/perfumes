@@ -6,6 +6,19 @@ from PIL import Image
 import uuid
 import os
 
+def generate_unique_slug(instance, base_str, slug_field_name='slug'):
+    base_slug = slugify(base_str, allow_unicode=True) if base_str else ''
+    if not base_slug:
+        base_slug = str(uuid.uuid4())[:8]
+    
+    slug = base_slug
+    ModelClass = instance.__class__
+    counter = 1
+    while ModelClass.objects.filter(**{slug_field_name: slug}).exclude(pk=instance.pk).exists():
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    return slug
+
 
 # ══════════════════════════════════════════════════════════════════
 # UTILS
@@ -55,7 +68,7 @@ def compress_image(image_field, max_width=1200, quality=82):
 class Category(models.Model):
     name_ar    = models.CharField(max_length=100, verbose_name="الاسم بالعربي")
     name_en    = models.CharField(max_length=100, verbose_name="الاسم بالإنجليزي")
-    slug       = models.SlugField(unique=True, blank=True)
+    slug       = models.SlugField(unique=True, blank=True, allow_unicode=True)
     image      = models.ImageField(upload_to="category/", blank=True, null=True)
     is_active  = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -70,7 +83,7 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name_en)
+            self.slug = generate_unique_slug(self, self.name_en or self.name_ar)
         super().save(*args, **kwargs)
 
         if self.image:
@@ -97,7 +110,7 @@ class SubCategory(models.Model):
     )
     name_ar    = models.CharField(max_length=100, verbose_name="الاسم بالعربي")
     name_en    = models.CharField(max_length=100, verbose_name="الاسم بالإنجليزي")
-    slug       = models.SlugField(unique=True, blank=True)
+    slug       = models.SlugField(unique=True, blank=True, allow_unicode=True)
     image      = models.ImageField(upload_to="sub_category/", blank=True, null=True)
     is_active  = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -112,7 +125,7 @@ class SubCategory(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name_en)
+            self.slug = generate_unique_slug(self, self.name_en or self.name_ar)
         super().save(*args, **kwargs)
 
         if self.image:
@@ -132,7 +145,7 @@ class SubCategory(models.Model):
 
 class Brand(models.Model):
     name       = models.CharField(max_length=100, verbose_name="اسم العلامة التجارية")
-    slug       = models.SlugField(unique=True, blank=True)
+    slug       = models.SlugField(unique=True, blank=True, allow_unicode=True)
     logo       = models.ImageField(upload_to="brand/", blank=True, null=True, verbose_name="الشعار")
     is_active  = models.BooleanField(default=True, verbose_name="نشط")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -147,7 +160,7 @@ class Brand(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = generate_unique_slug(self, self.name)
         super().save(*args, **kwargs)
 
         if self.logo:
@@ -177,7 +190,7 @@ class Product(models.Model):
     # ── الأسماء والوصف ───────────────────────────────────────────
     name_ar        = models.CharField(max_length=255, verbose_name="الاسم بالعربي")
     name_en        = models.CharField(max_length=255, verbose_name="الاسم بالإنجليزي")
-    slug           = models.SlugField(unique=True, blank=True, max_length=300)
+    slug           = models.SlugField(unique=True, blank=True, max_length=300, allow_unicode=True)
     description_ar = models.TextField(blank=True, verbose_name="الوصف بالعربي")
     description_en = models.TextField(blank=True, verbose_name="الوصف بالإنجليزي")
     size           = models.CharField(max_length=50, blank=True, null=True, verbose_name="الحجم")
