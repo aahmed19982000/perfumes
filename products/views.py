@@ -70,7 +70,7 @@ def product_list(request):
     page_obj    = paginator.get_page(page_number)
 
     # بيانات الفلاتر (للـ UI)
-    all_categories = Category.objects.filter(is_active=True)
+    all_categories = Category.objects.filter(is_active=True).prefetch_related('sub_categories')
     all_brands     = Brand.objects.filter(is_active=True)
     
     # حساب نطاق الأسعار للمنزلق (Slider)
@@ -82,6 +82,7 @@ def product_list(request):
         "brands":         all_brands,
         "price_stats":    price_stats,
         "selected_cats":  [int(i) for i in category_ids if i.isdigit()],
+        "selected_sub_cats": [int(i) for i in sub_category_ids if i.isdigit()],
         "selected_brands":[int(i) for i in brand_ids if i.isdigit()],
         "min_p":          min_price,
         "max_p":          max_price,

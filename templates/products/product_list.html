@@ -97,10 +97,28 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="category" value="{{ category.id }}" id="cat{{ category.id }}"
                                            {% if category.id in selected_cats %}checked{% endif %} onchange="this.form.submit()">
+                                    
                                     <label class="form-check-label" for="cat{{ category.id }}">
                                         {% if LANGUAGE_CODE == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ar }}{% endif %}
                                     </label>
                                 </div>
+                                {% if category.sub_categories.all %}
+                                <ul class="mt-2 mb-1" style="list-style: none; padding-inline-start: 22px; border-inline-start: 2px solid var(--border); margin-inline-start: 10px;">
+                                    {% for sub in category.sub_categories.all %}
+                                    {% if sub.is_active %}
+                                    <li class="filter-item" style="margin-bottom: 6px;">
+                                        <div class="form-check">
+                                            <input class="form-check-input" style="transform: scale(0.9);" type="checkbox" name="sub_category" value="{{ sub.id }}" id="subcat{{ sub.id }}"
+                                                   {% if sub.id in selected_sub_cats %}checked{% endif %} onchange="this.form.submit()">
+                                            <label class="form-check-label" style="font-size: 0.85rem;" for="subcat{{ sub.id }}">
+                                                {% if LANGUAGE_CODE == 'en' %}{{ sub.name_en }}{% else %}{{ sub.name_ar }}{% endif %}
+                                            </label>
+                                        </div>
+                                    </li>
+                                    {% endif %}
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
                             </li>
                             {% endfor %}
                         </ul>
@@ -242,10 +260,28 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="category" value="{{ category.id }}" id="mcat{{ category.id }}"
                                    {% if category.id in selected_cats %}checked{% endif %}>
+                            
                             <label class="form-check-label" for="mcat{{ category.id }}">
                                 {% if LANGUAGE_CODE == 'en' %}{{ category.name_en }}{% else %}{{ category.name_ar }}{% endif %}
                             </label>
                         </div>
+                        {% if category.sub_categories.all %}
+                        <ul class="mt-2 mb-1" style="list-style: none; padding-inline-start: 22px; border-inline-start: 2px solid var(--border); margin-inline-start: 10px;">
+                            {% for sub in category.sub_categories.all %}
+                            {% if sub.is_active %}
+                            <li class="filter-item" style="margin-bottom: 6px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" style="transform: scale(0.9);" type="checkbox" name="sub_category" value="{{ sub.id }}" id="msubcat{{ sub.id }}"
+                                           {% if sub.id in selected_sub_cats %}checked{% endif %}>
+                                    <label class="form-check-label" style="font-size: 0.85rem;" for="msubcat{{ sub.id }}">
+                                        {% if LANGUAGE_CODE == 'en' %}{{ sub.name_en }}{% else %}{{ sub.name_ar }}{% endif %}
+                                    </label>
+                                </div>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
                     </li>
                     {% endfor %}
                 </ul>
@@ -286,4 +322,4 @@
     // Inherit common functions from base.html
 </script>
 {% endblock %}
-
+
