@@ -37,6 +37,7 @@
     .stock-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 20px; }
     .stock-in { background: #d1fae5; color: #065f46; }
     .stock-out { background: #fee2e2; color: #991b1b; }
+    .info-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; background: var(--pd-soft); color: var(--pd-ink); border: 1px solid var(--pd-border); margin-bottom: 20px; margin-inline-end: 8px; }
 
     .qty-control { display: inline-flex; align-items: center; border: 1.5px solid var(--pd-border); border-radius: 12px; padding: 2px; background: #fff; height: 48px; }
     .qty-btn { width: 40px; height: 100%; border: none; background: none; color: var(--pd-ink); cursor: pointer; transition: background 0.2s; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
@@ -133,6 +134,23 @@
                     </div>
                     <span class="stars-label">({{ product.review_count }} {% if LANGUAGE_CODE == 'en' %}Reviews{% else %}تقييم{% endif %})</span>
                 </div>
+
+                {% if product.size or product.concentration %}
+                <div class="d-flex flex-wrap mb-2">
+                    {% if product.size %}
+                    <span class="info-badge">
+                        <i class="ti ti-bottle"></i> 
+                        <span class="opacity-75">{% if LANGUAGE_CODE == 'en' %}Size:{% else %}الحجم:{% endif %}</span> {{ product.size }}
+                    </span>
+                    {% endif %}
+                    {% if product.concentration %}
+                    <span class="info-badge">
+                        <i class="ti ti-droplet"></i> 
+                        <span class="opacity-75">{% if LANGUAGE_CODE == 'en' %}Concentration:{% else %}التركيز:{% endif %}</span> {{ product.concentration }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
 
                 <div class="price-block">
                     <div class="d-flex align-items-baseline">

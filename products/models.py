@@ -194,6 +194,7 @@ class Product(models.Model):
     description_ar = models.TextField(blank=True, verbose_name="الوصف بالعربي")
     description_en = models.TextField(blank=True, verbose_name="الوصف بالإنجليزي")
     size           = models.CharField(max_length=50, blank=True, null=True, verbose_name="الحجم")
+    concentration  = models.CharField(max_length=100, blank=True, null=True, verbose_name="التركيز")
 
     # ── العلاقات ─────────────────────────────────────────────────
     category = models.ForeignKey(

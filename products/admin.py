@@ -78,7 +78,7 @@ class ProductAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("المعرّف",        {"fields": ("sku", "slug")}),
-        ("الأسماء والوصف", {"fields": ("name_ar", "name_en", "size", "description_ar", "description_en")}),
+        ("الأسماء والوصف", {"fields": ("name_ar", "name_en", "size", "concentration", "description_ar", "description_en")}),
         ("التصنيف",        {"fields": ("category", "sub_category", "brand")}),
         ("السعر والمخزون", {"fields": ("price", "discount_price", "stock")}),
         ("الصورة",         {"fields": ("thumbnail", "thumbnail_preview")}),
