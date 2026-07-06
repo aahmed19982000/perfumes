@@ -221,6 +221,11 @@
         </a>
         {% endif %}
 
+        <a href="{% url 'products' %}" class="mob-nav-item">
+            <i class="ti ti-category-2"></i>
+            {% if LANGUAGE_CODE == 'en' %}Products{% else %}المنتجات{% endif %}
+        </a>
+
         {% if nav_categories and not header_settings or nav_categories and header_settings.show_categories_link %}
         <div class="mob-section-label">{% if LANGUAGE_CODE == 'en' %}Categories{% else %}الفئات{% endif %}</div>
         {% for cat in nav_categories %}

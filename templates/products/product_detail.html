@@ -89,6 +89,9 @@
             {% if product.category %}
             <li class="breadcrumb-item"><a href="{% url 'products' %}?category_id={{ product.category.id }}" class="text-decoration-none text-muted">{% if LANGUAGE_CODE == 'en' %}{{ product.category.name_en }}{% else %}{{ product.category.name_ar }}{% endif %}</a></li>
             {% endif %}
+            {% if product.sub_category %}
+            <li class="breadcrumb-item"><a href="{% url 'products' %}?sub_category={{ product.sub_category.name_ar|urlencode }}" class="text-decoration-none text-muted">{% if LANGUAGE_CODE == 'en' %}{{ product.sub_category.name_en }}{% else %}{{ product.sub_category.name_ar }}{% endif %}</a></li>
+            {% endif %}
             <li class="breadcrumb-item active fw-bold" style="color:var(--pd-ink)">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</li>
         </ol>
     </nav>
@@ -121,6 +124,11 @@
                 {% if product.brand %}
                 <a href="{% url 'products' %}?brand_id={{ product.brand.id }}" class="brand-tag text-decoration-none">
                     <i class="ti ti-building-store"></i> {{ product.brand.name }}
+                </a>
+                {% endif %}
+                {% if product.sub_category %}
+                <a href="{% url 'products' %}?sub_category={{ product.sub_category.name_ar|urlencode }}" class="brand-tag text-decoration-none" style="background: rgba(41, 128, 185, 0.1); color: #2980b9; border-color: rgba(41, 128, 185, 0.2);">
+                    <i class="ti ti-tags"></i> {% if LANGUAGE_CODE == 'en' %}{{ product.sub_category.name_en }}{% else %}{{ product.sub_category.name_ar }}{% endif %}
                 </a>
                 {% endif %}
 
