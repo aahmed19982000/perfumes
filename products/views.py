@@ -30,14 +30,17 @@ def product_list(request):
     # ── 2. Multi-Filtering (IDs list) ───────────────────────────
     category_ids     = request.GET.getlist("category")
     brand_ids        = request.GET.getlist("brand")
-    sub_category_ids = request.GET.getlist("sub_category")
+    sub_category_names = request.GET.getlist("sub_category")
 
     if category_ids:
         products = products.filter(category_id__in=category_ids)
     if brand_ids:
         products = products.filter(brand_id__in=brand_ids)
-    if sub_category_ids:
-        products = products.filter(sub_category_id__in=sub_category_ids)
+    if sub_category_names:
+        products = products.filter(
+            Q(sub_category__name_ar__in=sub_category_names) |
+            Q(sub_category__name_en__in=sub_category_names)
+        )
 
     # ── 3. Price Range ──────────────────────────────────────────
     min_price = request.GET.get("min_price")
@@ -71,7 +74,14 @@ def product_list(request):
 
     # بيانات الفلاتر (للـ UI)
     all_categories = Category.objects.filter(is_active=True).prefetch_related('sub_categories')
-    all_subcategories = SubCategory.objects.filter(is_active=True)
+    # تصفية الفئات الفرعية المكررة حسب الاسم في الواجهة
+    seen_sub_names = set()
+    unique_subcategories = []
+    for sub in SubCategory.objects.filter(is_active=True).order_by('name_ar'):
+        if sub.name_ar not in seen_sub_names:
+            seen_sub_names.add(sub.name_ar)
+            unique_subcategories.append(sub)
+
     all_brands     = Brand.objects.filter(is_active=True)
     
     # حساب نطاق الأسعار للمنزلق (Slider)
@@ -80,11 +90,11 @@ def product_list(request):
     return render(request, "products/product_list.html", {
         "products":       page_obj,
         "categories":     all_categories,
-        "subcategories":  all_subcategories,
+        "subcategories":  unique_subcategories,
         "brands":         all_brands,
         "price_stats":    price_stats,
         "selected_cats":  [int(i) for i in category_ids if i.isdigit()],
-        "selected_sub_cats": [int(i) for i in sub_category_ids if i.isdigit()],
+        "selected_sub_cats": sub_category_names,
         "selected_brands":[int(i) for i in brand_ids if i.isdigit()],
         "min_p":          min_price,
         "max_p":          max_price,

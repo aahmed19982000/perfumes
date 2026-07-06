@@ -230,6 +230,7 @@ class Product(models.Model):
     # ── الحالة والتصنيف ──────────────────────────────────────────
     is_active   = models.BooleanField(default=True,  verbose_name="نشط")
     is_featured = models.BooleanField(default=False, verbose_name="مميز")
+    has_box     = models.BooleanField(default=True,  verbose_name="بعلبة")
 
     # ── التواريخ ─────────────────────────────────────────────────
     created_at = models.DateTimeField(auto_now_add=True)

@@ -65,12 +65,12 @@ class ProductImageInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display    = ["thumbnail_preview", "name_ar", "brand", "category", "size",
+    list_display    = ["thumbnail_preview", "name_ar", "brand", "category", "size", "has_box",
                        "price", "final_price_display", "stock", "stock_badge",
                        "is_featured", "is_active"]
-    list_filter     = ["category", "sub_category", "brand", "is_active", "is_featured"]
+    list_filter     = ["category", "sub_category", "brand", "has_box", "is_active", "is_featured"]
     search_fields   = ["name_ar", "name_en", "sku", "slug"]
-    list_editable   = ["price", "stock", "is_featured", "is_active"]
+    list_editable   = ["price", "stock", "has_box", "is_featured", "is_active"]
     readonly_fields = ["sku", "slug", "created_at", "updated_at",
                        "avg_rating", "review_count", "thumbnail_preview"]
     prepopulated_fields = {}   # slug يتولد تلقائي في save()
@@ -82,7 +82,7 @@ class ProductAdmin(admin.ModelAdmin):
         ("التصنيف",        {"fields": ("category", "sub_category", "brand")}),
         ("السعر والمخزون", {"fields": ("price", "discount_price", "stock")}),
         ("الصورة",         {"fields": ("thumbnail", "thumbnail_preview")}),
-        ("الحالة",         {"fields": ("is_active", "is_featured")}),
+        ("الحالة",         {"fields": ("is_active", "is_featured", "has_box")}),
         ("الإحصاءات",      {"fields": ("avg_rating", "review_count", "created_at", "updated_at")}),
     )
 

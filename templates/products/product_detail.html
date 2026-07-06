@@ -135,7 +135,6 @@
                     <span class="stars-label">({{ product.review_count }} {% if LANGUAGE_CODE == 'en' %}Reviews{% else %}تقييم{% endif %})</span>
                 </div>
 
-                {% if product.size or product.concentration %}
                 <div class="d-flex flex-wrap mb-2">
                     {% if product.size %}
                     <span class="info-badge">
@@ -149,8 +148,18 @@
                         <span class="opacity-75">{% if LANGUAGE_CODE == 'en' %}Concentration:{% else %}التركيز:{% endif %}</span> {{ product.concentration }}
                     </span>
                     {% endif %}
+                    {% if product.has_box %}
+                    <span class="info-badge" style="background: rgba(39, 174, 96, 0.08); border-color: rgba(39, 174, 96, 0.2); color: #27ae60;">
+                        <i class="ti ti-package"></i> 
+                        <span>{% if LANGUAGE_CODE == 'en' %}With Original Box{% else %}بعلبة أصلية{% endif %}</span>
+                    </span>
+                    {% else %}
+                    <span class="info-badge" style="background: rgba(230, 126, 34, 0.08); border-color: rgba(230, 126, 34, 0.2); color: #e67e22;">
+                        <i class="ti ti-package"></i> 
+                        <span>{% if LANGUAGE_CODE == 'en' %}Without Original Box{% else %}بدون علبة أصلية{% endif %}</span>
+                    </span>
+                    {% endif %}
                 </div>
-                {% endif %}
 
                 <div class="price-block">
                     <div class="d-flex align-items-baseline">
