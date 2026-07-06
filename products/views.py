@@ -55,12 +55,29 @@ def product_list(request):
         products = products.order_by("-created_at")
 
     # ── 2. Multi-Filtering (IDs/Names list) ───────────────────────────
-    category_ids       = request.GET.getlist("category")
-    brand_ids          = request.GET.getlist("brand")
+    category_ids       = request.GET.getlist("category") + request.GET.getlist("category_id")
+    brand_ids          = request.GET.getlist("brand") + request.GET.getlist("brand_id")
     sub_category_names = request.GET.getlist("sub_category")
 
     if category_ids:
-        products = products.filter(category_id__in=category_ids)
+        filter_cat_ids = list(category_ids)
+        try:
+            unisex_cats = Category.objects.filter(Q(name_ar__icontains="للجنسين") | Q(name_en__icontains="Unisex"))
+            if unisex_cats.exists():
+                unisex_ids = [str(c.id) for c in unisex_cats]
+                men_cats = Category.objects.filter(Q(name_ar__icontains="للرجال") | Q(name_en__icontains="For Men"))
+                women_cats = Category.objects.filter(Q(name_ar__icontains="للنساء") | Q(name_en__icontains="For Women"))
+                men_ids = [str(c.id) for c in men_cats]
+                women_ids = [str(c.id) for c in women_cats]
+                
+                if any(cid in men_ids or cid in women_ids for cid in filter_cat_ids):
+                    for uid in unisex_ids:
+                        if uid not in filter_cat_ids:
+                            filter_cat_ids.append(uid)
+        except Exception:
+            pass
+
+        products = products.filter(category_id__in=filter_cat_ids)
     if brand_ids:
         products = products.filter(brand_id__in=brand_ids)
     if sub_category_names:
