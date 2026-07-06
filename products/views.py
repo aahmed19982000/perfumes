@@ -5,10 +5,37 @@ from django.db.models import Q, Min, Max
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.core.paginator import Paginator
 from .models import Product, Category, Brand, SubCategory
+import re
+
+def normalize_arabic(text):
+    if not text:
+        return ""
+    # إزالة التشكيل والشدة والحركات
+    text = re.sub(r'[\u064B-\u0652]', '', text)
+    # توحيد الألف
+    text = re.sub(r'[أإآ]', 'ا', text)
+    # توحيد الياء والألف المقصورة
+    text = re.sub(r'[ى]', 'y', text)
+    text = re.sub(r'[ي]', 'y', text)
+    # توحيد التاء المربوطة والهاء
+    text = re.sub(r'ة', 'ه', text)
+    return text.strip().lower()
 
 
 def product_list(request):
     products = Product.objects.filter(is_active=True)
+
+    # جلب وتجميع الفئات الفرعية المفعّلة وتوحيدها لمنع التكرار البصري بسبب التشكيل أو اختلاف الإملاء
+    all_subs = SubCategory.objects.filter(is_active=True)
+    grouped_subs = {}
+    for sub in all_subs:
+        norm = normalize_arabic(sub.name_ar)
+        if norm not in grouped_subs:
+            grouped_subs[norm] = []
+        grouped_subs[norm].append(sub)
+
+    unique_subcategories = [subs[0] for subs in grouped_subs.values()]
+    unique_subcategories.sort(key=lambda s: s.name_ar)
 
     # ── 1. Full-Text Search ──────────────────────────────────────
     search = request.GET.get("search")
@@ -27,9 +54,9 @@ def product_list(request):
         # ترتيب افتراضي لو مفيش بحث
         products = products.order_by("-created_at")
 
-    # ── 2. Multi-Filtering (IDs list) ───────────────────────────
-    category_ids     = request.GET.getlist("category")
-    brand_ids        = request.GET.getlist("brand")
+    # ── 2. Multi-Filtering (IDs/Names list) ───────────────────────────
+    category_ids       = request.GET.getlist("category")
+    brand_ids          = request.GET.getlist("brand")
     sub_category_names = request.GET.getlist("sub_category")
 
     if category_ids:
@@ -37,10 +64,13 @@ def product_list(request):
     if brand_ids:
         products = products.filter(brand_id__in=brand_ids)
     if sub_category_names:
-        products = products.filter(
-            Q(sub_category__name_ar__in=sub_category_names) |
-            Q(sub_category__name_en__in=sub_category_names)
-        )
+        selected_norms = {normalize_arabic(name) for name in sub_category_names}
+        matched_ids = []
+        for norm, subs in grouped_subs.items():
+            if norm in selected_norms:
+                matched_ids.extend([s.id for s in subs])
+        
+        products = products.filter(sub_category_id__in=matched_ids)
 
     # ── 3. Price Range ──────────────────────────────────────────
     min_price = request.GET.get("min_price")
@@ -74,14 +104,6 @@ def product_list(request):
 
     # بيانات الفلاتر (للـ UI)
     all_categories = Category.objects.filter(is_active=True).prefetch_related('sub_categories')
-    # تصفية الفئات الفرعية المكررة حسب الاسم في الواجهة
-    seen_sub_names = set()
-    unique_subcategories = []
-    for sub in SubCategory.objects.filter(is_active=True).order_by('name_ar'):
-        if sub.name_ar not in seen_sub_names:
-            seen_sub_names.add(sub.name_ar)
-            unique_subcategories.append(sub)
-
     all_brands     = Brand.objects.filter(is_active=True)
     
     # حساب نطاق الأسعار للمنزلق (Slider)
