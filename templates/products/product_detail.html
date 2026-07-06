@@ -71,6 +71,9 @@
 
     @media (max-width: 991.98px) {
         .mobile-bottom-bar { display: none !important; }
+        body { padding-bottom: 90px !important; }
+        .floating-contacts { display: none !important; }
+        .breadcrumb { font-size: 0.85rem; }
     }
 
     @media (max-width: 767px) {
@@ -121,16 +124,18 @@
         <!-- Info -->
         <div class="col-12 col-md-7">
             <div class="product-info-panel">
-                {% if product.brand %}
-                <a href="{% url 'products' %}?brand_id={{ product.brand.id }}" class="brand-tag text-decoration-none">
-                    <i class="ti ti-building-store"></i> {{ product.brand.name }}
-                </a>
-                {% endif %}
-                {% if product.sub_category %}
-                <a href="{% url 'products' %}?sub_category={{ product.sub_category.name_ar|urlencode }}" class="brand-tag text-decoration-none" style="background: rgba(41, 128, 185, 0.1); color: #2980b9; border-color: rgba(41, 128, 185, 0.2);">
-                    <i class="ti ti-tags"></i> {% if LANGUAGE_CODE == 'en' %}{{ product.sub_category.name_en }}{% else %}{{ product.sub_category.name_ar }}{% endif %}
-                </a>
-                {% endif %}
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    {% if product.brand %}
+                    <a href="{% url 'products' %}?brand_id={{ product.brand.id }}" class="brand-tag text-decoration-none m-0">
+                        <i class="ti ti-building-store"></i> {{ product.brand.name }}
+                    </a>
+                    {% endif %}
+                    {% if product.sub_category %}
+                    <a href="{% url 'products' %}?sub_category={{ product.sub_category.name_ar|urlencode }}" class="brand-tag text-decoration-none m-0" style="background: rgba(41, 128, 185, 0.1); color: #2980b9; border-color: rgba(41, 128, 185, 0.2);">
+                        <i class="ti ti-tags"></i> {% if LANGUAGE_CODE == 'en' %}{{ product.sub_category.name_en }}{% else %}{{ product.sub_category.name_ar }}{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
 
                 <h1 class="product-title">{% if LANGUAGE_CODE == 'en' %}{{ product.name_en }}{% else %}{{ product.name_ar }}{% endif %}</h1>
 
