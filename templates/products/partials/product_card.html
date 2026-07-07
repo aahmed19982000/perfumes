@@ -34,7 +34,7 @@
             </div>
             <div class="product-packaging-tag" style="font-size: 9px; font-weight: 700; display: flex; align-items: center; gap: 3px; color: {% if product.has_box %}#27ae60{% else %}#e67e22{% endif %}; background: {% if product.has_box %}rgba(39, 174, 96, 0.08){% else %}rgba(230, 126, 34, 0.08){% endif %}; padding: 2px 6px; border-radius: 4px;">
                 <i class="ti ti-package" style="font-size: 11px;"></i>
-                <span>{% if product.has_box %}{% if LANGUAGE_CODE == 'en' %}Original Box{% else %}بعلبة أصلية{% endif %}{% else %}{% if LANGUAGE_CODE == 'en' %}Without Original Box{% else %}بدون علبة أصلية{% endif %}{% endif %}</span>
+                <span>{% if product.has_box %}{% if LANGUAGE_CODE == 'en' %}Original Box{% else %}بعلبة أصلية{% endif %}{% else %}{% if LANGUAGE_CODE == 'en' %}Original Without Box{% else %}اصلى بدون علبه{% endif %}{% endif %}</span>
             </div>
         </div>
         <h3 class="product-title">
